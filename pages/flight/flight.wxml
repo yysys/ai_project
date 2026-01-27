@@ -1,0 +1,43 @@
+<!-- flight.wxml -->
+<view class="container">
+  <text class="page-title">无人机飞行控制</text>
+  
+  <!-- 无人机状态信息 -->
+  <view class="status-panel">
+    <view class="status-item">
+      <text class="status-label">速度:</text>
+      <text class="status-value">{{droneStatus.speed}} km/h</text>
+    </view>
+    <view class="status-item">
+      <text class="status-label">高度:</text>
+      <text class="status-value">{{droneStatus.altitude}} m</text>
+    </view>
+    <view class="status-item">
+      <text class="status-label">方向:</text>
+      <text class="status-value">{{droneStatus.direction}}°</text>
+    </view>
+  </view>
+  
+  <!-- 无人机飞行界面 -->
+  <view class="drone-container">
+    <image class="drone-image" src="../../images/drone.png" mode="aspectFit" style="transform: rotate({{rotation}}deg);"></image>
+    <view class="map-background">
+      <image src="../../images/map.png" mode="aspectFill"></image>
+    </view>
+  </view>
+  
+  <!-- 控制按钮 -->
+  <view class="control-panel">
+    <button class="control-btn speed-down" bindtap="decreaseSpeed">减速</button>
+    <button class="control-btn speed-up" bindtap="increaseSpeed">加速</button>
+  </view>
+  
+  <!-- 陀螺仪状态 -->
+  <view class="gyro-status">
+    <text class="gyro-label">陀螺仪状态:</text>
+    <text class="gyro-value">{{gyroStatus}}</text>
+  </view>
+  
+  <!-- 操作提示 -->
+  <text class="tip">提示: 倾斜手机可以控制无人机飞行角度</text>
+</view>

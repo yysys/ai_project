@@ -1,0 +1,36 @@
+<!-- index.wxml -->
+<view class="container">
+  <image class="logo" src="../../images/drone-logo.png" mode="aspectFit"></image>
+  <text class="app-title">无人机飞行</text>
+  <text class="app-subtitle">体验身临其境的飞行控制</text>
+  
+  <!-- 功能介绍 -->
+  <view class="features">
+    <view class="feature-item">
+      <image class="feature-icon" src="../../images/feature-gyro.png" mode="aspectFit"></image>
+      <text class="feature-title">陀螺仪控制</text>
+      <text class="feature-desc">倾斜手机控制飞行角度</text>
+    </view>
+    <view class="feature-item">
+      <image class="feature-icon" src="../../images/feature-speed.png" mode="aspectFit"></image>
+      <text class="feature-title">速度控制</text>
+      <text class="feature-desc">一键加速/减速</text>
+    </view>
+    <view class="feature-item">
+      <image class="feature-icon" src="../../images/feature-map.png" mode="aspectFit"></image>
+      <text class="feature-title">实时地图</text>
+      <text class="feature-desc">真实地图背景</text>
+    </view>
+  </view>
+  
+  <!-- 开始飞行按钮 -->
+  <button class="start-btn" bindtap="goToFlight">
+    开始飞行
+  </button>
+  
+  <!-- 用户信息 -->
+  <view class="user-info" wx:if="{{userInfo}}">
+    <image class="avatar" src="{{userInfo.avatarUrl}}" mode="aspectFit"></image>
+    <text class="username">欢迎，{{userInfo.nickName}}</text>
+  </view>
+</view>
