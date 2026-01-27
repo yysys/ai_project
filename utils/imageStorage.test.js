@@ -8,7 +8,7 @@ const { mockWxEnvironment } = require('./mock-wx');
 mockWxEnvironment();
 
 // 测试图片存储工具
-const imageStorage = require('../../drone_flight_miniprogram/utils/imageStorage.js');
+const imageStorage = require('./imageStorage.js');
 
 console.log('=== 测试图片存储功能 ===');
 

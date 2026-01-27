@@ -1,0 +1,21 @@
+{
+  "name": "drone-flight-miniprogram",
+  "version": "1.0.0",
+  "description": "无人机飞行微信小程序",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "generate-images": "node generate-images.js"
+  },
+  "keywords": [
+    "wechat",
+    "miniprogram",
+    "drone",
+    "flight"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}

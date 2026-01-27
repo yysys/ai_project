@@ -7,8 +7,19 @@ const { mockWxEnvironment, mockWx } = require('../utils/mock-wx');
 // 模拟环境
 mockWxEnvironment();
 
-// 测试飞行页面
-const flightPage = require('../../drone_flight_miniprogram/pages/flight/flight.js');
+// 保存 Page 函数的调用参数
+let flightPageConfig = null;
+const originalPage = global.Page;
+global.Page = function(config) {
+  console.log('Page initialized with config:', Object.keys(config));
+  flightPageConfig = config;
+  return originalPage(config);
+};
+
+// 导入飞行页面
+require('./flight/flight.js');
+
+const flightPage = flightPageConfig;
 
 console.log('=== 测试飞行页面功能 ===');
 
@@ -19,14 +30,18 @@ console.log('  data 对象存在:', !!flightPage.data);
 
 // 测试数据结构
 console.log('\n2. 测试数据结构:');
-console.log('  droneStatus 存在:', !!flightPage.data.droneStatus);
-console.log('  mapImage 存在:', !!flightPage.data.mapImage);
-console.log('  loading 初始值:', flightPage.data.loading);
+if (flightPage.data) {
+  console.log('  droneStatus 存在:', !!flightPage.data.droneStatus);
+  console.log('  rotation 存在:', typeof flightPage.data.rotation === 'number');
+  console.log('  gyroStatus 初始值:', flightPage.data.gyroStatus);
+}
 
 // 测试方法存在性
 console.log('\n3. 测试方法存在性:');
-console.log('  getMapImage 方法存在:', typeof flightPage.getMapImage === 'function');
-console.log('  getDroneImage 方法存在:', typeof flightPage.getDroneImage === 'function');
+console.log('  initDroneStatus 方法存在:', typeof flightPage.initDroneStatus === 'function');
+console.log('  initGyroscope 方法存在:', typeof flightPage.initGyroscope === 'function');
+console.log('  increaseSpeed 方法存在:', typeof flightPage.increaseSpeed === 'function');
+console.log('  decreaseSpeed 方法存在:', typeof flightPage.decreaseSpeed === 'function');
 
 // 模拟页面实例
 const flightPageInstance = {
@@ -38,13 +53,15 @@ const flightPageInstance = {
   }
 };
 
-// 测试加载图片
-console.log('\n4. 测试加载图片:');
+// 测试初始化无人机状态
+console.log('\n4. 测试初始化无人机状态:');
+flightPageInstance.initDroneStatus();
 
-// 调用获取地图图片
-flightPageInstance.getMapImage();
-
-// 调用获取无人机图片
-flightPageInstance.getDroneImage();
+// 测试加速和减速
+console.log('\n5. 测试加速和减速:');
+flightPageInstance.increaseSpeed();
+console.log('  加速后速度:', flightPageInstance.data.droneStatus.speed);
+flightPageInstance.decreaseSpeed();
+console.log('  减速后速度:', flightPageInstance.data.droneStatus.speed);
 
 console.log('\n=== 飞行页面测试完成 ===');

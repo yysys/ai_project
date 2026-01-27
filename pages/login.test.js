@@ -7,8 +7,19 @@ const { mockWxEnvironment, mockWx } = require('../utils/mock-wx');
 // 模拟环境
 mockWxEnvironment();
 
-// 测试登录页面
-const loginPage = require('../../drone_flight_miniprogram/pages/login/login.js');
+// 保存 Page 函数的调用参数
+let loginPageConfig = null;
+const originalPage = global.Page;
+global.Page = function(config) {
+  console.log('Page initialized with config:', Object.keys(config));
+  loginPageConfig = config;
+  return originalPage(config);
+};
+
+// 导入登录页面
+require('./login/login.js');
+
+const loginPage = loginPageConfig;
 
 console.log('=== 测试登录页面功能 ===');
 
@@ -21,9 +32,13 @@ console.log('  onGetUserInfo 方法存在:', typeof loginPage.onGetUserInfo === 
 
 // 测试数据结构
 console.log('\n2. 测试数据结构:');
-console.log('  userInfo 初始值:', loginPage.data.userInfo);
-console.log('  hasUserInfo 初始值:', loginPage.data.hasUserInfo);
-console.log('  canIUse 初始值:', loginPage.data.canIUse);
+if (loginPage.data) {
+  console.log('  userInfo 初始值:', loginPage.data.userInfo);
+  console.log('  hasUserInfo 初始值:', loginPage.data.hasUserInfo);
+  console.log('  canIUse 初始值:', loginPage.data.canIUse);
+} else {
+  console.log('  data 对象不存在');
+}
 
 // 测试 onLoad 方法
 console.log('\n3. 测试 onLoad 方法:');
@@ -46,10 +61,12 @@ console.log('\n4. 测试 onGetUserInfo 方法:');
 
 // 模拟用户信息
 const mockUserInfo = {
-  userInfo: {
-    nickName: 'Test User',
-    avatarUrl: 'https://example.com/avatar.png',
-    gender: 1
+  detail: {
+    userInfo: {
+      nickName: 'Test User',
+      avatarUrl: 'https://example.com/avatar.png',
+      gender: 1
+    }
   }
 };
 

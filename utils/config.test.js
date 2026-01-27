@@ -8,7 +8,7 @@ const { mockWxEnvironment } = require('./mock-wx');
 mockWxEnvironment();
 
 // 测试配置文件
-const config = require('../../drone_flight_miniprogram/config/config.js');
+const config = require('../config/config.js');
 
 console.log('=== 测试配置文件管理 ===');
 

@@ -8,7 +8,7 @@ const { mockWxEnvironment } = require('./mock-wx');
 mockWxEnvironment();
 
 // 测试 GPT 工具
-const gptUtil = require('../../drone_flight_miniprogram/utils/gpt.js');
+const gptUtil = require('./gpt.js');
 
 console.log('=== 测试 GPT 工具功能 ===');
 

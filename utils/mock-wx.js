@@ -77,9 +77,15 @@ const mockWx = {
   redirectTo(options) {
     console.log('Redirect to:', options.url);
   },
-  
+
   switchTab(options) {
     console.log('Switch tab to:', options.url);
+  },
+
+  // 检查API是否可用
+  canIUse(apiName) {
+    console.log('Check if API is available:', apiName);
+    return true;
   },
   
   // 获取保存的文件列表
