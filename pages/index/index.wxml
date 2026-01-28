@@ -1,8 +1,11 @@
 <!-- index.wxml -->
 <view class="container">
-  <image class="logo" src="../../images/drone-logo.png" mode="aspectFit"></image>
-  <text class="app-title">无人机飞行</text>
-  <text class="app-subtitle">体验身临其境的飞行控制</text>
+  <!-- 页面标题区域 -->
+  <view class="page-header">
+    <image class="logo" src="../../images/drone-logo.png" mode="aspectFit"></image>
+    <text class="app-title">无人机飞行</text>
+    <text class="app-subtitle">体验身临其境的飞行控制</text>
+  </view>
   
   <!-- 功能介绍 -->
   <view class="features">
@@ -24,13 +27,17 @@
   </view>
   
   <!-- 开始飞行按钮 -->
-  <button class="start-btn" bindtap="goToFlight">
-    开始飞行
-  </button>
+  <view class="start-section">
+    <button class="start-btn" bindtap="goToFlight">
+      开始飞行
+    </button>
+  </view>
   
   <!-- 用户信息 -->
-  <view class="user-info" wx:if="{{userInfo}}">
-    <image class="avatar" src="{{userInfo.avatarUrl}}" mode="aspectFit"></image>
-    <text class="username">欢迎，{{userInfo.nickName}}</text>
+  <view class="user-section">
+    <view class="user-info" wx:if="{{userInfo}}">
+      <image class="avatar" src="{{userInfo.avatarUrl}}" mode="aspectFit"></image>
+      <text class="username">欢迎，{{userInfo.nickName}}</text>
+    </view>
   </view>
 </view>

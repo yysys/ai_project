@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>无人机飞行微信小程序 - UI交互图</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        /* 自定义样式 */
+        .page {
+            min-height: 100vh;
+            background-color: #f5f5f5;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .drone-container {
+            position: relative;
+            overflow: hidden;
+        }
+        .drone-image {
+            transition: transform 0.2s ease;
+        }
+        .map-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.6;
+        }
+        .control-btn {
+            transition: all 0.2s ease;
+        }
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+        .status-panel {
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+        }
+        .login-btn {
+            background-color: #07c160;
+            color: white;
+            transition: all 0.2s ease;
+        }
+        .login-btn:active {
+            background-color: #06b056;
+            transform: scale(0.98);
+        }
+        .start-btn {
+            background-color: #1890ff;
+            color: white;
+            transition: all 0.2s ease;
+        }
+        .start-btn:active {
+            background-color: #40a9ff;
+            transform: scale(0.98);
+        }
+        .speed-up {
+            background-color: #52c41a;
+            color: white;
+        }
+        .speed-down {
+            background-color: #ff4d4f;
+            color: white;
+        }
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: white;
+            border-top: 1px solid #e8e8e8;
+            display: flex;
+            justify-content: space-around;
+            padding: 10rpx 0;
+        }
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10rpx;
+        }
+        .tab-item.active {
+            color: #1890ff;
+        }
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        /* 响应式设计 - 横屏优先 */
+        @media (max-width: 768px) {
+            .drone-container {
+                height: 300px;
+            }
+            .page {
+                flex-direction: row;
+            }
+        }
+        @media (min-width: 769px) {
+            .drone-container {
+                height: 500px;
+            }
+            .page {
+                flex-direction: row;
+            }
+        }
+        /* 强制横屏布局 */
+        .page {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+        .max-w-md {
+            max-width: 100%;
+            width: 100%;
+        }
+        /* 飞行控制页横屏布局 */
+        #flight-page .max-w-md {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        #flight-page .drone-container {
+            grid-column: 1 / -1;
+        }
+        #flight-page .status-panel {
+            grid-column: 1 / -1;
+        }
+        #flight-page .control-panel {
+            grid-column: 1 / -1;
+        }
+        /* 登录页横屏布局 */
+        #login-page {
+            flex-direction: row;
+        }
+        #login-page .w-full {
+            max-width: 500px;
+        }
+        /* 首页横屏布局 */
+        #home-page .max-w-md {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        #home-page .flex.flex-col.items-center {
+            grid-column: 1 / -1;
+        }
+        #home-page .mb-12.fade-in {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        #home-page .mb-20.fade-in {
+            grid-column: 1 / -1;
+        }
+        #home-page .bg-white.rounded-lg {
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <!-- 登录页 -->
+    <div id="login-page" class="page flex flex-col items-center justify-center p-6">
+        <div class="w-full max-w-md bg-white rounded-lg shadow-lg p-8 fade-in">
+            <div class="flex flex-col items-center mb-8">
+                <div class="w-32 h-32 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+                    <i class="fa fa-paper-plane text-4xl text-blue-500"></i>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-800">无人机飞行</h1>
+                <p class="text-gray-600 mt-2">请登录以开始飞行体验</p>
+            </div>
+            <button id="login-btn" class="login-btn w-full py-4 rounded-full text-lg font-medium mb-4">
+                <i class="fa fa-weixin mr-2"></i> 微信登录
+            </button>
+            <p class="text-center text-gray-500 text-sm">登录后可享受完整的飞行控制体验</p>
+        </div>
+    </div>
+
+    <!-- 首页 -->
+    <div id="home-page" class="page p-6 hidden">
+        <div class="max-w-md mx-auto">
+            <div class="flex flex-col items-center mb-12 pt-8 fade-in">
+                <div class="w-32 h-32 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+                    <i class="fa fa-paper-plane text-4xl text-blue-500"></i>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-800">无人机飞行</h1>
+                <p class="text-gray-600 mt-2">体验身临其境的飞行控制</p>
+            </div>
+
+            <!-- 功能介绍 -->
+            <div class="mb-12 fade-in" style="animation-delay: 0.2s;">
+                <div class="bg-white rounded-lg shadow-md p-4 mb-4">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fa fa-rotate-right text-blue-500"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800">陀螺仪控制</h3>
+                            <p class="text-gray-600 text-sm">倾斜手机控制飞行角度</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-4 mb-4">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fa fa-tachometer text-blue-500"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800">速度控制</h3>
+                            <p class="text-gray-600 text-sm">一键加速/减速</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-4">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fa fa-map text-blue-500"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800">实时地图</h3>
+                            <p class="text-gray-600 text-sm">真实地图背景</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 开始飞行按钮 -->
+            <div class="mb-20 fade-in" style="animation-delay: 0.4s;">
+                <button id="start-flight-btn" class="start-btn w-full py-4 rounded-full text-lg font-medium">
+                    开始飞行
+                </button>
+            </div>
+
+            <!-- 用户信息 -->
+            <div class="bg-white rounded-lg shadow-md p-4 flex items-center fade-in" style="animation-delay: 0.6s;">
+                <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mr-4">
+                    <i class="fa fa-user text-gray-500"></i>
+                </div>
+                <div>
+                    <p class="text-gray-800">欢迎，测试用户</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部导航栏 -->
+        <div class="tab-bar">
+            <div class="tab-item active" data-page="home-page">
+                <i class="fa fa-home text-xl"></i>
+                <span class="text-xs mt-1">首页</span>
+            </div>
+            <div class="tab-item" data-page="flight-page">
+                <i class="fa fa-paper-plane text-xl"></i>
+                <span class="text-xs mt-1">飞行</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 飞行控制页 -->
+    <div id="flight-page" class="page p-6 hidden">
+        <div class="max-w-md mx-auto">
+            <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center fade-in">无人机飞行控制</h1>
+
+            <!-- 状态信息面板 -->
+            <div class="bg-white rounded-lg shadow-md p-4 mb-6 grid grid-cols-3 gap-4 fade-in" style="animation-delay: 0.2s;">
+                <div class="text-center">
+                    <p class="text-gray-600 text-sm">速度</p>
+                    <p id="speed-value" class="font-bold text-gray-800">0 km/h</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-gray-600 text-sm">高度</p>
+                    <p id="altitude-value" class="font-bold text-gray-800">0 m</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-gray-600 text-sm">方向</p>
+                    <p id="direction-value" class="font-bold text-gray-800">0°</p>
+                </div>
+            </div>
+
+            <!-- 无人机飞行区域 -->
+            <div class="drone-container bg-blue-50 rounded-lg shadow-md relative mb-6 overflow-hidden fade-in" style="animation-delay: 0.4s;">
+                <!-- 地图背景 -->
+                <div class="map-background w-full h-full">
+                    <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=realistic%20map%20view%20from%20above%2C%20terrain%2C%20high%20quality%2C%20blue%20and%20green%20colors&image_size=landscape_16_9" alt="地图背景" class="w-full h-full object-cover opacity-60">
+                </div>
+                <!-- 无人机图像 -->
+                <div id="drone-image" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
+                    <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=drone%20flying%20in%20the%20sky%2C%20realistic%2C%20high%20quality%2C%20white%20background&image_size=square" alt="无人机" class="w-32 h-32 object-contain">
+                </div>
+            </div>
+
+            <!-- 控制按钮面板 -->
+            <div class="flex justify-center mb-6 fade-in" style="animation-delay: 0.6s;">
+                <button id="speed-down-btn" class="control-btn speed-down w-24 h-24 rounded-full flex items-center justify-center text-xl font-bold mr-8">
+                    减速
+                </button>
+                <button id="speed-up-btn" class="control-btn speed-up w-24 h-24 rounded-full flex items-center justify-center text-xl font-bold">
+                    加速
+                </button>
+            </div>
+
+            <!-- 陀螺仪状态 -->
+            <div class="bg-gray-100 rounded-lg p-4 mb-6 fade-in" style="animation-delay: 0.8s;">
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">陀螺仪状态:</span>
+                    <span id="gyro-status" class="font-medium text-green-500">已激活</span>
+                </div>
+            </div>
+
+            <!-- 操作提示 -->
+            <div class="text-center text-gray-500 text-sm mb-20 fade-in" style="animation-delay: 1s;">
+                <p>提示: 倾斜手机可以控制无人机飞行角度</p>
+            </div>
+        </div>
+
+        <!-- 底部导航栏 -->
+        <div class="tab-bar">
+            <div class="tab-item" data-page="home-page">
+                <i class="fa fa-home text-xl"></i>
+                <span class="text-xs mt-1">首页</span>
+            </div>
+            <div class="tab-item active" data-page="flight-page">
+                <i class="fa fa-paper-plane text-xl"></i>
+                <span class="text-xs mt-1">飞行</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 页面控制
+        const pages = {
+            'login-page': document.getElementById('login-page'),
+            'home-page': document.getElementById('home-page'),
+            'flight-page': document.getElementById('flight-page')
+        };
+
+        // 显示页面
+        function showPage(pageId) {
+            // 隐藏所有页面
+            Object.values(pages).forEach(page => {
+                page.classList.add('hidden');
+            });
+            // 显示目标页面
+            pages[pageId].classList.remove('hidden');
+            // 更新导航栏状态
+            document.querySelectorAll('.tab-item').forEach(item => {
+                if (item.dataset.page === pageId) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        // 登录按钮点击事件
+        document.getElementById('login-btn').addEventListener('click', function() {
+            // 模拟登录延迟
+            setTimeout(() => {
+                showPage('home-page');
+            }, 500);
+        });
+
+        // 开始飞行按钮点击事件
+        document.getElementById('start-flight-btn').addEventListener('click', function() {
+            showPage('flight-page');
+        });
+
+        // 导航栏点击事件
+        document.querySelectorAll('.tab-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const pageId = this.dataset.page;
+                showPage(pageId);
+            });
+        });
+
+        // 速度控制
+        let speed = 0;
+        const speedUpBtn = document.getElementById('speed-up-btn');
+        const speedDownBtn = document.getElementById('speed-down-btn');
+        const speedValue = document.getElementById('speed-value');
+
+        speedUpBtn.addEventListener('click', function() {
+            if (speed < 100) {
+                speed += 5;
+                speedValue.textContent = speed + ' km/h';
+            }
+        });
+
+        speedDownBtn.addEventListener('click', function() {
+            if (speed > 0) {
+                speed -= 5;
+                speedValue.textContent = speed + ' km/h';
+            }
+        });
+
+        // 陀螺仪模拟（鼠标移动控制）
+        const droneImage = document.getElementById('drone-image');
+        const directionValue = document.getElementById('direction-value');
+        let direction = 0;
+
+        document.getElementById('flight-page').addEventListener('mousemove', function(e) {
+            // 获取页面中心
+            const rect = this.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            // 计算鼠标与中心的距离
+            const deltaX = e.clientX - centerX;
+            const deltaY = e.clientY - centerY;
+            
+            // 计算旋转角度
+            const rotationX = (deltaY / rect.height) * 45;
+            const rotationY = (deltaX / rect.width) * 45;
+            
+            // 应用旋转
+            droneImage.style.transform = `translate(-50%, -50%) rotateX(${rotationX}deg) rotateY(${rotationY}deg)`;
+            
+            // 更新方向值
+            direction = Math.round((deltaX / rect.width) * 180);
+            directionValue.textContent = direction + '°';
+        });
+
+        // 重置陀螺仪状态
+        document.getElementById('flight-page').addEventListener('mouseleave', function() {
+            droneImage.style.transform = 'translate(-50%, -50%) rotateX(0deg) rotateY(0deg)';
+            direction = 0;
+            directionValue.textContent = direction + '°';
+        });
+
+        // 初始化页面
+        showPage('login-page');
+    </script>
+</body>
+</html>

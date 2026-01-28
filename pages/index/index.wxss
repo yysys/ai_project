@@ -3,43 +3,56 @@
   padding: 40rpx 20rpx;
   min-height: 100vh;
   display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+/* 页面标题区域 */
+.page-header {
+  width: 100%;
+  display: flex;
   flex-direction: column;
   align-items: center;
+  margin-bottom: 40rpx;
 }
 
 .logo {
-  width: 200rpx;
-  height: 200rpx;
-  margin: 40rpx 0;
+  width: 150rpx;
+  height: 150rpx;
+  margin: 20rpx 0;
 }
 
 .app-title {
   font-size: 48rpx;
   font-weight: bold;
   color: #333;
-  margin-bottom: 20rpx;
+  margin-bottom: 10rpx;
 }
 
 .app-subtitle {
   font-size: 28rpx;
   color: #666;
-  margin-bottom: 60rpx;
+  margin-bottom: 20rpx;
 }
 
+/* 功能介绍区域 */
 .features {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around;
   width: 100%;
-  margin-bottom: 60rpx;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300rpx, 1fr));
+  gap: 30rpx;
+  margin-bottom: 40rpx;
 }
 
 .feature-item {
-  width: 30%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 40rpx;
+  padding: 30rpx;
+  background-color: white;
+  border-radius: 15rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
 }
 
 .feature-icon {
@@ -62,8 +75,17 @@
   text-align: center;
 }
 
+/* 开始飞行按钮 */
+.start-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 40rpx;
+}
+
 .start-btn {
-  width: 80%;
+  width: 60%;
   height: 90rpx;
   line-height: 90rpx;
   text-align: center;
@@ -71,7 +93,7 @@
   color: white;
   border-radius: 45rpx;
   font-size: 36rpx;
-  margin-bottom: 40rpx;
+  margin-bottom: 20rpx;
   border: none;
 }
 
@@ -79,15 +101,20 @@
   border: none;
 }
 
+/* 用户信息 */
+.user-section {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
 .user-info {
   display: flex;
   align-items: center;
-  margin-top: 20rpx;
-  padding: 20rpx;
-  background-color: #f5f5f5;
+  padding: 20rpx 40rpx;
+  background-color: white;
   border-radius: 20rpx;
-  width: 100%;
-  justify-content: center;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
 }
 
 .avatar {
@@ -102,25 +129,17 @@
   color: #333;
 }
 
-/* 响应式设计 */
-@media (max-width: 375px) {
-  .feature-item {
-    width: 100%;
-    flex-direction: row;
-    justify-content: flex-start;
-    padding: 0 20rpx;
+/* 横屏响应式设计 */
+@media (orientation: landscape) {
+  .container {
+    padding: 20rpx;
   }
   
-  .feature-icon {
-    margin-right: 20rpx;
-    margin-bottom: 0;
+  .features {
+    grid-template-columns: repeat(3, 1fr);
   }
   
-  .feature-title {
-    text-align: left;
-  }
-  
-  .feature-desc {
-    text-align: left;
+  .start-btn {
+    width: 40%;
   }
 }

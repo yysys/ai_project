@@ -33,15 +33,21 @@ if (!fs.existsSync(config.imageDir)) {
 /**
  * 从GPT获取图片
  * @param {string} prompt - 图片描述
+ * @param {string} name - 图片名称
  * @returns {Promise<string>} - 图片URL
  */
-async function getImageFromGPT(prompt) {
+async function getImageFromGPT(prompt, name) {
   try {
     console.log(`正在从GPT获取图片: ${prompt}`);
     
     // 这里应该调用OpenAI API
     // 由于是模拟，返回一个占位图片URL
-    return `https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(prompt)}&image_size=square`;
+    // 根据图片类型选择合适的横屏尺寸
+    let imageSize = 'landscape_16_9';
+    if (['drone-logo', 'feature-gyro', 'feature-speed', 'feature-map', 'tab-home', 'tab-home-active', 'tab-flight', 'tab-flight-active'].includes(name)) {
+      imageSize = 'square';
+    }
+    return `https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(prompt)}&image_size=${imageSize}`;
   } catch (error) {
     console.error('获取图片失败:', error);
     return null;
@@ -80,7 +86,7 @@ async function generateAllImages() {
   const results = [];
   
   for (const [name, prompt] of Object.entries(config.prompts)) {
-    const imageUrl = await getImageFromGPT(prompt);
+    const imageUrl = await getImageFromGPT(prompt, name);
     if (imageUrl) {
       const success = await downloadAndSaveImage(imageUrl, `${name}.png`);
       results.push({ name, success });

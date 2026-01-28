@@ -1,5 +1,6 @@
 <!-- flight.wxml -->
 <view class="container">
+  <!-- 页面标题 -->
   <text class="page-title">无人机飞行控制</text>
   
   <!-- 无人机状态信息 -->
@@ -26,18 +27,23 @@
     </view>
   </view>
   
-  <!-- 控制按钮 -->
-  <view class="control-panel">
-    <button class="control-btn speed-down" bindtap="decreaseSpeed">减速</button>
-    <button class="control-btn speed-up" bindtap="increaseSpeed">加速</button>
+  <!-- 控制区域 -->
+  <view class="control-section">
+    <!-- 控制按钮 -->
+    <view class="control-panel">
+      <button class="control-btn speed-down" bindtap="decreaseSpeed">减速</button>
+      <button class="control-btn speed-up" bindtap="increaseSpeed">加速</button>
+    </view>
+    
+    <!-- 状态栏 -->
+    <view class="status-section">
+      <view class="gyro-status">
+        <text class="gyro-label">陀螺仪状态:</text>
+        <text class="gyro-value">{{gyroStatus}}</text>
+      </view>
+      
+      <!-- 操作提示 -->
+      <text class="tip">倾斜手机控制飞行角度</text>
+    </view>
   </view>
-  
-  <!-- 陀螺仪状态 -->
-  <view class="gyro-status">
-    <text class="gyro-label">陀螺仪状态:</text>
-    <text class="gyro-value">{{gyroStatus}}</text>
-  </view>
-  
-  <!-- 操作提示 -->
-  <text class="tip">提示: 倾斜手机可以控制无人机飞行角度</text>
 </view>
