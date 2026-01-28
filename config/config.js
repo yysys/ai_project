@@ -2,7 +2,7 @@
 module.exports = {
   // GPT配置
   gpt: {
-    apiKey: '', // 请在实际使用时填写
+    apiKey: 'YOUR_API_KEY_HERE', // 实际API key
     model: 'gpt-4-vision-preview',
     maxTokens: 1000,
     temperature: 0.0

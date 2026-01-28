@@ -2,9 +2,12 @@
 <view class="login-container">
   <!-- 游戏背景视频 -->
   <view class="game-background">
-    <video id="game-video" autoplay loop muted class="video">
+    <!-- 视频背景 -->
+    <video id="game-video" autoplay loop muted class="video" binderror="handleVideoError">
       <source src="../../assets/videos/game-intro.mp4" type="video/mp4"></source>
     </video>
+    <!-- 备用背景图片 -->
+    <image id="game-background-image" class="background-image" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=drone%20flying%20through%20scenic%20landscape%2C%20aerial%20view%2C%20cinematic%2C%20mountains%2C%20forests%2C%20lakes%2C%20vibrant%20colors%2C%20high%20quality&image_size=landscape_16_9"></image>
   </view>
   
   <!-- 游戏音效 -->

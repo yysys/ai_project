@@ -22,9 +22,9 @@ Page({
         userInfo: userInfo,
         hasUserInfo: true
       })
-      // 跳转到飞行页面
-      wx.switchTab({
-        url: '../flight/flight'
+      // 跳转到游戏大厅
+      wx.redirectTo({
+        url: '/pages/lobby/lobby'
       })
       return
     }
@@ -36,11 +36,13 @@ Page({
   // 加载游戏资源
   loadGameResources() {
     const resources = [
-      { name: '游戏logo', size: 15 },
-      { name: '游戏视频', size: 30 },
-      { name: '游戏音效', size: 20 },
-      { name: '无人机模型', size: 20 },
-      { name: '地图资源', size: 15 }
+      { name: '游戏系统配置', size: 5 },
+      { name: 'UI界面资源', size: 10 },
+      { name: '商城物品图标', size: 15 },
+      { name: '无人机模型(1-10级)', size: 25 },
+      { name: '导弹系统资源', size: 15 },
+      { name: '背景音乐与音效', size: 20 },
+      { name: '高清地图纹理', size: 10 }
     ]
     
     let progress = 0
@@ -99,9 +101,9 @@ Page({
           console.log('Login code:', res.code)
           // 这里可以发送code到后台换取openId等信息
           
-          // 跳转到飞行页面
-          wx.switchTab({
-            url: '../flight/flight'
+          // 跳转到游戏大厅
+          wx.redirectTo({
+            url: '/pages/lobby/lobby'
           })
         }
       })
@@ -116,5 +118,11 @@ Page({
     innerAudioContext.onEnded(() => {
       innerAudioContext.destroy()
     })
+  },
+  
+  // 处理视频错误
+  handleVideoError() {
+    console.log('视频加载失败，使用备用背景图片')
+    // 视频加载失败时，可以在这里添加额外的处理逻辑
   }
 })

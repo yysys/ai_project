@@ -1,0 +1,64 @@
+<!-- pages/game/game.wxml -->
+<view class="container">
+  <!-- 游戏背景地图 (使用movable-view模拟移动效果) -->
+  <map id="gameMap" 
+    longitude="{{longitude}}" 
+    latitude="{{latitude}}" 
+    scale="18" 
+    markers="{{markers}}" 
+    circles="{{circles}}"
+    show-location
+    style="width: 100%; height: 100vh;"
+  ></map>
+
+  <!-- HUD 信息显示 -->
+  <view class="hud-top">
+    <view class="hud-item">
+      <text class="hud-label">高度</text>
+      <text class="hud-value">{{altitude}}m</text>
+    </view>
+    <view class="hud-item">
+      <text class="hud-label">速度</text>
+      <text class="hud-value">{{speed}}km/h</text>
+    </view>
+    <view class="hud-item score-box">
+      <text class="hud-label">得分</text>
+      <text class="hud-value">{{score}}</text>
+    </view>
+  </view>
+
+  <!-- 左侧摇杆 -->
+  <view class="joystick-area" 
+    catchtouchstart="onTouchStart" 
+    catchtouchmove="onTouchMove" 
+    catchtouchend="onTouchEnd">
+    <view class="joystick-base">
+      <view class="joystick-stick" style="transform: translate({{stickX}}px, {{stickY}}px);"></view>
+    </view>
+  </view>
+
+  <!-- 右侧控制区 -->
+  <view class="controls-right">
+    <!-- 速度控制 -->
+    <view class="speed-controls">
+      <view class="control-btn {{accelerating ? 'active' : ''}}" bindtouchstart="startAccelerate" bindtouchend="stopAccelerate">
+        <text>加速</text>
+      </view>
+      <view class="control-btn {{decelerating ? 'active' : ''}}" bindtouchstart="startDecelerate" bindtouchend="stopDecelerate">
+        <text>减速</text>
+      </view>
+    </view>
+
+    <!-- 导弹发射 -->
+    <view class="fire-btn" bindtap="fireMissile">
+      <image class="fire-icon" src="../../assets/images/missile-normal.png" mode="aspectFit"></image>
+      <text>发射</text>
+    </view>
+  </view>
+
+  <!-- 爆炸特效容器 -->
+  <view wx:for="{{explosions}}" wx:key="id" 
+    class="explosion" 
+    style="left: {{item.x}}px; top: {{item.y}}px;">
+  </view>
+</view>

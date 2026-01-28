@@ -1,0 +1,138 @@
+<!--pages/lobby/lobby.wxml-->
+<view class="container">
+  <!-- 背景视频 -->
+  <video 
+    class="bg-video" 
+    src="../../assets/videos/game-intro.mp4" 
+    autoplay 
+    loop 
+    muted 
+    controls="{{false}}" 
+    show-center-play-btn="{{false}}" 
+    enable-progress-gesture="{{false}}"
+    object-fit="cover"
+  ></video>
+
+  <!-- 遮罩层，确保文字清晰 -->
+  <view class="overlay"></view>
+
+  <!-- 顶部信息栏 -->
+  <view class="header">
+    <view class="user-info">
+      <image class="avatar" src="{{userInfo.avatarUrl || '../../images/default-avatar.png'}}" mode="aspectFit"></image>
+      <view class="user-details">
+        <text class="nickname">{{userInfo.nickName || '指挥官'}}</text>
+        <view class="currency">
+          <text class="coin-icon">💰</text>
+          <text class="coin-amount">{{coins}}</text>
+        </view>
+      </view>
+    </view>
+    
+    <view class="settings-btn" bindtap="openSettings">
+      <image class="icon-img" src="../../assets/images/btn-settings.png" mode="aspectFit"></image> 设置
+    </view>
+  </view>
+
+  <!-- 主要内容区 -->
+  <view class="main-content">
+    <view class="game-mode-card" bindtap="startGame">
+      <view class="mode-icon">⚔️</view>
+      <view class="mode-info">
+        <text class="mode-title">战场模式</text>
+        <text class="mode-desc">进入激烈的空中战场</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部功能栏 -->
+  <view class="footer">
+    <view class="menu-btn store-btn" bindtap="openStore">
+      <text class="btn-icon">🛒</text>
+      <text class="btn-text">军火库</text>
+    </view>
+  </view>
+
+  <!-- 商城弹窗 -->
+  <view class="modal {{showStore ? 'show' : ''}}" catchtouchmove="preventScroll">
+    <view class="modal-mask" bindtap="closeStore"></view>
+    <view class="modal-content store-content">
+      <view class="modal-header">
+        <text class="modal-title">军火库</text>
+        <view class="close-btn" bindtap="closeStore">✕</view>
+      </view>
+      
+      <view class="store-tabs">
+        <view class="tab {{currentStoreTab === 'drones' ? 'active' : ''}}" bindtap="switchStoreTab" data-tab="drones">无人机</view>
+        <view class="tab {{currentStoreTab === 'missiles' ? 'active' : ''}}" bindtap="switchStoreTab" data-tab="missiles">导弹</view>
+      </view>
+
+      <scroll-view scroll-y class="store-list">
+        <!-- 无人机列表 -->
+        <block wx:if="{{currentStoreTab === 'drones'}}">
+          <view class="store-item" wx:for="{{droneLevels}}" wx:key="level">
+            <view class="item-info">
+              <text class="item-name">{{item.name}}</text>
+              <view class="item-stats">
+                <text>生命: {{item.hp}}</text>
+                <text>攻击: {{item.attack}}</text>
+                <text>速度: {{item.speed}}</text>
+              </view>
+              <text class="item-desc">{{item.desc}}</text>
+            </view>
+            <view class="item-action">
+              <text class="price">💰 {{item.price}}</text>
+              <button class="buy-btn" bindtap="buyDrone" data-item="{{item}}" disabled="{{coins < item.price || currentDroneLevel >= item.level}}">
+                {{currentDroneLevel >= item.level ? '已拥有' : '购买'}}
+              </button>
+            </view>
+          </view>
+        </block>
+
+        <!-- 导弹列表 -->
+        <block wx:if="{{currentStoreTab === 'missiles'}}">
+          <view class="store-item" wx:for="{{missileTypes}}" wx:key="id">
+            <image class="item-img" src="../../assets/images/missile-{{item.id}}.png" mode="aspectFit"></image>
+            <view class="item-info">
+              <text class="item-name">{{item.name}}</text>
+              <view class="item-stats">
+                <text>伤害: {{item.damage}}</text>
+                <text>范围: {{item.radius}}</text>
+              </view>
+              <text class="item-desc">{{item.desc}}</text>
+            </view>
+            <view class="item-action">
+              <text class="price">💰 {{item.price}}</text>
+              <button class="buy-btn" bindtap="buyMissile" data-item="{{item}}" disabled="{{coins < item.price}}">
+                购买
+              </button>
+            </view>
+          </view>
+        </block>
+      </scroll-view>
+    </view>
+  </view>
+
+  <!-- 设置弹窗 -->
+  <view class="modal {{showSettings ? 'show' : ''}}" catchtouchmove="preventScroll">
+    <view class="modal-mask" bindtap="closeSettings"></view>
+    <view class="modal-content settings-content">
+      <view class="modal-header">
+        <text class="modal-title">系统设置</text>
+        <view class="close-btn" bindtap="closeSettings">✕</view>
+      </view>
+      
+      <view class="settings-list">
+        <view class="setting-item">
+          <text>游戏音效</text>
+          <switch checked="{{gameSoundEnabled}}" bindchange="toggleGameSound" color="#00ff00"/>
+        </view>
+        <view class="setting-item">
+          <text>无人机音效</text>
+          <switch checked="{{droneSoundEnabled}}" bindchange="toggleDroneSound" color="#00ff00"/>
+        </view>
+      </view>
+    </view>
+  </view>
+
+</view>

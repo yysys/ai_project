@@ -1,6 +1,8 @@
 {
   "pages": [
     "pages/login/login",
+    "pages/lobby/lobby",
+    "pages/game/game",
     "pages/flight/flight",
     "pages/index/index"
   ],
