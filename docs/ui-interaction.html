@@ -173,20 +173,102 @@
     </style>
 </head>
 <body class="font-sans">
-    <!-- 登录页 -->
-    <div id="login-page" class="page flex flex-col items-center justify-center p-6">
-        <div class="w-full max-w-md bg-white rounded-lg shadow-lg p-8 fade-in">
-            <div class="flex flex-col items-center mb-8">
-                <div class="w-32 h-32 bg-blue-100 rounded-full flex items-center justify-center mb-6">
-                    <i class="fa fa-paper-plane text-4xl text-blue-500"></i>
+    <!-- 登录页 - 游戏界面+弹窗登录 -->
+    <div id="login-page" class="page w-full h-screen relative overflow-hidden">
+        <!-- 游戏背景视频 -->
+        <div class="game-background absolute inset-0 z-0">
+            <video id="game-video" autoplay loop muted class="w-full h-full object-cover">
+                <source src="../assets/videos/game-intro.mp4" type="video/mp4">
+                您的浏览器不支持视频播放。
+            </video>
+        </div>
+        
+        <!-- 游戏音效 -->
+        <audio id="game-audio" autoplay loop muted class="hidden">
+            <source src="../assets/audio/bg-music.mp3" type="audio/mpeg">
+            您的浏览器不支持音频播放。
+        </audio>
+        
+        <!-- 游戏界面元素 -->
+        <div class="game-interface absolute inset-0 z-10 flex flex-col">
+            <!-- 游戏标题 -->
+            <div class="game-header flex justify-center items-center pt-12">
+                <img src="../assets/images/game-logo.png" alt="无人机飞行" class="w-32 h-32 object-contain">
+                <div class="ml-6">
+                    <h1 class="text-4xl font-bold text-white drop-shadow-lg">无人机飞行</h1>
+                    <p class="text-xl text-white/80 drop-shadow-md">沉浸式飞行体验</p>
                 </div>
-                <h1 class="text-3xl font-bold text-gray-800">无人机飞行</h1>
-                <p class="text-gray-600 mt-2">请登录以开始飞行体验</p>
             </div>
-            <button id="login-btn" class="login-btn w-full py-4 rounded-full text-lg font-medium mb-4">
-                <i class="fa fa-weixin mr-2"></i> 微信登录
-            </button>
-            <p class="text-center text-gray-500 text-sm">登录后可享受完整的飞行控制体验</p>
+            
+            <!-- 游戏主内容 -->
+            <div class="game-content flex-1 flex items-center justify-center">
+                <div class="game-preview text-center">
+                    <img src="../assets/images/drone.png" alt="无人机" class="w-64 h-64 object-contain mb-8 animate-pulse">
+                    <div class="text-white drop-shadow-lg">
+                        <h2 class="text-3xl font-bold mb-4">准备起飞</h2>
+                        <p class="text-xl">体验身临其境的飞行控制</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 游戏底部 -->
+            <div class="game-footer p-8">
+                <!-- 加载进度条 -->
+                <div class="loading-section bg-black/50 backdrop-blur-md rounded-xl p-4 mb-8">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-white font-medium">加载游戏资源</span>
+                        <span id="loading-percentage" class="text-white font-bold">0%</span>
+                    </div>
+                    <div class="w-full bg-white/30 rounded-full h-3 mb-2">
+                        <div id="loading-bar" class="bg-gradient-to-r from-green-400 to-blue-500 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    <div id="loading-status" class="text-white/80 text-sm">准备加载...</div>
+                </div>
+                
+                <!-- 游戏状态 -->
+                <div class="game-status flex justify-between items-center text-white/80 text-sm">
+                    <div class="status-item">
+                        <i class="fa fa-music mr-2"></i> 音效: <span id="sound-status">开启</span>
+                    </div>
+                    <div class="status-item">
+                        <i class="fa fa-video-camera mr-2"></i> 画质: <span id="video-quality">高清</span>
+                    </div>
+                    <div class="status-item">
+                        <i class="fa fa-wifi mr-2"></i> 连接: <span id="connection-status">稳定</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 登录弹窗 -->
+        <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+            <div class="modal-backdrop absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
+            <div class="modal-content relative z-10 bg-white rounded-2xl shadow-2xl p-8 max-w-md w-4/5 animate-fade-in">
+                <div class="modal-header flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">欢迎来到无人机飞行</h2>
+                    <button id="close-modal" class="text-gray-500 hover:text-gray-800">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="modal-body mb-8">
+                    <div class="flex flex-col items-center mb-6">
+                        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-weixin text-4xl text-green-500"></i>
+                        </div>
+                        <p class="text-gray-600 text-center">登录后可享受完整的飞行控制体验</p>
+                    </div>
+                    <button id="login-btn" class="login-btn w-full py-4 rounded-full text-lg font-medium flex items-center justify-center">
+                        <i class="fa fa-weixin mr-2"></i> 使用微信账号登录
+                    </button>
+                </div>
+                <div class="modal-footer text-center text-sm text-gray-500">
+                    <p>登录即表示您同意</p>
+                    <div class="flex justify-center space-x-4 mt-2">
+                        <a href="#" class="text-blue-500">用户协议</a>
+                        <a href="#" class="text-blue-500">隐私政策</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -365,12 +447,77 @@
             });
         }
 
+        // 模拟资源加载
+        function simulateResourceLoading() {
+            const loadingBar = document.getElementById('loading-bar');
+            const loadingPercentage = document.getElementById('loading-percentage');
+            const loadingStatus = document.getElementById('loading-status');
+            const loginModal = document.getElementById('login-modal');
+            const gameAudio = document.getElementById('game-audio');
+            
+            let progress = 0;
+            const resources = [
+                { name: '游戏logo', size: 15 },
+                { name: '游戏视频', size: 30 },
+                { name: '游戏音效', size: 20 },
+                { name: '无人机模型', size: 20 },
+                { name: '地图资源', size: 15 }
+            ];
+            
+            let currentResourceIndex = 0;
+            
+            const loadInterval = setInterval(() => {
+                if (currentResourceIndex < resources.length) {
+                    const currentResource = resources[currentResourceIndex];
+                    progress += 1;
+                    
+                    if (progress >= resources.slice(0, currentResourceIndex + 1).reduce((sum, r) => sum + r.size, 0)) {
+                        currentResourceIndex++;
+                    }
+                    
+                    loadingBar.style.width = `${progress}%`;
+                    loadingPercentage.textContent = `${progress}%`;
+                    
+                    if (currentResourceIndex < resources.length) {
+                        loadingStatus.textContent = `加载中: ${resources[currentResourceIndex].name}`;
+                    } else {
+                        loadingStatus.textContent = '加载完成，准备进入游戏';
+                    }
+                } else {
+                    clearInterval(loadInterval);
+                    // 启用游戏音效
+                    gameAudio.muted = false;
+                    // 显示登录弹窗
+                    setTimeout(() => {
+                        loginModal.classList.remove('hidden');
+                    }, 500);
+                }
+            }, 100);
+        }
+        
         // 登录按钮点击事件
         document.getElementById('login-btn').addEventListener('click', function() {
             // 模拟登录延迟
+            this.disabled = true;
+            this.textContent = '登录中...';
+            
             setTimeout(() => {
+                // 隐藏登录弹窗
+                document.getElementById('login-modal').classList.add('hidden');
+                // 跳转到首页
                 showPage('home-page');
-            }, 500);
+            }, 1000);
+        });
+        
+        // 关闭登录弹窗按钮点击事件
+        document.getElementById('close-modal').addEventListener('click', function() {
+            document.getElementById('login-modal').classList.add('hidden');
+        });
+        
+        // 初始化加载
+        document.addEventListener('DOMContentLoaded', function() {
+            // 开始模拟资源加载
+            simulateResourceLoading();
         });
 
         // 开始飞行按钮点击事件
