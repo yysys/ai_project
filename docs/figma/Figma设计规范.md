@@ -1,4 +1,4 @@
-# Figma设计规范 - 猪了个猪（点击跑动版）
+# Figma设计规范 - 猪了个猪（菜狗与狼群版）
 
 ## Figma项目结构
 
@@ -65,13 +65,12 @@ Error: #F5222D
 Info: #1890FF
 ```
 
-### 猪猪类型色（Pig Type Colors）
+### 角色类型色（Character Type Colors）
 ```
-Normal Pig: #FF6B9D（粉色）
-Fast Pig: #FFD93D（黄色）
-Jump Pig: #52C41A（绿色）
-Bomb Pig: #F5222D（红色）
-Magnet Pig: #1890FF（蓝色）
+Vegetable Dog: #52C41A（绿色）
+Normal Wolf: #FF6B9D（粉色）
+Fast Wolf: #FFD93D（黄色）
+Cooperative Wolf: #9254DE（紫色）
 ```
 
 ---
@@ -108,7 +107,78 @@ Bold: 700
 
 ## 组件规范（Components）
 
-### 1. 猪猪组件（Pig Component）
+### 1. 菜狗组件（Vegetable Dog Component）
+
+#### 设计规格
+```
+Width: 80px
+Height: 80px
+Border Radius: 40px
+Shadow: 0 4px 8px rgba(0,0,0,0.1)
+Background: #52C41A
+```
+
+#### 状态样式
+```
+Idle（空闲）:
+  - Scale: 1
+  - Opacity: 1
+  - Animation: Gentle bounce
+
+Scared（害怕）:
+  - Scale: 0.95
+  - Opacity: 1
+  - Animation: Shaking
+  - Color: #FFD93D
+
+Protected（被保护）:
+  - Scale: 1
+  - Opacity: 1
+  - Shield Effect: Glowing blue
+  - Border: 3px solid #1890FF
+
+Caught（被抓）:
+  - Scale: 0.8
+  - Opacity: 0.7
+  - Animation: Fading
+  - Color: #F5222D
+```
+
+#### 生命值显示
+```
+Health Bar:
+  - Width: 60px
+  - Height: 8px
+  - Border Radius: 4px
+  - Background: rgba(0,0,0,0.1)
+  - Fill: #52C41A
+  - Position: Top center of dog
+```
+
+#### 动画效果
+```
+Idle Animation:
+  - Duration: 2s
+  - Easing: ease-in-out
+  - Keyframes:
+    0%: translateY(0), scale(1)
+    50%: translateY(-5px), scale(1.02)
+    100%: translateY(0), scale(1)
+
+Scared Animation:
+  - Duration: 0.5s
+  - Easing: ease-in-out
+  - Keyframes:
+    0%: rotate(0deg)
+    25%: rotate(-3deg)
+    50%: rotate(0deg)
+    75%: rotate(3deg)
+    100%: rotate(0deg)
+```
+
+---
+
+### 2. 狼组件（Wolf Component）
 
 #### 设计规格
 ```
@@ -126,11 +196,6 @@ Idle（空闲）:
   - Opacity: 1
   - Animation: Gentle bounce
 
-Hover（悬停）:
-  - Scale: 1.05
-  - Opacity: 1
-  - Shadow: 0 8px 16px rgba(0,0,0,0.15)
-
 Selected（选中）:
   - Scale: 1.1
   - Opacity: 1
@@ -143,41 +208,48 @@ Running（跑动）:
   - Animation: Running animation
   - Trail effect
 
-Disabled（禁用）:
-  - Scale: 1
-  - Opacity: 0.5
-  - Shadow: none
+Hunting（猎中）:
+  - Scale: 1.05
+  - Opacity: 1
+  - Animation: Aggressive movement
+  - Eyes: Red glow
+
+Caught（抓到菜狗）:
+  - Scale: 1.2
+  - Opacity: 1
+  - Animation: Victory pose
 ```
 
-#### 猪猪类型设计
+#### 狼类型设计
 ```
-Normal Pig（普通猪猪）:
+Normal Wolf（普通狼）:
   - Color: #FF6B9D
   - Features: Round body, small ears
   - Speed: Normal
 
-Fast Pig（快速猪猪）:
+Fast Wolf（快速狼）:
   - Color: #FFD93D
   - Features: Streamlined body, small wings
   - Speed: Fast (1.5x)
 
-Jump Pig（跳跃猪猪）:
-  - Color: #52C41A
-  - Features: Strong legs, spring-like
+Cooperative Wolf（协作狼）:
+  - Color: #9254DE
+  - Features: Team badge, coordinated look
   - Speed: Normal
-  - Ability: Can jump over obstacles
+  - Ability: Coordinates with other wolves
+```
 
-Bomb Pig（炸弹猪猪）:
-  - Color: #F5222D
-  - Features: Fuse on head, explosive look
-  - Speed: Normal
-  - Ability: Explodes on obstacle collision
-
-Magnet Pig（磁铁猪猪）:
-  - Color: #1890FF
-  - Features: Magnet symbol, metallic look
-  - Speed: Normal
-  - Ability: Attracts nearby items
+#### 方向指示器
+```
+Direction Indicator:
+  - Size: 20px × 20px
+  - Position: Top right of wolf
+  - Shape: Arrow
+  - Colors:
+    Left Up: #FF6B9D
+    Left Down: #FFD93D
+    Right Up: #52C41A
+    Right Down: #9254DE
 ```
 
 #### 动画效果
@@ -211,88 +283,78 @@ Click Animation:
 
 ---
 
-### 2. 障碍物组件（Obstacle Component）
+### 3. 方向组件（Direction Component）
 
-#### 石头（Rock）
+#### 四个对角线方向
 ```
-Width: 80px
-Height: 80px
-Shape: Irregular rock shape
-Color: #8B7355
-Shadow: 0 4px 8px rgba(0,0,0,0.2)
-```
+Direction: Left Up (左上）
+  - Angle: 225°
+  - Vector: { x: -1, y: -1 }
+  - Icon: Arrow pointing top-left
 
-#### 水坑（Puddle）
-```
-Width: 100px
-Height: 60px
-Shape: Ellipse
-Color: #87CEEB (with transparency)
-Opacity: 0.6
-Animation: Gentle ripple
-```
+Direction: Left Down (左下）
+  - Angle: 135°
+  - Vector: { x: -1, y: 1 }
+  - Icon: Arrow pointing bottom-left
 
-#### 陷阱（Trap）
-```
-Width: 60px
-Height: 60px
-Shape: Spiked circle
-Color: #FF6B6B
-Animation: Pulsing danger
+Direction: Right Up (右上）
+  - Angle: 315°
+  - Vector: { x: 1, y: -1 }
+  - Icon: Arrow pointing top-right
+
+Direction: Right Down (右下）
+  - Angle: 45°
+  - Vector: { x: 1, y: 1 }
+  - Icon: Arrow pointing bottom-right
 ```
 
-#### 弹簧（Spring）
+#### 方向指示器设计
+```
+Size: 24px × 24px
+Shape: Arrow
+Stroke Width: 3px
+Color: #333333
+Background: rgba(255,255,255,0.8)
+Border Radius: 4px
+```
+
+---
+
+### 4. 道具组件（Item Component）
+
+#### 护盾道具（Shield Item）
+```
+Width: 40px
+Height: 40px
+Shape: Circle with shield icon
+Color: #1890FF
+Animation: Rotating and glowing
+Duration: 5s
+```
+
+#### 障碍道具（Barrier Item）
 ```
 Width: 50px
-Height: 80px
-Shape: Coil spring
-Color: #FFD93D
-Animation: Bouncing
+Height: 50px
+Shape: Square with barrier icon
+Color: #FAAD14
+Animation: Pulsing
+Duration: 10s
 ```
 
----
-
-### 3. 道具组件（Item Component）
-
-#### 星星（Star）
+#### 陷阱道具（Trap Item）
 ```
 Width: 40px
 Height: 40px
-Shape: 5-pointed star
-Color: #FFD700
-Animation: Rotating and glowing
-```
-
-#### 金币（Coin）
-```
-Width: 36px
-Height: 36px
-Shape: Circle
-Color: #FFD700
+Shape: Circle with trap icon
+Color: #F5222D
 Animation: Spinning
-```
-
-#### 宝石（Gem）
-```
-Width: 32px
-Height: 32px
-Shape: Diamond
-Color: #9370DB
-Animation: Shimmering
-```
-
-#### 钥匙（Key）
-```
-Width: 40px
-Height: 40px
-Shape: Key
-Color: #FFD700
-Animation: Slight floating
+Duration: 8s
 ```
 
 ---
 
-### 4. 按钮组件（Button Component）
+### 5. 按钮组件（Button Component）
 
 #### 主要按钮（Primary Button）
 ```
@@ -346,13 +408,13 @@ Disabled:
 
 ---
 
-### 5. 游戏区域组件（Game Area Component）
+### 6. 游戏区域组件（Game Area Component）
 
 #### 设计规格
 ```
 Width: 100% (responsive)
 Height: 100% - top bar - bottom bar
-Background: #F0FFF4 (草地绿)
+Background: #F0FFF4 (草地绿）
 Border Radius: 16px
 Shadow: inset 0 2px 8px rgba(0,0,0,0.05)
 ```
@@ -372,7 +434,7 @@ Decorations:
 
 ---
 
-### 6. 信息栏组件（Info Bar Component）
+### 7. 信息栏组件（Info Bar Component）
 
 #### 顶部信息栏
 ```
@@ -395,15 +457,16 @@ Timer:
   - Font: 16px, Bold
   - Color: #FF6B9D (when < 30s)
 
-Progress:
-  - Progress Bar: 200px × 8px
-  - Text: "X/Y"
+Dog Health:
+  - Health Bar: 100px × 8px
+  - Text: "生命: X/3"
   - Font: 14px
+  - Color: #52C41A
 ```
 
 ---
 
-### 7. 弹窗组件（Modal Component）
+### 8. 弹窗组件（Modal Component）
 
 #### 设计规格
 ```
@@ -433,7 +496,7 @@ Footer:
 
 ---
 
-### 8. 进度条组件（Progress Component）
+### 9. 进度条组件（Progress Component）
 
 #### 设计规格
 ```
@@ -486,20 +549,21 @@ Pause Icon: 暂停图标
 Play Icon: 播放图标
 Close Icon: 关闭图标
 Check Icon: 确认图标
-Star Icon: 星星图标
-Coin Icon: 金币图标
-Gem Icon: 宝石图标
-Key Icon: 钥匙图标
+Shield Icon: 护盾图标
+Barrier Icon: 障碍图标
+Trap Icon: 陷阱图标
+Health Icon: 生命值图标
+Direction Icons: 四个方向图标
 ```
 
 ---
 
 ## 动画规范（Animations）
 
-### 猪猪跑动动画
+### 狼跑动动画
 ```
 Duration: Based on distance
-Speed: 100px/s (normal pig)
+Speed: 120px/s (normal wolf)
 Easing: linear
 Properties:
   - transform: translate(x, y)
@@ -570,17 +634,20 @@ Properties:
 ### 屏幕尺寸适配
 ```
 Small Screen: < 375px
-  - Pig Size: 50px × 50px
+  - Dog Size: 70px × 70px
+  - Wolf Size: 50px × 50px
   - Button Size: 100px × 40px
   - Font Size: -2px
 
 Medium Screen: 375px - 414px
-  - Pig Size: 60px × 60px
+  - Dog Size: 80px × 80px
+  - Wolf Size: 60px × 60px
   - Button Size: 120px × 48px
   - Font Size: Base
 
 Large Screen: > 414px
-  - Pig Size: 70px × 70px
+  - Dog Size: 90px × 90px
+  - Wolf Size: 70px × 70px
   - Button Size: 140px × 56px
   - Font Size: +2px
 ```
@@ -598,15 +665,16 @@ Side Safe Area: 44px
 
 ### 交互流程
 ```
-1. 用户点击猪猪
-   - 猪猪高亮显示
+1. 用户点击狼
+   - 狼高亮显示
    - 播放点击动画
-   - 猪猪开始沿直线跑动
+   - 狼开始沿对角线跑动
 
-2. 猪猪跑动
+2. 狼跑动
    - 显示跑动轨迹
+   - 显示方向指示器
    - 碰撞检测
-   - 到达目标或障碍物
+   - 到达边界或菜狗
 
 3. 游戏结束
    - 显示结果弹窗
@@ -616,8 +684,8 @@ Side Safe Area: 44px
 
 ### 手势操作
 ```
-Tap: 点击猪猪
-Drag: 拖拽猪猪（可选）
+Tap: 点击狼
+Drag: 拖拽狼（可选）
 Swipe: 滑动切换页面
 Pinch: 缩放（暂不使用）
 ```
@@ -637,13 +705,16 @@ Animations: Lottie files (optional)
 ### 命名规范
 ```
 Images: [type]_[name]_[size]@[scale].png
-  - Example: pig_normal_60x60@2x.png
+  - Example: dog_normal_80x80@2x.png
+  - Example: wolf_normal_60x60@2x.png
 
 Icons: [name]_[size].svg
   - Example: home_24.svg
+  - Example: direction_left_up_24.svg
 
 Components: [ComponentName]
-  - Example: PigComponent
+  - Example: DogComponent
+  - Example: WolfComponent
 ```
 
 ### 标注规范
@@ -661,11 +732,12 @@ Animations: Duration, Easing, Keyframes
 
 ### 图片资源
 ```
-Pig Sprites: 5种不同类型的猪猪
+Dog Sprites: 菜狗精灵图
+Wolf Sprites: 狼精灵图（3种类型）
 Background: 游戏背景图（草地主题）
 UI Elements: UI装饰元素
-Obstacles: 障碍物图片
 Items: 道具图片
+Directions: 方向指示器图标
 ```
 
 ### 音频资源
@@ -677,7 +749,8 @@ Sound Effects:
   - Collision sound
   - Success sound
   - Fail sound
-  - Collect sound
+  - Dog scared sound
+  - Wolf hunting sound
 ```
 
 ### 字体资源
@@ -695,7 +768,8 @@ Custom Font: 自定义字体（如有）
 - [ ] 字体大小和层级正确
 - [ ] 间距和对齐一致
 - [ ] 图标风格统一
-- [ ] 猪猪设计可爱且易识别
+- [ ] 菜狗和狼设计可爱且易识别
+- [ ] 方向指示器清晰可见
 
 ### 交互检查
 - [ ] 所有状态都有反馈
@@ -703,6 +777,7 @@ Custom Font: 自定义字体（如有）
 - [ ] 手势操作合理
 - [ ] 无障碍设计考虑
 - [ ] 点击区域足够大
+- [ ] 方向指示准确
 
 ### 技术检查
 - [ ] 响应式适配完成
@@ -713,7 +788,7 @@ Custom Font: 自定义字体（如有）
 
 ---
 
-**文档版本**：v2.0
+**文档版本**：v3.0
 **最后更新**：2026-02-01
 **设计工具**：Figma
 **设计团队**：UI/UX团队
