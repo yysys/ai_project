@@ -518,10 +518,10 @@
                     "totalCells": 120,
                     "gridColumns": 12,
                     "gridRows": 10,
-                    "cellWidth": 20,
-                    "cellHeight": 40,
+                    "cellWidth": 30,
+                    "cellHeight": 60,
                     "cellRotation": 45,
-                    "gridGap": 5,
+                    "gridGap": 2,
                     "directions": ["left_up", "left_down", "right_up", "right_down"],
                     "children": []
                   }
@@ -870,20 +870,28 @@
         "totalCells": 120,
         "gridColumns": 12,
         "gridRows": 10,
-        "cellWidth": 20,
-        "cellHeight": 40,
+        "cellWidth": 30,
+        "cellHeight": 60,
         "cellRotation": 45,
-        "gridGap": 5,
+        "gridGap": 2,
         "padding": 12
       },
       "cell": {
-        "width": 20,
-        "height": 40,
+        "width": 30,
+        "height": 60,
+        "aspectRatio": "2:1",
         "rotation": [45, 135],
-        "borderRadius": 2,
+        "borderRadius": 4,
         "backgroundColor": "#FFFFFF",
         "border": "1px solid #E8F5E9",
         "shadow": "0 1px 3px rgba(0,0,0,0.05)"
+      },
+      "cardGroup": {
+        "name": "三张卡片组合",
+        "layout": "1张卡片135度摆放 + 2张卡片45度摆放",
+        "aspectRatio": "3:2",
+        "spacing": "紧密排列，无间隙",
+        "useCase": "游戏中的卡片组合展示"
       },
       "cellRotation": {
         "description": "每个单元格旋转45度或135度",

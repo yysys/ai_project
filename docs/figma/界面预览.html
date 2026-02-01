@@ -306,9 +306,9 @@
 
         .game-grid {
             display: grid;
-            grid-template-columns: repeat(12, 20px);
-            grid-template-rows: repeat(10, 40px);
-            gap: 5px;
+            grid-template-columns: repeat(12, 30px);
+            grid-template-rows: repeat(10, 60px);
+            gap: 2px;
             background-color: #F0FFF4;
             border-radius: 16px;
             padding: 12px;
@@ -316,9 +316,9 @@
         }
 
         .grid-cell {
-            width: 20px;
-            height: 40px;
-            border-radius: 3px;
+            width: 30px;
+            height: 60px;
+            border-radius: 4px;
             background-color: #FFFFFF;
             border: 1px solid #E8F5E9;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
@@ -835,10 +835,11 @@
 
                 <div class="preview-item">
                     <h3>📐 组件尺寸</h3>
-                    <p><strong>游戏网格单元格（长方形）：</strong>20px × 40px（2:1比例），旋转45度或135度，圆角 2px</p>
+                    <p><strong>游戏网格单元格（长方形）：</strong>30px × 60px（2:1比例），旋转45度或135度，圆角 4px</p>
+                    <p><strong>三张卡片组合：</strong>1张卡片135度摆放 + 2张卡片45度摆放，组成长宽比3:2的长方形，紧密排列无间隙</p>
                     <p><strong>网格布局：</strong>10行 × 12列，共120个单元格</p>
                     <p><strong>单元格旋转：</strong>两种旋转角度（45度和135度）交替排列，形成四个方向的菱形视觉效果</p>
-                    <p><strong>网格间距：</strong>5px（避免旋转后单元格重叠）</p>
+                    <p><strong>网格间距：</strong>2px（卡片紧密排列）</p>
                     <p><strong>关卡按钮：</strong>80px × 80px，圆角 12px</p>
                     <p><strong>按钮：</strong>120px × 48px，圆角 24px</p>
                     <p><strong>圆形按钮：</strong>48px × 48px，圆角 24px</p>
