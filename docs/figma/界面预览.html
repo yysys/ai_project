@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>猪了个猪 - 界面预览</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .preview-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .preview-section {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .preview-section h2 {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #FF6B9D;
+        }
+
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            background-color: #FFF5F8;
+            border-radius: 40px;
+            border: 8px solid #333333;
+            overflow: hidden;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        .phone-notch {
+            width: 150px;
+            height: 30px;
+            background-color: #333333;
+            border-radius: 0 0 20px 20px;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .header {
+            height: 60px;
+            background-color: rgba(255,255,255,0.9);
+            border-bottom: 1px solid #F0F0F0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333333;
+        }
+
+        .header-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .header-info-text {
+            font-size: 16px;
+            font-weight: 500;
+            color: #666666;
+        }
+
+        .header-score {
+            font-size: 16px;
+            font-weight: 500;
+            color: #FF6B9D;
+        }
+
+        .header-icon {
+            width: 24px;
+            height: 24px;
+            background-color: rgba(255,107,157,0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .game-area {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            right: 0;
+            bottom: 80px;
+            background-color: #F0FFF4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .unit {
+            position: absolute;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.15s ease-out;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .unit:hover {
+            transform: scale(1.05);
+        }
+
+        .unit.dog {
+            width: 80px;
+            height: 80px;
+            background-color: #52C41A;
+            border-radius: 40px;
+        }
+
+        .unit.wolf {
+            width: 60px;
+            height: 60px;
+            background-color: #FF6B9D;
+            border-radius: 30px;
+        }
+
+        .unit.wolf.fast {
+            background-color: #FFD93D;
+        }
+
+        .unit.wolf.cooperative {
+            background-color: #9254DE;
+        }
+
+        .direction-indicator {
+            position: absolute;
+            top: -25px;
+            right: -10px;
+            width: 20px;
+            height: 20px;
+            background-color: rgba(255,255,255,0.8);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .direction-arrow {
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 12px solid #333333;
+        }
+
+        .bottom-bar {
+            height: 80px;
+            background-color: #FFFFFF;
+            border-top: 1px solid #F0F0F0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+
+        .button {
+            padding: 12px 30px;
+            border-radius: 24px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.15s ease-out;
+            border: none;
+        }
+
+        .button:hover {
+            transform: scale(1.05);
+        }
+
+        .button:active {
+            transform: scale(0.95);
+        }
+
+        .button.primary {
+            background: linear-gradient(135deg, #FF6B9D, #FF8FB1);
+            color: #FFFFFF;
+            box-shadow: 0 4px 12px rgba(255,107,157,0.3);
+        }
+
+        .button.secondary {
+            background: #FFFFFF;
+            color: #FF6B9D;
+            border: 2px solid #FF6B9D;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .button.circle {
+            width: 48px;
+            height: 48px;
+            border-radius: 24px;
+            padding: 0;
+            background-color: rgba(255,107,157,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .button-label {
+            font-size: 12px;
+            color: #666666;
+            margin-top: 4px;
+        }
+
+        .progress-bar {
+            width: 100px;
+            height: 8px;
+            background-color: rgba(0,0,0,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FF6B9D, #FFD93D);
+            transition: width 0.3s ease;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            width: 320px;
+            background-color: #FFFFFF;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .modal-header {
+            height: 60px;
+            background-color: #FFFFFF;
+            border-bottom: 1px solid #F0F0F0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 20px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #52C41A;
+        }
+
+        .modal-title.lose {
+            color: #F5222D;
+        }
+
+        .modal-body {
+            padding: 24px 20px;
+            text-align: center;
+        }
+
+        .stars {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .star {
+            font-size: 32px;
+            color: #FFD93D;
+        }
+
+        .modal-text {
+            font-size: 16px;
+            color: #666666;
+            margin-bottom: 10px;
+        }
+
+        .modal-text.large {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333333;
+        }
+
+        .modal-footer {
+            height: 140px;
+            background-color: #FFFFFF;
+            border-top: 1px solid #F0F0F0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background-color: #F0F0F0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666666;
+        }
+
+        .tab.active {
+            background-color: #FF6B9D;
+            color: #FFFFFF;
+        }
+
+        .tab:hover {
+            background-color: #FF8FB1;
+            color: #FFFFFF;
+        }
+
+        .info-box {
+            background-color: #FFF5F8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #FF6B9D;
+        }
+
+        .info-box h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333333;
+            margin-bottom: 10px;
+        }
+
+        .info-box p {
+            font-size: 14px;
+            color: #666666;
+            line-height: 1.6;
+            margin-bottom: 5px;
+        }
+
+        .color-swatch {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 2px solid #E0E0E0;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            vertical-align: middle;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        @keyframes wobble {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(5deg); }
+            50% { transform: rotate(0deg); }
+            75% { transform: rotate(-5deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        .unit.dog {
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        .unit.wolf {
+            animation: wobble 0.5s linear infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-container">
+        <div class="preview-section">
+            <h2>📱 主页</h2>
+            <div class="phone-frame">
+                <div class="phone-notch"></div>
+                
+                <div class="header">
+                    <div class="header-title">猪了个猪</div>
+                    <div class="header-info">
+                        <div class="header-info-text">第 1 关</div>
+                        <div class="header-score">0</div>
+                    </div>
+                    <div class="header-icon">⚙️</div>
+                </div>
+
+                <div class="game-area">
+                    <div class="unit dog" style="left: 147.5px; top: 260px;">
+                        <div class="direction-indicator">
+                            <div class="direction-arrow" style="transform: rotate(225deg);"></div>
+                        </div>
+                        🐕
+                    </div>
+                    <div class="unit wolf" style="left: 50px; top: 100px;">
+                        <div class="direction-indicator">
+                            <div class="direction-arrow" style="transform: rotate(45deg);"></div>
+                        </div>
+                        🐺
+                    </div>
+                    <div class="unit wolf fast" style="left: 280px; top: 150px;">
+                        <div class="direction-indicator">
+                            <div class="direction-arrow" style="transform: rotate(135deg);"></div>
+                        </div>
+                        🐺
+                    </div>
+                    <div class="unit wolf cooperative" style="left: 100px; top: 450px;">
+                        <div class="direction-indicator">
+                            <div class="direction-arrow" style="transform: rotate(315deg);"></div>
+                        </div>
+                        🐺
+                    </div>
+                </div>
+
+                <div class="bottom-bar">
+                    <div class="button circle">🏆</div>
+                    <div class="button circle">🛒</div>
+                    <button class="button primary">开始游戏</button>
+                    <div class="button circle">🏪</div>
+                    <div class="button circle">⚙️</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="preview-section">
+            <h2>🎮 游戏页</h2>
+            <div class="phone-frame">
+                <div class="phone-notch"></div>
+                
+                <div class="header">
+                    <div class="header-info-text" style="font-weight: bold;">第 1 关</div>
+                    <div class="header-info-text" style="color: #FF6B9D; font-weight: bold;">00:00</div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="font-size: 14px; color: #666666;">生命:</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                    <div class="header-icon">⏸️</div>
+                </div>
+
+                <div class="game-area">
+                    <div class="unit dog" style="left: 147.5px; top: 260px;">
+                        <div class="direction-indicator">
+                            <div class="direction-arrow" style="transform: rotate(225deg);"></div>
+                        </div>
+                        🐕
+                    </div>
+                    <div class="unit wolf" style="left: 50px; top: 100px;">
+                        <div class="direction-indicator">
+                            <div class="direction-arrow" style="transform: rotate(45deg);"></div>
+                        </div>
+                        🐺
+                    </div>
+                    <div class="unit wolf fast" style="left: 280px; top: 150px;">
+                        <div class="direction-indicator">
+                            <div class="direction-arrow" style="transform: rotate(135deg);"></div>
+                        </div>
+                        🐺
+                    </div>
+                    <div class="unit wolf cooperative" style="left: 100px; top: 450px;">
+                        <div class="direction-indicator">
+                            <div class="direction-arrow" style="transform: rotate(315deg);"></div>
+                        </div>
+                        🐺
+                    </div>
+                </div>
+
+                <div class="bottom-bar">
+                    <div style="text-align: center;">
+                        <div class="button circle">💡</div>
+                        <div class="button-label">提示</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div class="button circle">🔄</div>
+                        <div class="button-label">重置</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div class="button circle">⏱️</div>
+                        <div class="button-label">慢动作</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="preview-section">
+            <h2>🎉 胜利弹窗</h2>
+            <div class="phone-frame">
+                <div class="phone-notch"></div>
+                
+                <div class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div class="modal-title">胜利！</div>
+                        </div>
+                        <div class="modal-body">
+                            <div class="stars">
+                                <div class="star">⭐</div>
+                                <div class="star">⭐</div>
+                                <div class="star">⭐</div>
+                            </div>
+                            <div class="modal-text large">得分：1000</div>
+                            <div class="modal-text">用时：00:30</div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="button primary">下一关</button>
+                            <button class="button secondary">分享</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="preview-section">
+            <h2>❌ 失败弹窗</h2>
+            <div class="phone-frame">
+                <div class="phone-notch"></div>
+                
+                <div class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div class="modal-title lose">失败</div>
+                        </div>
+                        <div class="modal-body">
+                            <div class="modal-text large">得分：500</div>
+                            <div class="modal-text">菜狗没有跑出屏幕</div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="button primary">重新挑战</button>
+                            <button class="button secondary">返回主页</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="preview-section">
+            <h2>🎨 设计系统</h2>
+            <div class="info-box">
+                <h3>色彩系统</h3>
+                <p><strong>主色调：</strong></p>
+                <div>
+                    <span class="color-swatch" style="background-color: #FF6B9D;"></span>
+                    <span class="color-swatch" style="background-color: #FF8FB1;"></span>
+                    <span class="color-swatch" style="background-color: #E85A8A;"></span>
+                </div>
+                <p style="margin-top: 10px;"><strong>辅助色：</strong></p>
+                <div>
+                    <span class="color-swatch" style="background-color: #FFD93D;"></span>
+                    <span class="color-swatch" style="background-color: #FFE566;"></span>
+                    <span class="color-swatch" style="background-color: #E6C235;"></span>
+                </div>
+                <p style="margin-top: 10px;"><strong>背景色：</strong></p>
+                <div>
+                    <span class="color-swatch" style="background-color: #FFF5F8;"></span>
+                    <span class="color-swatch" style="background-color: #F0FFF4;"></span>
+                </div>
+                <p style="margin-top: 10px;"><strong>状态色：</strong></p>
+                <div>
+                    <span class="color-swatch" style="background-color: #52C41A;"></span>
+                    <span class="color-swatch" style="background-color: #F5222D;"></span>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h3>字体系统</h3>
+                <p><strong>字体家族：</strong>PingFang SC, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif</p>
+                <p><strong>字号规范：</strong></p>
+                <ul style="margin-left: 20px; color: #666666; line-height: 1.8;">
+                    <li>H1: 32px / 48px line-height</li>
+                    <li>H2: 28px / 42px line-height</li>
+                    <li>H3: 24px / 36px line-height</li>
+                    <li>Body: 16px / 24px line-height</li>
+                    <li>Caption: 12px / 18px line-height</li>
+                </ul>
+            </div>
+
+            <div class="info-box">
+                <h3>组件尺寸</h3>
+                <p><strong>菜狗：</strong>80px × 80px，圆角 40px</p>
+                <p><strong>狼：</strong>60px × 60px，圆角 30px</p>
+                <p><strong>按钮：</strong>120px × 48px，圆角 24px</p>
+                <p><strong>圆形按钮：</strong>48px × 48px，圆角 24px</p>
+            </div>
+        </div>
+
+        <div class="preview-section">
+            <h2>📐 页面结构</h2>
+            <div class="info-box">
+                <h3>主页布局</h3>
+                <pre style="background: #F5F5F5; padding: 15px; border-radius: 8px; overflow-x: auto;">
+┌─────────────────────────────────┐
+│ 顶部信息栏（60px）          │
+│ [标题] [关卡] [分数] [设置] │
+├─────────────────────────────────┤
+│                              │
+│       游戏区域（652px）        │
+│                              │
+│         [菜狗]               │
+│                              │
+│   [狼1]    [狼2]            │
+│                              │
+│       [狼3]                 │
+│                              │
+├─────────────────────────────────┤
+│ 底部操作栏（80px）          │
+│ [排行榜] [开始游戏] [商店]    │
+└─────────────────────────────────┘
+                </pre>
+            </div>
+
+            <div class="info-box">
+                <h3>游戏页布局</h3>
+                <pre style="background: #F5F5F5; padding: 15px; border-radius: 8px; overflow-x: auto;">
+┌─────────────────────────────────┐
+│ 游戏信息栏（60px）          │
+│ [关卡] [计时器] [生命] [暂停] │
+├─────────────────────────────────┤
+│                              │
+│       游戏画布（652px）        │
+│                              │
+│         [菜狗]               │
+│                              │
+│   [狼1]    [狼2]            │
+│                              │
+│       [狼3]                 │
+│                              │
+├─────────────────────────────────┤
+│ 游戏控制栏（100px）          │
+│ [提示] [重置] [慢动作]        │
+└─────────────────────────────────┘
+                </pre>
+            </div>
+
+            <div class="info-box">
+                <h3>游戏目标</h3>
+                <p style="font-size: 18px; font-weight: 600; color: #333333; margin-bottom: 10px;">
+                    🎯 <strong>菜狗跑出去消失 = 用户获胜</strong>
+                </p>
+                <p style="font-size: 14px; color: #666666; line-height: 1.6;">
+                    玩家需要点击菜狗，让它跑出屏幕边界。菜狗跑出去消失即代表用户获胜。
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.querySelectorAll('.unit').forEach(unit => {
+            unit.addEventListener('click', function() {
+                this.style.transform = 'scale(1.2)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 150);
+            });
+        });
+
+        document.querySelectorAll('.button').forEach(button => {
+            button.addEventListener('click', function() {
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 150);
+            });
+        });
+    </script>
+</body>
+</html>
