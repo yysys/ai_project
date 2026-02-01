@@ -13,6 +13,7 @@
 
 #### 1.2 Screens（界面设计）
 - Home Screen（主页）
+- Level Selection Screen（关卡选择页）
 - Game Screen（游戏页）
 - Result Screen（结果页）
 - Setting Screen（设置页）
@@ -408,7 +409,7 @@ Disabled:
 
 ---
 
-### 6. 游戏区域组件（Game Area Component）
+### 11. 游戏区域组件（Game Area Component）
 
 #### 设计规格
 ```
@@ -432,9 +433,201 @@ Decorations:
   - Parallax effect (optional)
 ```
 
+#### 游戏网格集成
+```
+Game Grid:
+  - 100个长方形小单元
+  - 10列 × 10行布局
+  - 每个单元32px × 48px
+  - 四个方向指示器（左上、左下、右上、右下）
+  - 支持菜狗和狼的放置和移动
+```
+
 ---
 
-### 7. 信息栏组件（Info Bar Component）
+### 6. 关卡选择页组件（Level Selection Component）
+
+#### 设计规格
+```
+Width: 100% (responsive)
+Height: 100% - top bar - bottom bar
+Background: #FFF5F8
+```
+
+#### 关卡按钮设计
+```
+Level Button:
+  - Width: 80px
+  - Height: 80px
+  - Border Radius: 12px
+  - Background: Linear gradient(135deg, #FF6B9D, #FF8FB1)
+  - Text: 24px, Bold, #FFFFFF
+  - Shadow: 0 4px 12px rgba(255,107,157,0.3)
+  - Spacing: 16px
+```
+
+#### 关卡状态样式
+```
+Unlocked（已解锁）:
+  - Background: Linear gradient(135deg, #FF6B9D, #FF8FB1)
+  - Opacity: 1
+  - Text Color: #FFFFFF
+  - Clickable: Yes
+
+Locked（未解锁）:
+  - Background: #E0E0E0
+  - Opacity: 0.6
+  - Text Color: #999999
+  - Clickable: No
+  - Lock Icon: Visible
+
+Completed（已完成）:
+  - Background: Linear gradient(135deg, #52C41A, #73D13D)
+  - Opacity: 1
+  - Text Color: #FFFFFF
+  - Star Rating: Visible
+  - Clickable: Yes
+
+Current（当前关卡）:
+  - Background: Linear gradient(135deg, #FFD93D, #FFE566)
+  - Opacity: 1
+  - Text Color: #333333
+  - Border: 3px solid #FF6B9D
+  - Clickable: Yes
+```
+
+#### 关卡网格布局
+```
+Grid Layout:
+  - Columns: 5
+  - Rows: 2
+  - Gap: 16px
+  - Padding: 24px
+  - Total Levels: 10
+```
+
+#### 星级评定
+```
+Star Rating:
+  - Size: 12px
+  - Color: #FFD93D
+  - Position: Bottom center of level button
+  - Spacing: 2px
+```
+
+---
+
+### 7. 游戏网格组件（Game Grid Component）
+
+#### 设计规格
+```
+Width: 100% (responsive)
+Height: 100% - top bar - bottom bar
+Background: #F0FFF4 (草地绿）
+Border Radius: 16px
+Shadow: inset 0 2px 8px rgba(0,0,0,0.05)
+```
+
+#### 网格布局
+```
+Grid Layout:
+  - Total Cells: 100
+  - Layout Type: Diagonal (斜向排列)
+  - Cell Width: 20px
+  - Cell Height: 40px
+  - Cell Rotation: 45度 或 135度 (两种旋转方向)
+  - Grid Gap: 10px (单元格间距，避免旋转后重叠)
+  - Padding: 12px
+  - Grid Columns: 10
+  - Grid Rows: 10
+```
+
+#### 斜向排列说明
+```
+Cell Rotation Layout:
+  - 每个单元格旋转45度
+  - 形成菱形视觉效果
+  - 网格间距12px，避免旋转后重叠
+  - 四个角分别对应四个方向：
+    * 顶部角：左上方向
+    * 左侧角：左下方向
+    * 右侧角：右上方向
+    * 底部角：右下方向
+  - 便于菜狗和狼沿对角线方向移动
+```
+
+#### 单元格设计
+```
+Cell (长方形小单元):
+  - Width: 20px
+  - Height: 40px
+  - Rotation: 45度 或 135度 (两种旋转方向)
+  - Border Radius: 2px
+  - Background: #FFFFFF
+  - Border: 1px solid #E8F5E9
+  - Shadow: 0 1px 3px rgba(0,0,0,0.05)
+```
+
+#### 单元格旋转说明
+```
+Cell Rotation:
+  - 单元格有两种旋转角度：45度 和 135度
+  - 45度旋转：形成右上-左下方向的菱形
+  - 135度旋转：形成左上-右下方向的菱形
+  - 两种旋转交替排列，形成四个方向的视觉效果
+  - 网格间距12px，避免旋转后重叠
+  - 四个角分别对应四个方向：
+    * 45度旋转：
+      - 顶部角：左上方向
+      - 左侧角：左下方向
+      - 右侧角：右上方向
+      - 底部角：右下方向
+    * 135度旋转：
+      - 顶部角：右上方向
+      - 左侧角：左上方向
+      - 右侧角：右下方向
+      - 底部角：左下方向
+  - 便于菜狗和狼沿对角线方向移动
+```
+
+#### 单元格方向指示
+```
+Direction Indicators:
+  - Left Up (左上): 单元格左上角
+  - Left Down (左下): 单元格左下角
+  - Right Up (右上): 单元格右上角
+  - Right Down (右下): 单元格右下角
+
+Direction Arrow:
+  - Size: 8px × 8px
+  - Color: #52C41A
+  - Shape: Triangle
+  - Position: Corner of cell
+```
+
+#### 单元格状态
+```
+Empty (空):
+  - Background: #FFFFFF
+  - Opacity: 1
+
+Occupied (被占用):
+  - Background: #FF6B9D
+  - Opacity: 1
+
+Selected (选中):
+  - Background: #FFD93D
+  - Opacity: 1
+  - Border: 2px solid #FF6B9D
+
+Highlighted (高亮):
+  - Background: #FFE566
+  - Opacity: 0.8
+```
+
+---
+
+### 8. 信息栏组件（Info Bar Component）
 
 #### 顶部信息栏
 ```
@@ -466,7 +659,7 @@ Dog Health:
 
 ---
 
-### 8. 弹窗组件（Modal Component）
+### 9. 弹窗组件（Modal Component）
 
 #### 设计规格
 ```
@@ -496,7 +689,7 @@ Footer:
 
 ---
 
-### 9. 进度条组件（Progress Component）
+### 10. 进度条组件（Progress Component）
 
 #### 设计规格
 ```
@@ -559,6 +752,44 @@ Direction Icons: 四个方向图标
 ---
 
 ## 动画规范（Animations）
+
+### 关卡按钮动画
+```
+Duration: 200ms
+Easing: cubic-bezier(0.4, 0, 0.2, 1)
+Properties:
+  - transform: scale(1) → scale(1.1) → scale(1)
+  - opacity: 1
+```
+
+### 关卡解锁动画
+```
+Duration: 500ms
+Easing: cubic-bezier(0.4, 0, 0.2, 1)
+Properties:
+  - transform: scale(0.8) → scale(1)
+  - opacity: 0 → 1
+  - Confetti effect
+```
+
+### 单元格选中动画
+```
+Duration: 150ms
+Easing: cubic-bezier(0.4, 0, 0.2, 1)
+Properties:
+  - transform: scale(1) → scale(1.05) → scale(1)
+  - background-color: #FFFFFF → #FFD93D
+```
+
+### 单元格移动动画
+```
+Duration: Based on distance
+Easing: linear
+Properties:
+  - transform: translate(x, y)
+  - opacity: 1
+  - Trail effect
+```
 
 ### 狼跑动动画
 ```

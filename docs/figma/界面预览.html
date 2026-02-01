@@ -121,6 +121,14 @@
             top: 0;
             left: 50%;
             transform: translateX(-50%);
+            z-index: 100;
+            display: none;
+        }
+
+        @supports (top: env(safe-area-inset-top)) {
+            .phone-notch {
+                display: block;
+            }
         }
 
         .header {
@@ -135,6 +143,8 @@
             top: 0;
             left: 0;
             right: 0;
+            z-index: 50;
+            padding-top: env(safe-area-inset-top);
         }
 
         .header-title {
@@ -173,76 +183,221 @@
             font-size: 16px;
         }
 
-        .game-area {
+        .home-content {
             position: absolute;
             top: 60px;
             left: 0;
             right: 0;
             bottom: 80px;
+            background-color: #FFF5F8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .game-description {
+            font-size: 16px;
+            color: #666666;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .level-selection-content {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            right: 0;
+            bottom: 100px;
+            background-color: #FFF5F8;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            padding: 10px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .level-button {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .level-button:hover {
+            transform: scale(1.05);
+        }
+
+        .level-button.unlocked {
+            background: linear-gradient(135deg, #FF6B9D, #FF8FB1);
+            color: #FFFFFF;
+        }
+
+        .level-button.locked {
+            background: #E0E0E0;
+            color: #999999;
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .level-button.completed {
+            background: linear-gradient(135deg, #52C41A, #73D13D);
+            color: #FFFFFF;
+        }
+
+        .level-button.current {
+            background: linear-gradient(135deg, #FFD93D, #FFE566);
+            color: #333333;
+            border: 3px solid #FF6B9D;
+        }
+
+        .level-number {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .level-stars {
+            display: flex;
+            gap: 2px;
+            margin-top: 4px;
+        }
+
+        .level-star {
+            font-size: 12px;
+            color: #FFD93D;
+        }
+
+        .lock-icon {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 12px;
+        }
+
+        .game-area {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            right: 0;
+            bottom: 100px;
             background-color: #F0FFF4;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 10px;
         }
 
-        .unit {
-            position: absolute;
-            border-radius: 50%;
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 20px);
+            grid-template-rows: repeat(10, 40px);
+            gap: 10px;
+            background-color: #F0FFF4;
+            border-radius: 16px;
+            padding: 12px;
+            overflow: auto;
+        }
+
+        .grid-cell {
+            width: 20px;
+            height: 40px;
+            border-radius: 3px;
+            background-color: #FFFFFF;
+            border: 1px solid #E8F5E9;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: transform 0.15s ease-out;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            font-size: 32px;
+            transition: all 0.15s ease-out;
+            position: relative;
+            font-size: 14px;
         }
 
-        .unit:hover {
+        .grid-cell.rotate-45 {
+            transform: rotate(45deg);
+        }
+
+        .grid-cell.rotate-135 {
+            transform: rotate(135deg);
+        }
+
+        .grid-cell:hover {
             transform: scale(1.05);
         }
 
-        .unit.dog {
-            width: 80px;
-            height: 80px;
-            background-color: #52C41A;
-            border-radius: 40px;
+        .grid-cell.rotate-45:hover {
+            transform: rotate(45deg) scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
 
-        .unit.wolf {
-            width: 60px;
-            height: 60px;
+        .grid-cell.rotate-135:hover {
+            transform: rotate(135deg) scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .grid-cell.occupied {
             background-color: #FF6B9D;
-            border-radius: 30px;
+            color: #FFFFFF;
         }
 
-        .unit.wolf.fast {
+        .grid-cell.selected {
             background-color: #FFD93D;
+            border: 2px solid #FF6B9D;
         }
 
-        .unit.wolf.cooperative {
-            background-color: #9254DE;
-        }
-
-        .direction-indicator {
-            position: absolute;
-            top: -25px;
-            right: -10px;
-            width: 20px;
-            height: 20px;
-            background-color: rgba(255,255,255,0.8);
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
+        .grid-cell.highlighted {
+            background-color: #FFE566;
+            opacity: 0.8;
         }
 
         .direction-arrow {
-            width: 0;
-            height: 0;
-            border-left: 8px solid transparent;
-            border-right: 8px solid transparent;
-            border-bottom: 12px solid #333333;
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: #52C41A;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        }
+
+        .direction-arrow.left-up {
+            top: 2px;
+            left: 2px;
+            transform: rotate(135deg);
+        }
+
+        .direction-arrow.left-down {
+            bottom: 2px;
+            left: 2px;
+            transform: rotate(225deg);
+        }
+
+        .direction-arrow.right-up {
+            top: 2px;
+            right: 2px;
+            transform: rotate(45deg);
+        }
+
+        .direction-arrow.right-down {
+            bottom: 2px;
+            right: 2px;
+            transform: rotate(315deg);
         }
 
         .bottom-bar {
@@ -253,6 +408,19 @@
             align-items: center;
             justify-content: center;
             gap: 20px;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+
+        .level-footer {
+            height: 100px;
+            background-color: #FFFFFF;
+            border-top: 1px solid #F0F0F0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             position: absolute;
             bottom: 0;
             left: 0;
@@ -292,6 +460,12 @@
             color: #FF6B9D;
             border: 2px solid #FF6B9D;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .button.large {
+            width: 200px;
+            height: 60px;
+            font-size: 20px;
         }
 
         .button.circle {
@@ -403,19 +577,29 @@
             100% { transform: rotate(0deg); }
         }
 
-        .unit.dog {
-            animation: bounce 2s ease-in-out infinite;
+        .level-card {
+            background: linear-gradient(135deg, #FF6B9D, #FF8FB1);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
-        .unit.wolf {
-            animation: wobble 0.5s linear infinite;
+        .level-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="nav">
-            <button class="nav active" onclick="showPage('home')">📱 主页</button>
+            <button class="nav active" onclick="showPage('home')">🏠 主页</button>
+            <button class="nav" onclick="showPage('level-selection')">📱 关卡选择</button>
             <button class="nav" onclick="showPage('game')">🎮 游戏页</button>
             <button class="nav" onclick="showPage('win')">🎉 胜利弹窗</button>
             <button class="nav" onclick="showPage('lose')">❌ 失败弹窗</button>
@@ -423,7 +607,7 @@
         </div>
 
         <div id="page-home" class="page active">
-            <h2 class="page-title">📱 主页</h2>
+            <h2 class="page-title">🏠 主页</h2>
             <div class="phone-frame">
                 <div class="phone-notch"></div>
                 
@@ -436,39 +620,91 @@
                     <div class="header-icon">⚙️</div>
                 </div>
 
-                <div class="game-area">
-                    <div class="unit dog" style="left: 147.5px; top: 260px;">
-                        <div class="direction-indicator">
-                            <div class="direction-arrow" style="transform: rotate(225deg);"></div>
-                        </div>
-                        🐕
-                    </div>
-                    <div class="unit wolf" style="left: 50px; top: 100px;">
-                        <div class="direction-indicator">
-                            <div class="direction-arrow" style="transform: rotate(45deg);"></div>
-                        </div>
-                        🐺
-                    </div>
-                    <div class="unit wolf fast" style="left: 280px; top: 150px;">
-                        <div class="direction-indicator">
-                            <div class="direction-arrow" style="transform: rotate(135deg);"></div>
-                        </div>
-                        🐺
-                    </div>
-                    <div class="unit wolf cooperative" style="left: 100px; top: 450px;">
-                        <div class="direction-indicator">
-                            <div class="direction-arrow" style="transform: rotate(315deg);"></div>
-                        </div>
-                        🐺
-                    </div>
+                <div class="home-content">
+                    <button class="button primary large">开始游戏</button>
+                    <button class="button secondary large" style="margin-top: 20px;">选择关卡</button>
+                    <div class="game-description">帮助菜狗躲避狼群</div>
                 </div>
 
                 <div class="bottom-bar">
                     <div class="button circle">🏆</div>
                     <div class="button circle">🛒</div>
-                    <button class="button primary">开始游戏</button>
-                    <div class="button circle">🏪</div>
-                    <div class="button circle">⚙️</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-level-selection" class="page">
+            <h2 class="page-title">📱 关卡选择</h2>
+            <div class="phone-frame">
+                <div class="phone-notch"></div>
+                
+                <div class="header">
+                    <div class="header-title">选择关卡</div>
+                    <div class="header-info">
+                        <div class="header-info-text">已解锁 3/10</div>
+                    </div>
+                    <div class="header-icon">⬅️</div>
+                </div>
+
+                <div class="level-selection-content">
+                    <div class="level-grid">
+                        <div class="level-button completed">
+                            <div class="level-number">1</div>
+                            <div class="level-stars">
+                                <span class="level-star">⭐</span>
+                                <span class="level-star">⭐</span>
+                                <span class="level-star">⭐</span>
+                            </div>
+                        </div>
+                        <div class="level-button completed">
+                            <div class="level-number">2</div>
+                            <div class="level-stars">
+                                <span class="level-star">⭐</span>
+                                <span class="level-star">⭐</span>
+                                <span class="level-star">⭐</span>
+                            </div>
+                        </div>
+                        <div class="level-button current">
+                            <div class="level-number">3</div>
+                            <div class="level-stars">
+                                <span class="level-star">⭐</span>
+                                <span class="level-star">⭐</span>
+                                <span class="level-star">⭐</span>
+                            </div>
+                        </div>
+                        <div class="level-button locked">
+                            <div class="level-number">4</div>
+                            <div class="lock-icon">🔒</div>
+                        </div>
+                        <div class="level-button locked">
+                            <div class="level-number">5</div>
+                            <div class="lock-icon">🔒</div>
+                        </div>
+                        <div class="level-button locked">
+                            <div class="level-number">6</div>
+                            <div class="lock-icon">🔒</div>
+                        </div>
+                        <div class="level-button locked">
+                            <div class="level-number">7</div>
+                            <div class="lock-icon">🔒</div>
+                        </div>
+                        <div class="level-button locked">
+                            <div class="level-number">8</div>
+                            <div class="lock-icon">🔒</div>
+                        </div>
+                        <div class="level-button locked">
+                            <div class="level-number">9</div>
+                            <div class="lock-icon">🔒</div>
+                        </div>
+                        <div class="level-button locked">
+                            <div class="level-number">10</div>
+                            <div class="lock-icon">🔒</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="level-footer">
+                    <button class="button secondary">返回主页</button>
                 </div>
             </div>
         </div>
@@ -481,39 +717,14 @@
                 <div class="header">
                     <div class="header-info-text" style="font-weight: bold;">第 1 关</div>
                     <div class="header-info-text" style="color: #FF6B9D; font-weight: bold;">00:00</div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="font-size: 14px; color: #666666;">生命:</div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 100%;"></div>
-                        </div>
+                    <div class="progress-bar" style="width: 100px; height: 8px; background-color: rgba(0,0,0,0.1); border-radius: 4px; overflow: hidden;">
+                        <div class="progress-fill" style="width: 100%;"></div>
                     </div>
                     <div class="header-icon">⏸️</div>
                 </div>
 
                 <div class="game-area">
-                    <div class="unit dog" style="left: 147.5px; top: 260px;">
-                        <div class="direction-indicator">
-                            <div class="direction-arrow" style="transform: rotate(225deg);"></div>
-                        </div>
-                        🐕
-                    </div>
-                    <div class="unit wolf" style="left: 50px; top: 100px;">
-                        <div class="direction-indicator">
-                            <div class="direction-arrow" style="transform: rotate(45deg);"></div>
-                        </div>
-                        🐺
-                    </div>
-                    <div class="unit wolf fast" style="left: 280px; top: 150px;">
-                        <div class="direction-indicator">
-                            <div class="direction-arrow" style="transform: rotate(135deg);"></div>
-                        </div>
-                        🐺
-                    </div>
-                    <div class="unit wolf cooperative" style="left: 100px; top: 450px;">
-                        <div class="direction-indicator">
-                            <div class="direction-arrow" style="transform: rotate(315deg);"></div>
-                        </div>
-                        🐺
+                    <div class="game-grid" id="gameGrid">
                     </div>
                 </div>
 
@@ -624,8 +835,11 @@
 
                 <div class="preview-item">
                     <h3>📐 组件尺寸</h3>
-                    <p><strong>菜狗：</strong>80px × 80px，圆角 40px</p>
-                    <p><strong>狼：</strong>60px × 60px，圆角 30px</p>
+                    <p><strong>游戏网格单元格（长方形）：</strong>20px × 40px（2:1比例），旋转45度或135度，圆角 2px</p>
+                    <p><strong>网格布局：</strong>10行 × 10列，共100个单元格</p>
+                    <p><strong>单元格旋转：</strong>两种旋转角度（45度和135度）交替排列，形成四个方向的菱形视觉效果</p>
+                    <p><strong>网格间距：</strong>10px（避免旋转后单元格重叠）</p>
+                    <p><strong>关卡按钮：</strong>80px × 80px，圆角 12px</p>
                     <p><strong>按钮：</strong>120px × 48px，圆角 24px</p>
                     <p><strong>圆形按钮：</strong>48px × 48px，圆角 24px</p>
                 </div>
@@ -638,6 +852,30 @@
                     <p style="font-size: 14px; color: #666666; line-height: 1.6;">
                         玩家需要点击菜狗，让它跑出屏幕边界。菜狗跑出去消失即代表用户获胜。
                     </p>
+                </div>
+
+                <div class="preview-item">
+                    <h3>🧭 方向指示器</h3>
+                    <p><strong>四个对角线方向：</strong></p>
+                    <ul style="margin-left: 20px; color: #666666; line-height: 1.8;">
+                        <li>左上（Left Up）：225°</li>
+                        <li>左下（Left Down）：135°</li>
+                        <li>右上（Right Up）：315°</li>
+                        <li>右下（Right Down）：45°</li>
+                    </ul>
+                    <p style="margin-top: 10px;"><strong>方向箭头：</strong>8px × 8px 三角形，显示在单元格的四个角落</p>
+                </div>
+
+                <div class="preview-item">
+                    <h3>📊 关卡系统</h3>
+                    <p><strong>总关卡数：</strong>10关</p>
+                    <p><strong>关卡状态：</strong></p>
+                    <ul style="margin-left: 20px; color: #666666; line-height: 1.8;">
+                        <li>已完成（绿色）：显示星级评定</li>
+                        <li>当前关卡（黄色）：高亮显示</li>
+                        <li>已解锁（粉色）：可点击进入</li>
+                        <li>未解锁（灰色）：显示锁图标</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -657,12 +895,53 @@
             event.target.classList.add('active');
         }
 
-        document.querySelectorAll('.unit').forEach(unit => {
-            unit.addEventListener('click', function() {
-                this.style.transform = 'scale(1.2)';
+        function createGameGrid() {
+            const grid = document.getElementById('gameGrid');
+            grid.innerHTML = '';
+            
+            const rows = 10;
+            const cols = 10;
+            
+            for (let i = 0; i < 100; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                
+                const row = Math.floor(i / 10);
+                const col = i % 10;
+                
+                const rotation = (row + col) % 2 === 0 ? 45 : 135;
+                cell.classList.add(rotation === 45 ? 'rotate-45' : 'rotate-135');
+                
+                if (row === 4 && col === 4) {
+                    cell.className += ' occupied';
+                    const reverseRotation = rotation === 45 ? -45 : -135;
+                    cell.innerHTML = '<span style="transform: rotate(' + reverseRotation + 'deg); display: block;">🐕</span>';
+                } else if ((row === 1 && col === 1) || (row === 1 && col === 8) || (row === 7 && col === 4)) {
+                    cell.className += ' occupied';
+                    const reverseRotation = rotation === 45 ? -45 : -135;
+                    cell.innerHTML = '<span style="transform: rotate(' + reverseRotation + 'deg); display: block;">🐺</span>';
+                }
+                
+                cell.addEventListener('click', function() {
+                    const currentRotation = this.classList.contains('rotate-45') ? 45 : 135;
+                    this.style.transform = 'rotate(' + currentRotation + 'deg) scale(1.1)';
+                    setTimeout(() => {
+                        this.style.transform = 'rotate(' + currentRotation + 'deg) scale(1)';
+                    }, 150);
+                });
+                
+                grid.appendChild(cell);
+            }
+        }
+
+        document.querySelectorAll('.level-button').forEach(button => {
+            button.addEventListener('click', function() {
+                if (this.classList.contains('locked')) return;
+                
+                this.style.transform = 'scale(1.1)';
                 setTimeout(() => {
                     this.style.transform = 'scale(1)';
-                }, 150);
+                }, 200);
             });
         });
 
@@ -674,6 +953,8 @@
                 }, 150);
             });
         });
+
+        createGameGrid();
     </script>
 </body>
 </html>

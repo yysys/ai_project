@@ -74,85 +74,57 @@
               },
               {
                 "type": "container",
-                "id": "game-area",
-                "name": "游戏区域",
+                "id": "home-content",
+                "name": "主页内容",
                 "width": 375,
                 "height": 600,
                 "x": 0,
                 "y": 60,
-                "backgroundColor": "#F0FFF4",
+                "backgroundColor": "#FFF5F8",
                 "children": [
                   {
-                    "type": "unit",
-                    "id": "dog",
-                    "name": "菜狗",
-                    "unitType": "vegetable_dog",
-                    "x": 187.5,
-                    "y": 360,
-                    "size": 80,
-                    "backgroundColor": "#52C41A",
-                    "borderRadius": 40,
-                    "direction": "left_up",
-                    "state": "idle",
-                    "directionIndicator": {
-                      "visible": true,
-                      "size": 20,
-                      "color": "#333333"
-                    }
+                    "type": "button",
+                    "id": "btn-start-game",
+                    "name": "开始游戏按钮",
+                    "text": "开始游戏",
+                    "width": 200,
+                    "height": 60,
+                    "x": 87.5,
+                    "y": 200,
+                    "backgroundColor": "linear-gradient(135deg, #FF6B9D, #FF8FB1)",
+                    "color": "#FFFFFF",
+                    "fontSize": 20,
+                    "fontWeight": "bold",
+                    "borderRadius": 30,
+                    "shadow": "0 4px 12px rgba(255,107,157,0.3)"
                   },
                   {
-                    "type": "unit",
-                    "id": "wolf-1",
-                    "name": "狼1",
-                    "unitType": "wolf",
-                    "x": 50,
-                    "y": 100,
-                    "size": 60,
-                    "backgroundColor": "#FF6B9D",
+                    "type": "button",
+                    "id": "btn-select-level",
+                    "name": "选择关卡按钮",
+                    "text": "选择关卡",
+                    "width": 200,
+                    "height": 60,
+                    "x": 87.5,
+                    "y": 280,
+                    "backgroundColor": "#FFFFFF",
+                    "color": "#FF6B9D",
+                    "fontSize": 20,
+                    "fontWeight": "bold",
+                    "border": "2px solid #FF6B9D",
                     "borderRadius": 30,
-                    "direction": "right_down",
-                    "state": "idle",
-                    "directionIndicator": {
-                      "visible": true,
-                      "size": 20,
-                      "color": "#333333"
-                    }
+                    "shadow": "0 2px 8px rgba(0,0,0,0.1)"
                   },
                   {
-                    "type": "unit",
-                    "id": "wolf-2",
-                    "name": "狼2",
-                    "unitType": "wolf",
-                    "x": 300,
-                    "y": 150,
-                    "size": 60,
-                    "backgroundColor": "#FFD93D",
-                    "borderRadius": 30,
-                    "direction": "left_down",
-                    "state": "idle",
-                    "directionIndicator": {
-                      "visible": true,
-                      "size": 20,
-                      "color": "#333333"
-                    }
-                  },
-                  {
-                    "type": "unit",
-                    "id": "wolf-3",
-                    "name": "狼3",
-                    "unitType": "wolf",
-                    "x": 100,
-                    "y": 500,
-                    "size": 60,
-                    "backgroundColor": "#9254DE",
-                    "borderRadius": 30,
-                    "direction": "right_up",
-                    "state": "idle",
-                    "directionIndicator": {
-                      "visible": true,
-                      "size": 20,
-                      "color": "#333333"
-                    }
+                    "type": "text",
+                    "id": "game-description",
+                    "name": "游戏说明",
+                    "text": "帮助菜狗躲避狼群",
+                    "fontSize": 16,
+                    "fontWeight": "medium",
+                    "color": "#666666",
+                    "x": 127.5,
+                    "y": 380
                   }
                 ]
               },
@@ -166,43 +138,284 @@
                 "y": 732,
                 "backgroundColor": "#FFFFFF",
                 "borderTop": "1px solid #F0F0F0",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "page-level-selection",
+        "name": "关卡选择页",
+        "frames": [
+          {
+            "id": "frame-level-selection",
+            "name": "Level Selection Frame",
+            "width": 375,
+            "height": 812,
+            "backgroundColor": "#FFF5F8",
+            "children": [
+              {
+                "type": "container",
+                "id": "level-header",
+                "name": "关卡选择头部",
+                "width": 375,
+                "height": 60,
+                "x": 0,
+                "y": 0,
+                "backgroundColor": "rgba(255,255,255,0.9)",
+                "borderBottom": "1px solid #F0F0F0",
+                "children": [
+                  {
+                    "type": "text",
+                    "id": "level-title",
+                    "name": "关卡选择标题",
+                    "text": "选择关卡",
+                    "fontSize": 24,
+                    "fontWeight": "bold",
+                    "color": "#333333",
+                    "x": 20,
+                    "y": 18
+                  },
+                  {
+                    "type": "text",
+                    "id": "level-progress",
+                    "name": "关卡进度",
+                    "text": "已解锁 3/10",
+                    "fontSize": 16,
+                    "fontWeight": "medium",
+                    "color": "#666666",
+                    "x": 240,
+                    "y": 20
+                  },
+                  {
+                    "type": "icon-button",
+                    "id": "btn-back",
+                    "name": "返回按钮",
+                    "icon": "back",
+                    "size": 24,
+                    "x": 330,
+                    "y": 18,
+                    "backgroundColor": "rgba(255,107,157,0.1)",
+                    "borderRadius": 12
+                  }
+                ]
+              },
+              {
+                "type": "container",
+                "id": "level-grid",
+                "name": "关卡网格",
+                "width": 375,
+                "height": 652,
+                "x": 0,
+                "y": 60,
+                "backgroundColor": "#FFF5F8",
+                "children": [
+                  {
+                    "type": "level-button",
+                    "id": "level-1",
+                    "name": "第1关",
+                    "level": 1,
+                    "state": "completed",
+                    "stars": 3,
+                    "width": 80,
+                    "height": 80,
+                    "x": 24,
+                    "y": 24,
+                    "backgroundColor": "linear-gradient(135deg, #52C41A, #73D13D)",
+                    "color": "#FFFFFF",
+                    "fontSize": 24,
+                    "fontWeight": "bold",
+                    "borderRadius": 12
+                  },
+                  {
+                    "type": "level-button",
+                    "id": "level-2",
+                    "name": "第2关",
+                    "level": 2,
+                    "state": "completed",
+                    "stars": 2,
+                    "width": 80,
+                    "height": 80,
+                    "x": 120,
+                    "y": 24,
+                    "backgroundColor": "linear-gradient(135deg, #52C41A, #73D13D)",
+                    "color": "#FFFFFF",
+                    "fontSize": 24,
+                    "fontWeight": "bold",
+                    "borderRadius": 12
+                  },
+                  {
+                    "type": "level-button",
+                    "id": "level-3",
+                    "name": "第3关",
+                    "level": 3,
+                    "state": "current",
+                    "stars": 0,
+                    "width": 80,
+                    "height": 80,
+                    "x": 216,
+                    "y": 24,
+                    "backgroundColor": "linear-gradient(135deg, #FFD93D, #FFE566)",
+                    "color": "#333333",
+                    "fontSize": 24,
+                    "fontWeight": "bold",
+                    "borderRadius": 12,
+                    "border": "3px solid #FF6B9D"
+                  },
+                  {
+                    "type": "level-button",
+                    "id": "level-4",
+                    "name": "第4关",
+                    "level": 4,
+                    "state": "locked",
+                    "stars": 0,
+                    "width": 80,
+                    "height": 80,
+                    "x": 312,
+                    "y": 24,
+                    "backgroundColor": "#E0E0E0",
+                    "color": "#999999",
+                    "fontSize": 24,
+                    "fontWeight": "bold",
+                    "borderRadius": 12,
+                    "opacity": 0.6
+                  },
+                  {
+                    "type": "level-button",
+                    "id": "level-5",
+                    "name": "第5关",
+                    "level": 5,
+                    "state": "locked",
+                    "stars": 0,
+                    "width": 80,
+                    "height": 80,
+                    "x": 24,
+                    "y": 120,
+                    "backgroundColor": "#E0E0E0",
+                    "color": "#999999",
+                    "fontSize": 24,
+                    "fontWeight": "bold",
+                    "borderRadius": 12,
+                    "opacity": 0.6
+                  },
+                  {
+                    "type": "level-button",
+                    "id": "level-6",
+                    "name": "第6关",
+                    "level": 6,
+                    "state": "locked",
+                    "stars": 0,
+                    "width": 80,
+                    "height": 80,
+                    "x": 120,
+                    "y": 120,
+                    "backgroundColor": "#E0E0E0",
+                    "color": "#999999",
+                    "fontSize": 24,
+                    "fontWeight": "bold",
+                    "borderRadius": 12,
+                    "opacity": 0.6
+                  },
+                  {
+                    "type": "level-button",
+                    "id": "level-7",
+                    "name": "第7关",
+                    "level": 7,
+                    "state": "locked",
+                    "stars": 0,
+                    "width": 80,
+                    "height": 80,
+                    "x": 216,
+                    "y": 120,
+                    "backgroundColor": "#E0E0E0",
+                    "color": "#999999",
+                    "fontSize": 24,
+                    "fontWeight": "bold",
+                    "borderRadius": 12,
+                    "opacity": 0.6
+                  },
+                  {
+                    "type": "level-button",
+                    "id": "level-8",
+                    "name": "第8关",
+                    "level": 8,
+                    "state": "locked",
+                    "stars": 0,
+                    "width": 80,
+                    "height": 80,
+                    "x": 312,
+                    "y": 120,
+                    "backgroundColor": "#E0E0E0",
+                    "color": "#999999",
+                    "fontSize": 24,
+                    "fontWeight": "bold",
+                    "borderRadius": 12,
+                    "opacity": 0.6
+                  },
+                  {
+                    "type": "level-button",
+                    "id": "level-9",
+                    "name": "第9关",
+                    "level": 9,
+                    "state": "locked",
+                    "stars": 0,
+                    "width": 80,
+                    "height": 80,
+                    "x": 24,
+                    "y": 216,
+                    "backgroundColor": "#E0E0E0",
+                    "color": "#999999",
+                    "fontSize": 24,
+                    "fontWeight": "bold",
+                    "borderRadius": 12,
+                    "opacity": 0.6
+                  },
+                  {
+                    "type": "level-button",
+                    "id": "level-10",
+                    "name": "第10关",
+                    "level": 10,
+                    "state": "locked",
+                    "stars": 0,
+                    "width": 80,
+                    "height": 80,
+                    "x": 120,
+                    "y": 216,
+                    "backgroundColor": "#E0E0E0",
+                    "color": "#999999",
+                    "fontSize": 24,
+                    "fontWeight": "bold",
+                    "borderRadius": 12,
+                    "opacity": 0.6
+                  }
+                ]
+              },
+              {
+                "type": "container",
+                "id": "level-footer",
+                "name": "关卡选择底部",
+                "width": 375,
+                "height": 100,
+                "x": 0,
+                "y": 712,
+                "backgroundColor": "#FFFFFF",
+                "borderTop": "1px solid #F0F0F0",
                 "children": [
                   {
                     "type": "button",
-                    "id": "btn-start",
-                    "name": "开始游戏",
-                    "text": "开始游戏",
+                    "id": "btn-home",
+                    "name": "返回主页",
+                    "text": "返回主页",
                     "width": 120,
                     "height": 48,
                     "x": 127.5,
-                    "y": 16,
-                    "backgroundColor": "linear-gradient(135deg, #FF6B9D, #FF8FB1)",
-                    "color": "#FFFFFF",
+                    "y": 26,
+                    "backgroundColor": "#FFFFFF",
+                    "color": "#FF6B9D",
                     "fontSize": 16,
                     "fontWeight": "bold",
-                    "borderRadius": 24,
-                    "shadow": "0 4px 12px rgba(255,107,157,0.3)"
-                  },
-                  {
-                    "type": "icon-button",
-                    "id": "btn-rank",
-                    "name": "排行榜",
-                    "icon": "rank",
-                    "size": 48,
-                    "x": 20,
-                    "y": 16,
-                    "backgroundColor": "rgba(255,107,157,0.1)",
-                    "borderRadius": 24
-                  },
-                  {
-                    "type": "icon-button",
-                    "id": "btn-shop",
-                    "name": "商店",
-                    "icon": "shop",
-                    "size": 48,
-                    "x": 307,
-                    "y": 16,
-                    "backgroundColor": "rgba(255,107,157,0.1)",
+                    "border": "2px solid #FF6B9D",
                     "borderRadius": 24
                   }
                 ]
@@ -283,14 +496,36 @@
               },
               {
                 "type": "container",
-                "id": "game-canvas",
-                "name": "游戏画布",
+                "id": "game-grid-container",
+                "name": "游戏网格容器",
                 "width": 375,
                 "height": 652,
                 "x": 0,
                 "y": 60,
                 "backgroundColor": "#F0FFF4",
-                "children": []
+                "children": [
+                  {
+                    "type": "game-grid",
+                    "id": "game-grid",
+                    "name": "游戏网格",
+                    "width": 360,
+                    "height": 632,
+                    "x": 7.5,
+                    "y": 10,
+                    "backgroundColor": "#F0FFF4",
+                    "borderRadius": 16,
+                    "layoutType": "grid",
+                    "totalCells": 100,
+                    "gridColumns": 10,
+                    "gridRows": 10,
+                    "cellWidth": 20,
+                    "cellHeight": 40,
+                    "cellRotation": 45,
+                    "gridGap": 10,
+                    "directions": ["left_up", "left_down", "right_up", "right_down"],
+                    "children": []
+                  }
+                ]
               },
               {
                 "type": "container",
@@ -583,6 +818,145 @@
     ]
   },
   "components": {
+    "levelButton": {
+      "name": "关卡按钮组件",
+      "props": {
+        "width": 80,
+        "height": 80,
+        "borderRadius": 12,
+        "fontSize": 24,
+        "fontWeight": "bold"
+      },
+      "states": {
+        "unlocked": {
+          "backgroundColor": "linear-gradient(135deg, #FF6B9D, #FF8FB1)",
+          "color": "#FFFFFF",
+          "opacity": 1,
+          "clickable": true
+        },
+        "locked": {
+          "backgroundColor": "#E0E0E0",
+          "color": "#999999",
+          "opacity": 0.6,
+          "clickable": false,
+          "lockIcon": true
+        },
+        "completed": {
+          "backgroundColor": "linear-gradient(135deg, #52C41A, #73D13D)",
+          "color": "#FFFFFF",
+          "opacity": 1,
+          "clickable": true,
+          "starRating": true
+        },
+        "current": {
+          "backgroundColor": "linear-gradient(135deg, #FFD93D, #FFE566)",
+          "color": "#333333",
+          "opacity": 1,
+          "clickable": true,
+          "border": "3px solid #FF6B9D"
+        }
+      },
+      "starRating": {
+        "size": 12,
+        "color": "#FFD93D",
+        "position": "bottom-center",
+        "spacing": 2
+      }
+    },
+    "gameGrid": {
+      "name": "游戏网格组件",
+      "props": {
+        "layoutType": "grid",
+        "totalCells": 100,
+        "gridColumns": 10,
+        "gridRows": 10,
+        "cellWidth": 32,
+        "cellHeight": 48,
+        "cellRotation": 45,
+        "gridGap": 12,
+        "padding": 16
+      },
+      "cell": {
+        "width": 20,
+        "height": 40,
+        "rotation": [45, 135],
+        "borderRadius": 2,
+        "backgroundColor": "#FFFFFF",
+        "border": "1px solid #E8F5E9",
+        "shadow": "0 1px 3px rgba(0,0,0,0.05)"
+      },
+      "cellRotation": {
+        "description": "每个单元格旋转45度或135度",
+        "rotation45": {
+          "effect": "形成右上-左下方向的菱形",
+          "directionMapping": {
+            "top": "左上方向",
+            "left": "左下方向",
+            "right": "右上方向",
+            "bottom": "右下方向"
+          }
+        },
+        "rotation135": {
+          "effect": "形成左上-右下方向的菱形",
+          "directionMapping": {
+            "top": "右上方向",
+            "left": "左上方向",
+            "right": "右下方向",
+            "bottom": "左下方向"
+          }
+        },
+        "layout": "两种旋转交替排列，形成四个方向的视觉效果"
+      },
+      "gridSpacing": {
+        "description": "网格间距10px",
+        "purpose": "避免单元格旋转45度或135度后重叠"
+      },
+      "directionIndicators": {
+        "leftUp": {
+          "position": "top-left",
+          "color": "#52C41A",
+          "movement": "向左上方移动"
+        },
+        "leftDown": {
+          "position": "bottom-left",
+          "color": "#FF6B9D",
+          "movement": "向左下方移动"
+        },
+        "rightUp": {
+          "position": "top-right",
+          "color": "#FFD93D",
+          "movement": "向右上方移动"
+        },
+        "rightDown": {
+          "position": "bottom-right",
+          "color": "#9254DE",
+          "movement": "向右下方移动"
+        },
+        "arrow": {
+          "size": "8px × 8px",
+          "shape": "triangle"
+        }
+      },
+      "cellStates": {
+        "empty": {
+          "backgroundColor": "#FFFFFF",
+          "opacity": 1
+        },
+        "occupied": {
+          "backgroundColor": "#FF6B9D",
+          "opacity": 1
+        },
+        "selected": {
+          "backgroundColor": "#FFD93D",
+          "opacity": 1,
+          "border": "2px solid #FF6B9D"
+        },
+        "highlighted": {
+          "backgroundColor": "#FFE566",
+          "opacity": 0.8
+        }
+      }
+    },
     "unit": {
       "name": "单位组件（菜狗/狼）",
       "props": {
