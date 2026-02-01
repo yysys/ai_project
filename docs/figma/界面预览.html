@@ -306,9 +306,9 @@
 
         .game-grid {
             display: grid;
-            grid-template-columns: repeat(10, 20px);
+            grid-template-columns: repeat(12, 20px);
             grid-template-rows: repeat(10, 40px);
-            gap: 10px;
+            gap: 5px;
             background-color: #F0FFF4;
             border-radius: 16px;
             padding: 12px;
@@ -836,9 +836,9 @@
                 <div class="preview-item">
                     <h3>📐 组件尺寸</h3>
                     <p><strong>游戏网格单元格（长方形）：</strong>20px × 40px（2:1比例），旋转45度或135度，圆角 2px</p>
-                    <p><strong>网格布局：</strong>10行 × 10列，共100个单元格</p>
+                    <p><strong>网格布局：</strong>10行 × 12列，共120个单元格</p>
                     <p><strong>单元格旋转：</strong>两种旋转角度（45度和135度）交替排列，形成四个方向的菱形视觉效果</p>
-                    <p><strong>网格间距：</strong>10px（避免旋转后单元格重叠）</p>
+                    <p><strong>网格间距：</strong>5px（避免旋转后单元格重叠）</p>
                     <p><strong>关卡按钮：</strong>80px × 80px，圆角 12px</p>
                     <p><strong>按钮：</strong>120px × 48px，圆角 24px</p>
                     <p><strong>圆形按钮：</strong>48px × 48px，圆角 24px</p>
@@ -900,23 +900,23 @@
             grid.innerHTML = '';
             
             const rows = 10;
-            const cols = 10;
+            const cols = 12;
             
-            for (let i = 0; i < 100; i++) {
+            for (let i = 0; i < 120; i++) {
                 const cell = document.createElement('div');
                 cell.className = 'grid-cell';
                 
-                const row = Math.floor(i / 10);
-                const col = i % 10;
+                const row = Math.floor(i / 12);
+                const col = i % 12;
                 
                 const rotation = (row + col) % 2 === 0 ? 45 : 135;
                 cell.classList.add(rotation === 45 ? 'rotate-45' : 'rotate-135');
                 
-                if (row === 4 && col === 4) {
+                if (row === 4 && col === 5) {
                     cell.className += ' occupied';
                     const reverseRotation = rotation === 45 ? -45 : -135;
                     cell.innerHTML = '<span style="transform: rotate(' + reverseRotation + 'deg); display: block;">🐕</span>';
-                } else if ((row === 1 && col === 1) || (row === 1 && col === 8) || (row === 7 && col === 4)) {
+                } else if ((row === 1 && col === 2) || (row === 1 && col === 9) || (row === 7 && col === 5)) {
                     cell.className += ' occupied';
                     const reverseRotation = rotation === 45 ? -45 : -135;
                     cell.innerHTML = '<span style="transform: rotate(' + reverseRotation + 'deg); display: block;">🐺</span>';

@@ -531,14 +531,14 @@ Shadow: inset 0 2px 8px rgba(0,0,0,0.05)
 #### 网格布局
 ```
 Grid Layout:
-  - Total Cells: 100
+  - Total Cells: 120
   - Layout Type: Diagonal (斜向排列)
   - Cell Width: 20px
   - Cell Height: 40px
   - Cell Rotation: 45度 或 135度 (两种旋转方向)
-  - Grid Gap: 10px (单元格间距，避免旋转后重叠)
+  - Grid Gap: 5px (单元格间距，避免旋转后重叠)
   - Padding: 12px
-  - Grid Columns: 10
+  - Grid Columns: 12
   - Grid Rows: 10
 ```
 

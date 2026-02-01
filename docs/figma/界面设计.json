@@ -515,13 +515,13 @@
                     "backgroundColor": "#F0FFF4",
                     "borderRadius": 16,
                     "layoutType": "grid",
-                    "totalCells": 100,
-                    "gridColumns": 10,
+                    "totalCells": 120,
+                    "gridColumns": 12,
                     "gridRows": 10,
                     "cellWidth": 20,
                     "cellHeight": 40,
                     "cellRotation": 45,
-                    "gridGap": 10,
+                    "gridGap": 5,
                     "directions": ["left_up", "left_down", "right_up", "right_down"],
                     "children": []
                   }
@@ -867,14 +867,14 @@
       "name": "游戏网格组件",
       "props": {
         "layoutType": "grid",
-        "totalCells": 100,
-        "gridColumns": 10,
+        "totalCells": 120,
+        "gridColumns": 12,
         "gridRows": 10,
-        "cellWidth": 32,
-        "cellHeight": 48,
+        "cellWidth": 20,
+        "cellHeight": 40,
         "cellRotation": 45,
-        "gridGap": 12,
-        "padding": 16
+        "gridGap": 5,
+        "padding": 12
       },
       "cell": {
         "width": 20,
@@ -908,7 +908,7 @@
         "layout": "两种旋转交替排列，形成四个方向的视觉效果"
       },
       "gridSpacing": {
-        "description": "网格间距10px",
+        "description": "网格间距5px",
         "purpose": "避免单元格旋转45度或135度后重叠"
       },
       "directionIndicators": {
