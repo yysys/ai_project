@@ -307,8 +307,8 @@
         .game-grid {
             display: grid;
             grid-template-columns: repeat(12, 30px);
-            grid-template-rows: repeat(10, 60px);
-            gap: 2px;
+            grid-template-rows: repeat(10, 15px);
+            gap: 0px;
             background-color: #F0FFF4;
             border-radius: 16px;
             padding: 12px;
@@ -317,8 +317,8 @@
 
         .grid-cell {
             width: 30px;
-            height: 60px;
-            border-radius: 4px;
+            height: 15px;
+            border-radius: 2px;
             background-color: #FFFFFF;
             border: 1px solid #E8F5E9;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
@@ -328,7 +328,7 @@
             cursor: pointer;
             transition: all 0.15s ease-out;
             position: relative;
-            font-size: 14px;
+            font-size: 10px;
         }
 
         .grid-cell.rotate-45 {
@@ -835,11 +835,11 @@
 
                 <div class="preview-item">
                     <h3>📐 组件尺寸</h3>
-                    <p><strong>游戏网格单元格（长方形）：</strong>30px × 60px（2:1比例），旋转45度或135度，圆角 4px</p>
-                    <p><strong>三张卡片组合：</strong>1张卡片135度摆放 + 2张卡片45度摆放，组成长宽比3:2的长方形，紧密排列无间隙</p>
+                    <p><strong>游戏网格单元格（长方形）：</strong>30px × 15px（2:1比例），旋转45度或135度，圆角 2px</p>
                     <p><strong>网格布局：</strong>10行 × 12列，共120个单元格</p>
                     <p><strong>单元格旋转：</strong>两种旋转角度（45度和135度）交替排列，形成四个方向的菱形视觉效果</p>
-                    <p><strong>网格间距：</strong>2px（卡片紧密排列）</p>
+                    <p><strong>网格间距：</strong>0px（紧密排列，卡片之间无空隙）</p>
+                    <p><strong>卡片组合：</strong>3张卡片（一张135度，两张45度）紧密排列成长宽比3:2的长方形</p>
                     <p><strong>关卡按钮：</strong>80px × 80px，圆角 12px</p>
                     <p><strong>按钮：</strong>120px × 48px，圆角 24px</p>
                     <p><strong>圆形按钮：</strong>48px × 48px，圆角 24px</p>
@@ -910,7 +910,7 @@
                 const row = Math.floor(i / 12);
                 const col = i % 12;
                 
-                const rotation = (row + col) % 2 === 0 ? 45 : 135;
+                const rotation = (row + col) % 3 === 0 ? 135 : 45;
                 cell.classList.add(rotation === 45 ? 'rotate-45' : 'rotate-135');
                 
                 if (row === 4 && col === 5) {

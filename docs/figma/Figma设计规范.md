@@ -534,21 +534,12 @@ Grid Layout:
   - Total Cells: 120
   - Layout Type: Diagonal (斜向排列)
   - Cell Width: 30px
-  - Cell Height: 60px (长宽比 2:1)
+  - Cell Height: 15px
   - Cell Rotation: 45度 或 135度 (两种旋转方向)
-  - Grid Gap: 2px (单元格间距，凑紧摆放)
+  - Grid Gap: 0px (单元格间距，紧密排列)
   - Padding: 12px
   - Grid Columns: 12
   - Grid Rows: 10
-```
-
-#### 三张卡片组合布局
-```
-Card Group Layout (3张卡片组合):
-  - 组合方式: 1张卡片135度摆放 + 2张卡片45度摆放
-  - 组合尺寸: 长宽比 3:2 的长方形
-  - 摆放方式: 卡片紧密排列，无间隙
-  - 适用场景: 游戏中的卡片组合展示
 ```
 
 #### 斜向排列说明
@@ -566,11 +557,12 @@ Cell Rotation Layout:
 ```
 
 #### 单元格设计
+```
 Cell (长方形小单元):
   - Width: 30px
-  - Height: 60px (长宽比 2:1)
+  - Height: 15px
   - Rotation: 45度 或 135度 (两种旋转方向)
-  - Border Radius: 4px
+  - Border Radius: 2px
   - Background: #FFFFFF
   - Border: 1px solid #E8F5E9
   - Shadow: 0 1px 3px rgba(0,0,0,0.05)
@@ -583,7 +575,7 @@ Cell Rotation:
   - 45度旋转：形成右上-左下方向的菱形
   - 135度旋转：形成左上-右下方向的菱形
   - 两种旋转交替排列，形成四个方向的视觉效果
-  - 网格间距12px，避免旋转后重叠
+  - 网格间距2px，紧密排列避免旋转后重叠
   - 四个角分别对应四个方向：
     * 45度旋转：
       - 顶部角：左上方向
@@ -596,6 +588,18 @@ Cell Rotation:
       - 右侧角：右下方向
       - 底部角：左下方向
   - 便于菜狗和狼沿对角线方向移动
+```
+
+#### 卡片组合说明
+```
+Card Combination:
+  - 单张卡片尺寸：24px × 12px（长宽比2:1）
+  - 旋转角度：45度或135度
+  - 组合方式：3张卡片紧密排列
+    * 1张卡片：135度旋转
+    * 2张卡片：45度旋转
+  - 组合后整体：长宽比3:2的长方形
+  - 紧密排列：网格间距2px，确保卡片之间无多余空隙
 ```
 
 #### 单元格方向指示

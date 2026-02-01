@@ -519,9 +519,9 @@
                     "gridColumns": 12,
                     "gridRows": 10,
                     "cellWidth": 30,
-                    "cellHeight": 60,
+                    "cellHeight": 15,
                     "cellRotation": 45,
-                    "gridGap": 2,
+                    "gridGap": 0,
                     "directions": ["left_up", "left_down", "right_up", "right_down"],
                     "children": []
                   }
@@ -871,27 +871,19 @@
         "gridColumns": 12,
         "gridRows": 10,
         "cellWidth": 30,
-        "cellHeight": 60,
+        "cellHeight": 15,
         "cellRotation": 45,
-        "gridGap": 2,
+        "gridGap": 0,
         "padding": 12
       },
       "cell": {
         "width": 30,
-        "height": 60,
-        "aspectRatio": "2:1",
+        "height": 15,
         "rotation": [45, 135],
-        "borderRadius": 4,
+        "borderRadius": 2,
         "backgroundColor": "#FFFFFF",
         "border": "1px solid #E8F5E9",
         "shadow": "0 1px 3px rgba(0,0,0,0.05)"
-      },
-      "cardGroup": {
-        "name": "三张卡片组合",
-        "layout": "1张卡片135度摆放 + 2张卡片45度摆放",
-        "aspectRatio": "3:2",
-        "spacing": "紧密排列，无间隙",
-        "useCase": "游戏中的卡片组合展示"
       },
       "cellRotation": {
         "description": "每个单元格旋转45度或135度",
@@ -916,8 +908,8 @@
         "layout": "两种旋转交替排列，形成四个方向的视觉效果"
       },
       "gridSpacing": {
-        "description": "网格间距5px",
-        "purpose": "避免单元格旋转45度或135度后重叠"
+        "description": "网格间距0px",
+        "purpose": "紧密排列，卡片之间无空隙"
       },
       "directionIndicators": {
         "leftUp": {
