@@ -1,7 +1,7 @@
 const GameEngine = require('./utils/gameEngine');
 const { GameState } = require('./utils/constants');
 
-Page({
+tt.createPage({
   data: {
     levelId: 0,
     levelName: '',
