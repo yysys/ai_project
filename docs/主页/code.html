@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Zcool+KuaiLe&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FFD700",
+                        "farm-green": "#7BC86C",
+                        "farm-dark": "#4a8a40",
+                        "soil-brown": "#8D6E63",
+                        "wolf-grey": "#64748b",
+                        "btn-orange": "#FF8C00",
+                        "btn-orange-shadow": "#E65100",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"],
+                        "bubbly": ["'Zcool KuaiLe'", "cursive", "sans-serif"]
+                    },
+                    backgroundImage: {
+                        'cloud-pattern': "url(\"data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.4' fill-rule='evenodd'/%3E%3C/svg%3E\")",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+        }
+        .bg-farm {
+            background-color: #aed581;
+            background-image: 
+                radial-gradient(circle at 50% 120%, #c5e1a5 20%, transparent 60%),
+                linear-gradient(180deg, #dcedc8 0%, #aed581 100%);
+        }
+        .mascot-glow {
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.6));
+        }
+        .bubbly-text {
+            text-shadow: 
+                2px 2px 0px #ffffff,
+                -2px -2px 0px #ffffff,
+                2px -2px 0px #ffffff,
+                -2px 2px 0px #ffffff,
+                4px 4px 0px rgba(74, 138, 64, 0.2);
+        }
+        .btn-press {
+            transition: all 0.1s;
+        }
+        .btn-press:active {
+            transform: translateY(4px);
+            box-shadow: 0 0px 0 0 #E65100;}
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(2deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        .cloud-anim-1 {
+            animation: floatCloud 20s linear infinite;
+        }
+        .cloud-anim-2 {
+            animation: floatCloud 25s linear infinite reverse;
+        }
+        @keyframes floatCloud {
+            from { transform: translateX(-20px); }
+            to { transform: translateX(20px); }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display text-slate-800 overflow-hidden">
+<div class="relative flex h-screen w-full flex-col overflow-hidden select-none bg-farm">
+<div class="absolute inset-0 bg-cloud-pattern opacity-50 pointer-events-none"></div>
+<div class="absolute top-10 left-10 w-24 h-12 bg-white/40 rounded-full blur-xl cloud-anim-1"></div>
+<div class="absolute top-20 right-10 w-32 h-16 bg-white/30 rounded-full blur-xl cloud-anim-2"></div>
+<div class="absolute top-0 w-full z-50 pt-safe-top p-4 flex justify-end">
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm text-farm-dark shadow-md active:scale-95 transition-transform">
+<span class="material-symbols-outlined font-bold">settings</span>
+</button>
+</div>
+<main class="flex-1 relative w-full h-full flex flex-col items-center justify-center px-6 pb-12 z-10">
+<div class="mb-8 text-center relative z-20">
+<h1 class="font-bubbly text-6xl text-farm-dark tracking-wide bubbly-text transform -rotate-2">
+                    拯救菜狗
+                </h1>
+<div class="text-sm font-bold text-farm-dark/70 mt-2 bg-white/60 px-4 py-1 rounded-full inline-block backdrop-blur-sm shadow-sm">
+                    Save the Cabbage Dog
+                </div>
+</div>
+<div class="relative w-64 h-64 mb-10 flex items-center justify-center floating">
+<div class="absolute inset-0 bg-yellow-300/30 rounded-full blur-3xl transform scale-110"></div>
+<div class="relative w-full h-full mascot-glow transform hover:scale-105 transition-transform duration-300 cursor-pointer">
+<img alt="Cabbage Dog Mascot" class="w-full h-full object-contain drop-shadow-2xl" src="https://lh3.googleusercontent.com/aida-public/AB6AXuApwgydymAcHiZkKh1m7yRT8Ux1Athx7JWBLVxihj0GvKV9YGLaF_cjL-sNIkQzfCrkFQHfkVcxRYKtcJAeyJ0XuUiQ52EbkxxQKFUe1VqgijE18eZUWu8xuiccee7G2qmudVaCILYLA_reP36lOJoRpFG8Dj0GyAEZ4xI7EBR7FcNmiSck-l2nppKSOQ1Z0GzyHPSxkY1p2RCT0knSz1FXGmGLa7fpJbpRBZPleUWj5Cp2-5aZW3TxoSOe6yQ3mXvdBAmkBB5c5nc"/>
+<div class="absolute -top-4 -right-4 bg-white p-2 rounded-full shadow-lg transform rotate-12 animate-bounce">
+<span class="material-symbols-outlined text-yellow-500 text-2xl">pets</span>
+</div>
+</div>
+</div>
+<button class="w-full max-w-xs group relative btn-press mb-4">
+<div class="absolute inset-0 bg-btn-orange-shadow rounded-full translate-y-2 group-active:translate-y-0 transition-transform"></div>
+<div class="relative bg-btn-orange text-white text-2xl font-black py-4 px-8 rounded-full border-4 border-white shadow-xl flex items-center justify-center gap-3">
+<span class="material-symbols-outlined text-3xl">play_circle</span>
+<span class="font-bubbly tracking-widest">开始游戏</span>
+</div>
+</button>
+<div class="mt-8 text-farm-dark/60 text-xs font-semibold">
+                v1.2.0 • 每日挑战已就绪！
+            </div>
+</main>
+</div>
+
+</body></html>

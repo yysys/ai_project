@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FFD700",
+                        "farm-green": "#7BC86C",
+                        "farm-dark": "#4a8a40",
+                        "soil-brown": "#8D6E63",
+                        "wolf-grey": "#64748b",
+                        "win-orange": "#FF9800",
+                        "win-red": "#FF5722",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        :root {
+            --tile-base: 18px;}
+        body {
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+        }
+        .board-rotate-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: visible;
+            padding: 20px;
+            width: 100%;
+            height: 100%;
+        }
+        .parquet-grid {
+            display: grid;
+            grid-template-columns: repeat(14, var(--tile-base));
+            grid-template-rows: repeat(14, var(--tile-base));
+            gap: 0;
+            transform: rotate(45deg);
+            padding: 0;
+            margin: auto;background: transparent;
+            border: none;
+            box-shadow: none;
+        }
+        .tile {
+            position: relative;
+            background-color: #f1f8e9;
+            display: block;
+            overflow: hidden;border: 0.5px solid rgba(0,0,0,0.1); 
+            box-sizing: border-box;
+            padding: 0;
+            margin: 0;
+        }.tile-h {
+            grid-column: span 2;
+            width: 100%;
+            height: 100%;
+        }
+        .tile-v {
+            grid-row: span 2;
+            width: 100%;
+            height: 100%;
+        }
+        .tile-dog {
+            z-index: 50;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);border: 2px solid #FFD700;
+        }.unit-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;display: block;
+            transform-origin: center;
+            border-radius: 0;}.tile-v .unit-img {position: absolute;
+            width: calc(var(--tile-base) * 2);
+            height: var(--tile-base);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(90deg);
+            object-fit: cover; 
+            min-width: calc(var(--tile-base) * 2);
+            min-height: var(--tile-base);
+        }.tile-h .unit-img {
+            object-fit: cover;
+        }
+        .bg-grass {
+            background-color: #7cb342;
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1) 1px, transparent 1px),
+                linear-gradient(45deg, rgba(0,0,0,0.05) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.05) 75%, rgba(0,0,0,0.05));
+            background-size: 20px 20px, 40px 40px, 40px 40px;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }@keyframes confetti-fall {
+            0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #FFD700;
+            animation: confetti-fall 3s linear infinite;
+        }
+        .confetti:nth-child(2n) { background: #FF5722; animation-duration: 2.5s; animation-delay: 0.2s; }
+        .confetti:nth-child(3n) { background: #2196F3; animation-duration: 3.2s; animation-delay: 0.5s; }
+        .confetti:nth-child(4n) { background: #8BC34A; animation-duration: 2.8s; animation-delay: 0.1s; }
+        .confetti:nth-child(5n) { background: #E91E63; animation-duration: 3.5s; animation-delay: 0.3s; }
+    </style>
+<style>
+    body {
+      min-height: max(600px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-[#dcedc8] font-display text-slate-800 overflow-hidden">
+<div class="relative flex h-screen w-full flex-col overflow-hidden select-none bg-grass">
+<div class="absolute inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-center justify-center p-6">
+<div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
+<div class="confetti left-[10%] top-[-10%]"></div>
+<div class="confetti left-[20%] top-[-15%]"></div>
+<div class="confetti left-[30%] top-[-20%]"></div>
+<div class="confetti left-[40%] top-[-10%]"></div>
+<div class="confetti left-[50%] top-[-25%]"></div>
+<div class="confetti left-[60%] top-[-15%]"></div>
+<div class="confetti left-[70%] top-[-10%]"></div>
+<div class="confetti left-[80%] top-[-20%]"></div>
+<div class="confetti left-[90%] top-[-12%]"></div>
+</div>
+<div class="relative w-full max-w-[340px] bg-white rounded-[2.5rem] shadow-2xl overflow-visible animate-[bounce_0.6s_ease-out]">
+<div class="absolute -top-24 left-1/2 -translate-x-1/2 w-64 h-64 bg-yellow-300/30 rounded-full blur-3xl pointer-events-none"></div>
+<div class="relative -mt-16 flex flex-col items-center">
+<div class="w-40 h-40 relative z-10">
+<div class="w-full h-full bg-gradient-to-br from-green-100 to-green-50 rounded-full border-4 border-white shadow-xl flex items-center justify-center overflow-hidden">
+<img alt="Happy Cabbage Dog" class="w-32 h-32 object-contain animate-[pulse_1.5s_infinite]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuApwgydymAcHiZkKh1m7yRT8Ux1Athx7JWBLVxihj0GvKV9YGLaF_cjL-sNIkQzfCrkFQHfkVcxRYKtcJAeyJ0XuUiQ52EbkxxQKFUe1VqgijE18eZUWu8xuiccee7G2qmudVaCILYLA_reP36lOJoRpFG8Dj0GyAEZ4xI7EBR7FcNmiSck-l2nppKSOQ1Z0GzyHPSxkY1p2RCT0knSz1FXGmGLa7fpJbpRBZPleUWj5Cp2-5aZW3TxoSOe6yQ3mXvdBAmkBB5c5nc"/>
+</div>
+<div class="absolute -bottom-2 -right-2 w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center border-4 border-white shadow-lg animate-bounce" style="animation-delay: 0.2s">
+<span class="material-symbols-outlined text-white font-bold">celebration</span>
+</div>
+</div>
+<h2 class="mt-4 text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500 tracking-tight drop-shadow-sm">
+                        过关成功!
+                    </h2>
+<div class="flex items-center gap-2 mt-4">
+<span class="material-symbols-outlined text-4xl text-yellow-400 drop-shadow-md fill-current" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-5xl text-yellow-400 drop-shadow-lg fill-current -mt-2" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-4xl text-yellow-400 drop-shadow-md fill-current" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+<div class="px-8 pb-8 pt-4 flex flex-col items-center">
+<div class="w-full bg-orange-50 rounded-2xl p-4 mb-6 border border-orange-100 flex items-center justify-center gap-6">
+<div class="flex flex-col items-center gap-1">
+<div class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-xl">💰</div>
+<span class="text-sm font-bold text-orange-800">+150</span>
+</div>
+<div class="w-px h-8 bg-orange-200"></div>
+<div class="flex flex-col items-center gap-1">
+<div class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center text-xl">🦴</div>
+<span class="text-sm font-bold text-orange-800">x 2</span>
+</div>
+</div>
+<div class="flex w-full gap-3">
+<button class="flex-1 py-3.5 px-4 rounded-xl bg-slate-100 text-slate-600 font-bold border-b-4 border-slate-200 active:border-b-0 active:translate-y-1 transition-all text-sm">
+                            返回首页
+                        </button>
+<button class="flex-[1.5] py-3.5 px-4 rounded-xl bg-gradient-to-b from-green-400 to-green-500 text-white font-bold border-b-4 border-green-600 shadow-lg shadow-green-200 active:border-b-0 active:translate-y-1 transition-all text-sm flex items-center justify-center gap-1">
+                            下一关
+                            <span class="material-symbols-outlined text-lg">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<header class="flex flex-col w-full z-50 pt-safe-top bg-gradient-to-b from-[#558b2f]/90 to-transparent pb-4 flex-shrink-0 blur-[2px]">
+<div class="flex items-center justify-between px-4 pt-4 pb-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-xl bg-white text-farm-dark shadow-lg border-2 border-farm-green/30 active:scale-95 transition-transform">
+<span class="material-symbols-outlined font-bold">arrow_back</span>
+</button>
+<div class="flex flex-col items-center">
+<h1 class="text-2xl font-black text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.3)] tracking-tight uppercase">第 100 关</h1>
+<div class="flex items-center gap-1 text-[#dcedc8] text-xs font-bold uppercase tracking-wider drop-shadow-sm">
+<span class="material-symbols-outlined text-[14px]">pets</span>
+                    100% 探索度
+                </div>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-xl bg-white text-farm-dark shadow-lg border-2 border-farm-green/30 active:scale-95 transition-transform">
+<span class="material-symbols-outlined font-bold">settings</span>
+</button>
+</div>
+</header>
+<main class="flex-1 relative w-full h-full overflow-hidden flex items-center justify-center px-4 blur-[2px]">
+<div class="w-full h-full flex items-center justify-center">
+<div class="board-rotate-wrapper">
+<div class="parquet-grid drop-shadow-2xl">
+<div class="tile tile-h tile-wolf" style="grid-column:1/3; grid-row:1;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:3/5; grid-row:1;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:5/7; grid-row:1;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:7/9; grid-row:1;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:9/11; grid-row:1;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:11/13; grid-row:1;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:13/15; grid-row:1;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:1; grid-row:2/4;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:2/4; grid-row:2;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:4; grid-row:2/4;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:5/7; grid-row:2;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDlmdsHKx6h9Es76fPbzQZNWCe8CQPM6goNz9I7GkvrevZksyLM4JqPv4acvXkeThWgQ4YmFFYs8XbBLKjCbXZEQkfssLAAA82utzgE8lSp1F2acnp4QgiqqVuKQgp8Q_2aFVfPD0Wof3u3NAt2hhhRnpGN7fZx3zfn_ZT5XA9M_lcw75ZCBmhjEEWxjgT6mFQo0ePmgh_JrcnZA4Nub1JLHEr88oAMxBbrVLJWpzq-m85ADiJddD9lBYESXHgtFRmepYGpUawb2Q"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:7; grid-row:2/4;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:8/10; grid-row:2;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:10; grid-row:2/4;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:11/13; grid-row:2;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:13; grid-row:2/4;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:14; grid-row:2/4;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:2/4; grid-row:3;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:5/7; grid-row:3;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:8/10; grid-row:3;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9UOrxHQfebxKtLEgmofz1P6hNiGqfBhEspsETq558HfBiLt7mfy31R6TLgw6ajOmWJyJo1TLRWUO_Fu__qHfsF4PIrH1AUrwgL8qy85N5G_LkVxVSB5qIu48nPRHLud7u36WnMtgDJxX5l4O0Wvwh_LvL_QlG2oz6m-VXdj_nHOWmJT2YxQ63lee7S0_Cr3PIVHrtCqBLiNa3YaacLOdxG_LYX9-6LskIghFTDDFOyza-tcXVDMnq9-0zGEnyPAF8rwLUiJ8mlXY"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:11/13; grid-row:3;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:1/3; grid-row:4;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:3; grid-row:4/6;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:4/6; grid-row:4;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:6; grid-row:4/6;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:7/9; grid-row:4;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:9; grid-row:4/6;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:10/12; grid-row:4;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:12; grid-row:4/6;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:13/15; grid-row:4;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:1/3; grid-row:5;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDlmdsHKx6h9Es76fPbzQZNWCe8CQPM6goNz9I7GkvrevZksyLM4JqPv4acvXkeThWgQ4YmFFYs8XbBLKjCbXZEQkfssLAAA82utzgE8lSp1F2acnp4QgiqqVuKQgp8Q_2aFVfPD0Wof3u3NAt2hhhRnpGN7fZx3zfn_ZT5XA9M_lcw75ZCBmhjEEWxjgT6mFQo0ePmgh_JrcnZA4Nub1JLHEr88oAMxBbrVLJWpzq-m85ADiJddD9lBYESXHgtFRmepYGpUawb2Q"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:4/6; grid-row:5;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:7/9; grid-row:5;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:10/12; grid-row:5;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:13/15; grid-row:5;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:1; grid-row:6/8;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:2/4; grid-row:6;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:4; grid-row:6/8;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:5/7; grid-row:6;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:7; grid-row:6/8;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9UOrxHQfebxKtLEgmofz1P6hNiGqfBhEspsETq558HfBiLt7mfy31R6TLgw6ajOmWJyJo1TLRWUO_Fu__qHfsF4PIrH1AUrwgL8qy85N5G_LkVxVSB5qIu48nPRHLud7u36WnMtgDJxX5l4O0Wvwh_LvL_QlG2oz6m-VXdj_nHOWmJT2YxQ63lee7S0_Cr3PIVHrtCqBLiNa3YaacLOdxG_LYX9-6LskIghFTDDFOyza-tcXVDMnq9-0zGEnyPAF8rwLUiJ8mlXY"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:8/10; grid-row:6;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:10; grid-row:6/8;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:11/13; grid-row:6;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:13; grid-row:6/8;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:14; grid-row:6/8;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:2/4; grid-row:7;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:5/7; grid-row:7;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-dog" style="grid-column:8/10; grid-row:7;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuApwgydymAcHiZkKh1m7yRT8Ux1Athx7JWBLVxihj0GvKV9YGLaF_cjL-sNIkQzfCrkFQHfkVcxRYKtcJAeyJ0XuUiQ52EbkxxQKFUe1VqgijE18eZUWu8xuiccee7G2qmudVaCILYLA_reP36lOJoRpFG8Dj0GyAEZ4xI7EBR7FcNmiSck-l2nppKSOQ1Z0GzyHPSxkY1p2RCT0knSz1FXGmGLa7fpJbpRBZPleUWj5Cp2-5aZW3TxoSOe6yQ3mXvdBAmkBB5c5nc"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:11/13; grid-row:7;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:1/3; grid-row:8;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:3; grid-row:8/10;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:4/6; grid-row:8;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDlmdsHKx6h9Es76fPbzQZNWCe8CQPM6goNz9I7GkvrevZksyLM4JqPv4acvXkeThWgQ4YmFFYs8XbBLKjCbXZEQkfssLAAA82utzgE8lSp1F2acnp4QgiqqVuKQgp8Q_2aFVfPD0Wof3u3NAt2hhhRnpGN7fZx3zfn_ZT5XA9M_lcw75ZCBmhjEEWxjgT6mFQo0ePmgh_JrcnZA4Nub1JLHEr88oAMxBbrVLJWpzq-m85ADiJddD9lBYESXHgtFRmepYGpUawb2Q"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:6; grid-row:8/10;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:7/9; grid-row:8;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:9; grid-row:8/10;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:10/12; grid-row:8;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:12; grid-row:8/10;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:13/15; grid-row:8;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:1/3; grid-row:9;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:4/6; grid-row:9;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:7/9; grid-row:9;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9UOrxHQfebxKtLEgmofz1P6hNiGqfBhEspsETq558HfBiLt7mfy31R6TLgw6ajOmWJyJo1TLRWUO_Fu__qHfsF4PIrH1AUrwgL8qy85N5G_LkVxVSB5qIu48nPRHLud7u36WnMtgDJxX5l4O0Wvwh_LvL_QlG2oz6m-VXdj_nHOWmJT2YxQ63lee7S0_Cr3PIVHrtCqBLiNa3YaacLOdxG_LYX9-6LskIghFTDDFOyza-tcXVDMnq9-0zGEnyPAF8rwLUiJ8mlXY"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:10/12; grid-row:9;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:13/15; grid-row:9;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:1; grid-row:10/12;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:2/4; grid-row:10;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:4; grid-row:10/12;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:5/7; grid-row:10;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:7; grid-row:10/12;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:8/10; grid-row:10;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:10; grid-row:10/12;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:11/13; grid-row:10;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:13; grid-row:10/12;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:14; grid-row:10/12;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:2/4; grid-row:11;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:5/7; grid-row:11;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:8/10; grid-row:11;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:11/13; grid-row:11;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:1/3; grid-row:12;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:3; grid-row:12/14;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:4/6; grid-row:12;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDlmdsHKx6h9Es76fPbzQZNWCe8CQPM6goNz9I7GkvrevZksyLM4JqPv4acvXkeThWgQ4YmFFYs8XbBLKjCbXZEQkfssLAAA82utzgE8lSp1F2acnp4QgiqqVuKQgp8Q_2aFVfPD0Wof3u3NAt2hhhRnpGN7fZx3zfn_ZT5XA9M_lcw75ZCBmhjEEWxjgT6mFQo0ePmgh_JrcnZA4Nub1JLHEr88oAMxBbrVLJWpzq-m85ADiJddD9lBYESXHgtFRmepYGpUawb2Q"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:6; grid-row:12/14;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:7/9; grid-row:12;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:9; grid-row:12/14;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:10/12; grid-row:12;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-v tile-wolf" style="grid-column:12; grid-row:12/14;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:13/15; grid-row:12;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:1/3; grid-row:13;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:4/6; grid-row:13;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:7/9; grid-row:13;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9UOrxHQfebxKtLEgmofz1P6hNiGqfBhEspsETq558HfBiLt7mfy31R6TLgw6ajOmWJyJo1TLRWUO_Fu__qHfsF4PIrH1AUrwgL8qy85N5G_LkVxVSB5qIu48nPRHLud7u36WnMtgDJxX5l4O0Wvwh_LvL_QlG2oz6m-VXdj_nHOWmJT2YxQ63lee7S0_Cr3PIVHrtCqBLiNa3YaacLOdxG_LYX9-6LskIghFTDDFOyza-tcXVDMnq9-0zGEnyPAF8rwLUiJ8mlXY"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:10/12; grid-row:13;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:13/15; grid-row:13;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:1/3; grid-row:14;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:3/5; grid-row:14;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:5/7; grid-row:14;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:7/9; grid-row:14;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:9/11; grid-row:14;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:11/13; grid-row:14;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+<div class="tile tile-h tile-wolf" style="grid-column:13/15; grid-row:14;"><img class="unit-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o"/></div>
+</div>
+</div>
+</div>
+</main>
+<footer class="p-6 z-50 bg-white/95 backdrop-blur-xl border-t border-white/40 shadow-[0_-10px_40px_rgba(0,0,0,0.08)] rounded-t-[2.5rem] flex-shrink-0 blur-[2px]">
+<div class="flex items-end justify-center gap-6 max-w-lg mx-auto">
+<button class="flex-1 group flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform">
+<div class="w-16 h-16 rounded-2xl bg-[#eff6ff] border-2 border-[#bfdbfe] flex items-center justify-center shadow-sm group-active:bg-blue-100 transition-colors">
+<span class="material-symbols-outlined text-[#3b82f6] text-3xl">undo</span>
+</div>
+<span class="text-xs font-bold text-slate-500 uppercase tracking-wider">撤回</span>
+</button>
+<button class="flex-1 group -mt-8 flex flex-col items-center justify-center gap-1 active:translate-y-1 transition-transform">
+<div class="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-orange-400 border-4 border-white shadow-[0_8px_20px_rgba(255,193,7,0.4)] flex items-center justify-center relative overflow-hidden">
+<span class="material-symbols-outlined text-white text-4xl drop-shadow-md">lightbulb</span>
+</div>
+<span class="text-xs font-black text-orange-500 uppercase tracking-wider">提示</span>
+</button>
+<button class="flex-1 group flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform">
+<div class="w-16 h-16 rounded-2xl bg-[#eff6ff] border-2 border-[#bfdbfe] flex items-center justify-center shadow-sm group-active:bg-blue-100 transition-colors">
+<span class="material-symbols-outlined text-[#3b82f6] text-3xl">refresh</span>
+</div>
+<span class="text-xs font-bold text-slate-500 uppercase tracking-wider">重置</span>
+</button>
+</div>
+</footer>
+</div>
+</body></html>
