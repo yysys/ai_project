@@ -2,5 +2,21 @@
   "deviceOrientation": "portrait",
   "showStatusBar": false,
   "networkTimeout": 60000,
-  "subpackages": []
+  "subpackages": [],
+  "pages": [
+    "pages/index/index",
+    "pages/level/level",
+    "pages/game/game",
+    "pages/result/result"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#56ab2f",
+    "navigationBarTitleText": "拯救菜狗",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f5f5f5"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
 }
