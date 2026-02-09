@@ -1,0 +1,6 @@
+{
+  "deviceOrientation": "portrait",
+  "showStatusBar": false,
+  "networkTimeout": 60000,
+  "subpackages": []
+}

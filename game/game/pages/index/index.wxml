@@ -1,0 +1,22 @@
+<view class="container">
+  <view class="top-bar">
+    <view class="placeholder"></view>
+    <text class="title">拯救菜狗</text>
+    <view class="icon-btn" bindtap="openSettings">
+      <text>⚙️</text>
+    </view>
+  </view>
+
+  <view class="content">
+    <view class="mascot float-animation">
+      <text class="mascot-emoji">🐕</text>
+    </view>
+    <text class="slogan">点击菜狗，让它跑出屏幕！</text>
+  </view>
+
+  <view class="bottom-bar">
+    <view class="btn-primary" bindtap="startGame">
+      <text>开始游戏</text>
+    </view>
+  </view>
+</view>
