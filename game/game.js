@@ -1,8 +1,6 @@
 const GameEngine = require('./utils/gameEngine');
 const { GameState } = require('./utils/constants');
 
-const app = getApp();
-
 Page({
   data: {
     levelId: 0,
