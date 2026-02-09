@@ -19,5 +19,5 @@
   "style": "v2",
   "sitemapLocation": "sitemap.json",
   "lazyCodeLoading": "requiredComponents",
-  "main": "game.js"
+  "main": "main.js"
 }
