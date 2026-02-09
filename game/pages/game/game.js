@@ -125,7 +125,7 @@ Page({
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
     }
-
+    
     this.timerInterval = setInterval(() => {
       if (!this.data.isPaused && this.data.gameActive) {
         const elapsedTime = this.gameEngine.gameStateManager.getElapsedTime();
@@ -146,7 +146,9 @@ Page({
   },
 
   handleCanvasTouch(e) {
-    if (!this.data.gameActive || this.data.isPaused) return;
+    if (!this.data.gameActive || this.data.isPaused) {
+      return;
+    }
 
     const touch = e.touches[0];
     const rect = e.currentTarget.getBoundingClientRect();
@@ -189,21 +191,27 @@ Page({
   },
 
   pauseGame() {
-    if (!this.data.gameActive || this.data.isPaused) return;
+    if (!this.data.gameActive || this.data.isPaused) {
+      return;
+    }
     
     this.gameEngine.pause();
     this.setData({ isPaused: true });
   },
 
   resumeGame() {
-    if (!this.data.gameActive || !this.data.isPaused) return;
+    if (!this.data.gameActive || !this.data.isPaused) {
+      return;
+    }
     
     this.gameEngine.resume();
     this.setData({ isPaused: false });
   },
 
   resetGame() {
-    if (!this.data.gameActive) return;
+    if (!this.data.gameActive) {
+      return;
+    }
     
     this.gameEngine.reset();
     this.startLevel();
