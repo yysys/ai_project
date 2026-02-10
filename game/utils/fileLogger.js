@@ -67,32 +67,44 @@ class FileLogger {
   }
 
   log(message) {
-    const timestamp = new Date().toISOString();
-    const logEntry = `[${timestamp}] ${message}`;
-    console.log(logEntry);
-    this.logBuffer.push(logEntry);
-    if (this.logBuffer.length >= 10) {
-      this.flushLogBuffer();
+    try {
+      const timestamp = new Date().toISOString();
+      const logEntry = `[${timestamp}] ${message}`;
+      console.log(logEntry);
+      this.logBuffer.push(logEntry);
+      if (this.logBuffer.length >= 10) {
+        this.flushLogBuffer();
+      }
+    } catch (e) {
+      console.error('fileLogger.log 出错:', e);
     }
   }
 
   error(message) {
-    const timestamp = new Date().toISOString();
-    const logEntry = `[${timestamp}] [ERROR] ${message}`;
-    console.error(logEntry);
-    this.logBuffer.push(logEntry);
-    if (this.logBuffer.length >= 10) {
-      this.flushLogBuffer();
+    try {
+      const timestamp = new Date().toISOString();
+      const logEntry = `[${timestamp}] [ERROR] ${message}`;
+      console.error(logEntry);
+      this.logBuffer.push(logEntry);
+      if (this.logBuffer.length >= 10) {
+        this.flushLogBuffer();
+      }
+    } catch (e) {
+      console.error('fileLogger.error 出错:', e);
     }
   }
 
   warn(message) {
-    const timestamp = new Date().toISOString();
-    const logEntry = `[${timestamp}] [WARN] ${message}`;
-    console.warn(logEntry);
-    this.logBuffer.push(logEntry);
-    if (this.logBuffer.length >= 10) {
-      this.flushLogBuffer();
+    try {
+      const timestamp = new Date().toISOString();
+      const logEntry = `[${timestamp}] [WARN] ${message}`;
+      console.warn(logEntry);
+      this.logBuffer.push(logEntry);
+      if (this.logBuffer.length >= 10) {
+        this.flushLogBuffer();
+      }
+    } catch (e) {
+      console.error('fileLogger.warn 出错:', e);
     }
   }
 
@@ -193,8 +205,14 @@ class FileLogger {
 
 const fileLogger = new FileLogger();
 
-window.addEventListener('hide', () => {
-  fileLogger.flushLogBuffer();
-});
+if (typeof window !== 'undefined' && window.addEventListener) {
+  window.addEventListener('hide', () => {
+    fileLogger.flushLogBuffer();
+  });
+} else if (typeof tt !== 'undefined' && tt.onHide) {
+  tt.onHide(() => {
+    fileLogger.flushLogBuffer();
+  });
+}
 
 module.exports = fileLogger;

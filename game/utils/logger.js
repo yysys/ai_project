@@ -40,35 +40,47 @@ class DebugLogger {
   }
 
   log(message) {
-    const timestamp = new Date().toISOString();
-    const logEntry = `[${timestamp}] ${message}`;
-    this.logs.push(logEntry);
-    console.log(logEntry);
-    this.logBuffer.push(logEntry);
-    if (this.logBuffer.length >= 10) {
-      this.flushLogBuffer();
+    try {
+      const timestamp = new Date().toISOString();
+      const logEntry = `[${timestamp}] ${message}`;
+      this.logs.push(logEntry);
+      console.log(logEntry);
+      this.logBuffer.push(logEntry);
+      if (this.logBuffer.length >= 10) {
+        this.flushLogBuffer();
+      }
+    } catch (e) {
+      console.error('logger.log 出错:', e);
     }
   }
 
   error(message) {
-    const timestamp = new Date().toISOString();
-    const logEntry = `[${timestamp}] [ERROR] ${message}`;
-    this.logs.push(logEntry);
-    console.error(logEntry);
-    this.logBuffer.push(logEntry);
-    if (this.logBuffer.length >= 10) {
-      this.flushLogBuffer();
+    try {
+      const timestamp = new Date().toISOString();
+      const logEntry = `[${timestamp}] [ERROR] ${message}`;
+      this.logs.push(logEntry);
+      console.error(logEntry);
+      this.logBuffer.push(logEntry);
+      if (this.logBuffer.length >= 10) {
+        this.flushLogBuffer();
+      }
+    } catch (e) {
+      console.error('logger.error 出错:', e);
     }
   }
 
   warn(message) {
-    const timestamp = new Date().toISOString();
-    const logEntry = `[${timestamp}] [WARN] ${message}`;
-    this.logs.push(logEntry);
-    console.warn(logEntry);
-    this.logBuffer.push(logEntry);
-    if (this.logBuffer.length >= 10) {
-      this.flushLogBuffer();
+    try {
+      const timestamp = new Date().toISOString();
+      const logEntry = `[${timestamp}] [WARN] ${message}`;
+      this.logs.push(logEntry);
+      console.warn(logEntry);
+      this.logBuffer.push(logEntry);
+      if (this.logBuffer.length >= 10) {
+        this.flushLogBuffer();
+      }
+    } catch (e) {
+      console.error('logger.warn 出错:', e);
     }
   }
 
@@ -153,8 +165,14 @@ class DebugLogger {
 
 const logger = new DebugLogger();
 
-window.addEventListener('hide', () => {
-  logger.flushLogBuffer();
-});
+if (typeof window !== 'undefined' && window.addEventListener) {
+  window.addEventListener('hide', () => {
+    logger.flushLogBuffer();
+  });
+} else if (typeof tt !== 'undefined' && tt.onHide) {
+  tt.onHide(() => {
+    logger.flushLogBuffer();
+  });
+}
 
 module.exports = logger;
