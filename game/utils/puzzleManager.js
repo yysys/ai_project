@@ -1,7 +1,13 @@
 const { TileType, UnitType, UnitState, GameState, Direction, DIRECTION_VECTORS, generateId } = require('./constants');
 
 const logger = require('./logger');
-const fileLogger = require('./fileLogger');
+let fileLogger = null;
+try {
+  fileLogger = require('./fileLogger');
+  console.log('fileLogger 加载成功');
+} catch (e) {
+  console.error('fileLogger 加载失败，将只使用控制台日志:', e);
+}
 
 class Tile {
   constructor(config) {
@@ -358,30 +364,34 @@ class PuzzleManager {
   slideTile(tile) {
     if (!this.slideTileLogShown) {
       logger.log('=== slideTile 方法被调用 ===');
-      fileLogger.log('=== slideTile 方法被调用 ===');
+      if (fileLogger) fileLogger.log('=== slideTile 方法被调用 ===');
       this.slideTileLogShown = true;
     }
     
-    fileLogger.log('=== slideTile 开始 ===');
-    fileLogger.log('格子 ID:', tile.id);
-    fileLogger.log('格子类型:', tile.unitType);
-    fileLogger.log('格子状态:', tile.state);
+    if (fileLogger) {
+      fileLogger.log('=== slideTile 开始 ===');
+      fileLogger.log('格子 ID:', tile.id);
+      fileLogger.log('格子类型:', tile.unitType);
+      fileLogger.log('格子状态:', tile.state);
+    }
     
     if (tile.state !== UnitState.IDLE) {
       logger.log('格子不是 IDLE 状态:', tile.state);
-      fileLogger.log('格子不是 IDLE 状态:', tile.state);
+      if (fileLogger) fileLogger.log('格子不是 IDLE 状态:', tile.state);
       return { moved: false, reason: 'tile_not_idle' };
     }
 
     const direction = tile.direction;
     const vector = DIRECTION_VECTORS[direction];
     
-    fileLogger.log('格子方向:', direction);
-    fileLogger.log('方向向量:', JSON.stringify(vector));
+    if (fileLogger) {
+      fileLogger.log('格子方向:', direction);
+      fileLogger.log('方向向量:', JSON.stringify(vector));
+    }
     
     if (!vector) {
       logger.log('无效的方向:', direction);
-      fileLogger.log('无效的方向:', direction);
+      if (fileLogger) fileLogger.log('无效的方向:', direction);
       return { moved: false, reason: 'invalid_direction' };
     }
 
@@ -394,9 +404,11 @@ class PuzzleManager {
     logger.log('格子大小:', tile.gridColSpan, 'x', tile.gridRowSpan);
     logger.log('格子占据区域: [', tile.gridCol, ',', tile.gridRow, '] 到 [', tile.gridCol + tile.gridColSpan - 1, ',', tile.gridRow + tile.gridRowSpan - 1, ']');
     
-    fileLogger.log('初始位置:', tile.gridCol, tile.gridRow);
-    fileLogger.log('格子大小:', tile.gridColSpan, 'x', tile.gridRowSpan);
-    fileLogger.log('格子占据区域: [', tile.gridCol, ',', tile.gridRow, '] 到 [', tile.gridCol + tile.gridColSpan - 1, ',', tile.gridRow + tile.gridRowSpan - 1, ']');
+    if (fileLogger) {
+      fileLogger.log('初始位置:', tile.gridCol, tile.gridRow);
+      fileLogger.log('格子大小:', tile.gridColSpan, 'x', tile.gridRowSpan);
+      fileLogger.log('格子占据区域: [', tile.gridCol, ',', tile.gridRow, '] 到 [', tile.gridCol + tile.gridColSpan - 1, ',', tile.gridRow + tile.gridRowSpan - 1, ']');
+    }
 
     let newCol = tile.gridCol;
     let newRow = tile.gridRow;
@@ -411,43 +423,43 @@ class PuzzleManager {
 
       const stepLog = `步骤 ${stepCount}: 当前位置 (${newCol}, ${newRow}) -> 尝试移动到 (${nextCol}, ${nextRow})`;
       console.log(stepLog);
-      fileLogger.log(stepLog);
+      if (fileLogger) fileLogger.log(stepLog);
       
       const spanLog = `格子 span: ${tile.gridColSpan}x${tile.gridRowSpan}, 方向: ${direction}`;
       console.log(spanLog);
-      fileLogger.log(spanLog);
+      if (fileLogger) fileLogger.log(spanLog);
 
       const nextRight = nextCol + tile.gridColSpan - 1;
       const nextBottom = nextRow + tile.gridRowSpan - 1;
       
       const areaLog = `格子将占据区域: [${nextCol}, ${nextRow}] 到 [${nextRight}, ${nextBottom}]`;
       console.log(areaLog);
-      fileLogger.log(areaLog);
-
-      if (nextCol < 1 || nextRight > this.gridSize || 
-          nextRow < 1 || nextBottom > this.gridSize) {
-        const boundaryLog = `⚠️ 超出边界！gridSize=${this.gridSize}, 区域=[${nextCol},${nextRow}]-[${nextRight},${nextBottom}]`;
-        console.log(boundaryLog);
-        fileLogger.log(boundaryLog);
-        const disappearLog = `超出边界！格子将消失，最终位置: (${newCol}, ${newRow})`;
-        console.log(disappearLog);
-        fileLogger.log(disappearLog);
-        disappeared = true;
-        moved = true;
-        break;
-      }
+      if (fileLogger) fileLogger.log(areaLog);
 
       const hasCollision = this.checkCollision(tile, nextCol, nextRow);
       if (hasCollision) {
         const collisionLog = `碰到障碍！停止在当前位置 (${newCol}, ${newRow})`;
         console.log(collisionLog);
-        fileLogger.log(collisionLog);
+        if (fileLogger) fileLogger.log(collisionLog);
         moved = true;
         break;
       }
 
       newCol = nextCol;
       newRow = nextRow;
+
+      if (nextCol < 1 || nextRight > this.gridSize || 
+          nextRow < 1 || nextBottom > this.gridSize) {
+        const boundaryLog = `⚠️ 超出边界！gridSize=${this.gridSize}, 区域=[${nextCol},${nextRow}]-[${nextRight},${nextBottom}]`;
+        console.log(boundaryLog);
+        if (fileLogger) fileLogger.log(boundaryLog);
+        const disappearLog = `超出边界！格子将消失，最终位置: (${newCol}, ${newRow})`;
+        console.log(disappearLog);
+        if (fileLogger) fileLogger.log(disappearLog);
+        disappeared = true;
+        moved = true;
+        break;
+      }
     }
 
     if (moved) {
@@ -458,22 +470,22 @@ class PuzzleManager {
         tile.state = UnitState.DISAPPEARED;
         const disappearMsg = '格子消失！最终位置: (' + newCol + ', ' + newRow + ')';
         console.log(disappearMsg);
-        fileLogger.log(disappearMsg);
+        if (fileLogger) fileLogger.log(disappearMsg);
       } else {
         tile.state = UnitState.IDLE;
         const stopMsg = '格子停止！最终位置: (' + newCol + ', ' + newRow + ')';
         console.log(stopMsg);
-        fileLogger.log(stopMsg);
+        if (fileLogger) fileLogger.log(stopMsg);
       }
     } else {
       const noMoveMsg = '格子没有移动！';
       console.log(noMoveMsg);
-      fileLogger.log(noMoveMsg);
+      if (fileLogger) fileLogger.log(noMoveMsg);
     }
 
     const endMsg = '=== slideTile 结束 === 返回: moved=' + moved + ', disappeared=' + disappeared;
     console.log('=== slideTile 结束 ===');
-    fileLogger.log(endMsg);
+    if (fileLogger) fileLogger.log(endMsg);
 
     return { moved, disappeared, tile };
   }

@@ -89,8 +89,8 @@ class FileLogger {
       const fullMessage = message + '\n';
       if (typeof this.fs.appendFileSync === 'function') {
         this.fs.appendFileSync(this.currentLogFile, fullMessage);
-      } else if (typeof this.fs.writeFile === 'function') {
-        this.fs.writeFile({
+      } else if (typeof this.fs.appendFile === 'function') {
+        this.fs.appendFile({
           filePath: this.currentLogFile,
           data: fullMessage,
           encoding: 'utf8'
