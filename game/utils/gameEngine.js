@@ -170,18 +170,26 @@ class GameEngine {
     const localX = rotatedX + centerX;
     const localY = rotatedY + centerY;
 
+    console.log('[getTileAtPosition] 总格子数:', tiles.length);
+    console.log('[getTileAtPosition] 点击坐标:', screenX, screenY);
+    console.log('[getTileAtPosition] 局部坐标:', localX, localY);
+
     for (const tile of tiles) {
       const tileX = offsetX + (tile.gridCol - 1) * tileSize;
       const tileY = offsetY + (tile.gridRow - 1) * tileSize;
       const tileWidth = tile.gridColSpan * tileSize;
       const tileHeight = tile.gridRowSpan * tileSize;
 
+      console.log('[getTileAtPosition] 检查格子:', tile.id, '位置:', tile.gridCol, tile.gridRow, '范围:', tileX, tileY, tileX + tileWidth, tileY + tileHeight);
+
       if (localX >= tileX && localX < tileX + tileWidth &&
           localY >= tileY && localY < tileY + tileHeight) {
+        console.log('[getTileAtPosition] 找到格子!', tile);
         return tile;
       }
     }
 
+    console.log('[getTileAtPosition] 未找到格子');
     return null;
   }
 
