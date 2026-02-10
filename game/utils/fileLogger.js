@@ -1,9 +1,10 @@
 class FileLogger {
   constructor() {
     this.fs = null;
-    this.debugDir = './debug';
+    this.debugDir = 'ttfile://user/debug';
     this.currentLogFile = null;
     this.logBuffer = [];
+    this.isTt = false;
     this.init();
   }
 
@@ -11,6 +12,7 @@ class FileLogger {
     try {
       if (typeof tt !== 'undefined' && tt.getFileSystemManager) {
         this.fs = tt.getFileSystemManager();
+        this.isTt = true;
         console.log('抖音小游戏文件系统初始化成功');
       } else if (typeof wx !== 'undefined' && wx.getFileSystemManager) {
         this.fs = wx.getFileSystemManager();
@@ -40,7 +42,6 @@ class FileLogger {
       this.currentLogFile = `${this.debugDir}/debug_${timestamp}.log`;
       this.log('=== 日志系统初始化 ===');
       this.log('日志文件:', this.currentLogFile);
-      this.flushLogBuffer();
     } catch (e) {
       console.error('FileLogger 初始化失败:', e);
     }
@@ -48,7 +49,13 @@ class FileLogger {
 
   ensureDebugDir() {
     try {
-      if (typeof this.fs.existsSync === 'function' && !this.fs.existsSync(this.debugDir)) {
+      if (this.isTt) {
+        this.fs.mkdir({
+          dirPath: this.debugDir,
+          success: () => console.log('Debug 目录已创建:', this.debugDir),
+          fail: (err) => console.error('创建 debug 目录失败:', err)
+        });
+      } else if (typeof this.fs.existsSync === 'function' && !this.fs.existsSync(this.debugDir)) {
         if (typeof this.fs.mkdirSync === 'function') {
           this.fs.mkdirSync(this.debugDir);
           console.log('Debug 目录已创建:', this.debugDir);
@@ -64,7 +71,9 @@ class FileLogger {
     const logEntry = `[${timestamp}] ${message}`;
     console.log(logEntry);
     this.logBuffer.push(logEntry);
-    this.appendToFile(logEntry);
+    if (this.logBuffer.length >= 10) {
+      this.flushLogBuffer();
+    }
   }
 
   error(message) {
@@ -72,7 +81,9 @@ class FileLogger {
     const logEntry = `[${timestamp}] [ERROR] ${message}`;
     console.error(logEntry);
     this.logBuffer.push(logEntry);
-    this.appendToFile(logEntry);
+    if (this.logBuffer.length >= 10) {
+      this.flushLogBuffer();
+    }
   }
 
   warn(message) {
@@ -80,41 +91,40 @@ class FileLogger {
     const logEntry = `[${timestamp}] [WARN] ${message}`;
     console.warn(logEntry);
     this.logBuffer.push(logEntry);
-    this.appendToFile(logEntry);
-  }
-
-  appendToFile(message) {
-    if (!this.currentLogFile || !this.fs) return;
-    try {
-      const fullMessage = message + '\n';
-      if (typeof this.fs.appendFileSync === 'function') {
-        this.fs.appendFileSync(this.currentLogFile, fullMessage);
-      } else if (typeof this.fs.appendFile === 'function') {
-        this.fs.appendFile({
-          filePath: this.currentLogFile,
-          data: fullMessage,
-          encoding: 'utf8'
-        });
-      }
-    } catch (e) {
-      console.error('写入日志文件失败:', e);
+    if (this.logBuffer.length >= 10) {
+      this.flushLogBuffer();
     }
   }
 
   flushLogBuffer() {
     if (this.logBuffer.length === 0 || !this.fs) return;
     try {
-      const content = this.logBuffer.join('\n');
-      if (typeof this.fs.writeFileSync === 'function') {
+      const content = this.logBuffer.join('\n') + '\n';
+      
+      if (this.isTt) {
+        this.fs.writeFile({
+          filePath: this.currentLogFile,
+          data: content,
+          encoding: 'utf8',
+          success: () => {
+            console.log('日志写入成功:', this.currentLogFile);
+            this.logBuffer = [];
+          },
+          fail: (err) => {
+            console.error('写入日志文件失败:', err);
+          }
+        });
+      } else if (typeof this.fs.writeFileSync === 'function') {
         this.fs.writeFileSync(this.currentLogFile, content);
+        this.logBuffer = [];
       } else if (typeof this.fs.writeFile === 'function') {
         this.fs.writeFile({
           filePath: this.currentLogFile,
           data: content,
           encoding: 'utf8'
         });
+        this.logBuffer = [];
       }
-      this.logBuffer = [];
     } catch (e) {
       console.error('刷新日志缓冲失败:', e);
     }
@@ -123,7 +133,25 @@ class FileLogger {
   clear() {
     if (!this.fs) return;
     try {
-      if (typeof this.fs.readdirSync === 'function') {
+      if (this.isTt) {
+        this.fs.readdir({
+          dirPath: this.debugDir,
+          success: (res) => {
+            res.files.forEach(file => {
+              if (file.endsWith('.log')) {
+                const filePath = `${this.debugDir}/${file}`;
+                this.fs.unlink({
+                  filePath: filePath,
+                  success: () => console.log('删除日志文件:', filePath),
+                  fail: (err) => console.error('删除日志文件失败:', err)
+                });
+              }
+            });
+            console.log('所有日志文件已清空');
+          },
+          fail: (err) => console.error('清空日志文件失败:', err)
+        });
+      } else if (typeof this.fs.readdirSync === 'function') {
         const files = this.fs.readdirSync(this.debugDir);
         files.forEach(file => {
           const filePath = `${this.debugDir}/${file}`;
@@ -141,7 +169,9 @@ class FileLogger {
   getLatestLogFile() {
     if (!this.fs) return null;
     try {
-      if (typeof this.fs.readdirSync === 'function') {
+      if (this.isTt) {
+        return this.currentLogFile;
+      } else if (typeof this.fs.readdirSync === 'function') {
         const files = this.fs.readdirSync(this.debugDir)
           .filter(file => file.endsWith('.log'))
           .map(file => ({
@@ -162,4 +192,9 @@ class FileLogger {
 }
 
 const fileLogger = new FileLogger();
+
+window.addEventListener('hide', () => {
+  fileLogger.flushLogBuffer();
+});
+
 module.exports = fileLogger;
