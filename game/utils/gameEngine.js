@@ -1,13 +1,9 @@
-const { GAME_CONFIG } = require('./constants');
-const UnitManager = require('./unitManager');
-const LevelManager = require('./levelManager');
-const GameStateManager = require('./gameStateManager');
+const { GameState, TILE_CONFIG, GAME_CONFIG } = require('./constants');
+const PuzzleManager = require('./puzzleManager');
 
 class GameEngine {
   constructor() {
-    this.unitManager = new UnitManager();
-    this.levelManager = new LevelManager();
-    this.gameStateManager = new GameStateManager();
+    this.puzzleManager = new PuzzleManager();
     
     this.lastTimestamp = 0;
     this.deltaTime = 0;
@@ -22,6 +18,9 @@ class GameEngine {
     this.isInitialized = false;
     this.animationId = null;
     
+    this.gameState = GameState.IDLE;
+    this.elapsedTime = 0;
+    
     this.onWin = null;
     this.onLose = null;
     this.onUpdate = null;
@@ -33,20 +32,7 @@ class GameEngine {
     this.screenWidth = screenWidth;
     this.screenHeight = screenHeight;
     
-    this.unitManager.setScreenSize(screenWidth, screenHeight);
     this.isInitialized = true;
-    
-    this.setupEventListeners();
-  }
-
-  setupEventListeners() {
-    this.gameStateManager.addListener((newState, oldState) => {
-      if (newState === GameState.WIN && this.onWin) {
-        this.onWin();
-      } else if (newState === GameState.LOSE && this.onLose) {
-        this.onLose();
-      }
-    });
   }
 
   startLevel(levelId) {
@@ -55,20 +41,14 @@ class GameEngine {
       return false;
     }
 
-    const success = this.levelManager.setCurrentLevel(levelId);
+    const success = this.puzzleManager.setCurrentLevel(levelId);
     if (!success) {
       console.error('Failed to set current level');
       return false;
     }
 
-    this.unitManager.clear();
-    this.unitManager.createVegetableDog();
-    
-    const level = this.levelManager.getCurrentLevel();
-    this.unitManager.createWolves(level.wolfCount);
-    
-    this.gameStateManager.reset();
-    this.gameStateManager.start();
+    this.gameState = GameState.PLAYING;
+    this.elapsedTime = 0;
     
     this.startGameLoop();
     
@@ -85,7 +65,7 @@ class GameEngine {
   }
 
   gameLoop(timestamp) {
-    if (this.gameStateManager.isGameOver()) {
+    if (this.gameState === GameState.WIN || this.gameState === GameState.LOSE) {
       return;
     }
 
@@ -99,197 +79,283 @@ class GameEngine {
   }
 
   update() {
-    if (this.gameStateManager.isPaused() || this.gameStateManager.isGameOver()) {
+    if (this.gameState !== GameState.PLAYING) {
       return;
     }
 
-    this.unitManager.update(this.deltaTime);
-    
-    const disappearedUnits = this.unitManager.checkBoundaries();
-    
-    if (this.unitManager.isDogDisappeared()) {
+    this.elapsedTime += this.deltaTime;
+
+    if (this.puzzleManager.checkWinCondition()) {
       this.handleWin();
-    } else if (this.checkLoseCondition()) {
-      this.handleLose();
     }
 
     if (this.onUpdate) {
-      this.onUpdate(this.gameStateManager.getElapsedTime());
+      this.onUpdate(this.elapsedTime);
     }
-  }
-
-  checkLoseCondition() {
-    const level = this.levelManager.getCurrentLevel();
-    if (!level) return false;
-
-    if (level.type === 'timed' && level.timeLimit) {
-      const elapsedTime = this.gameStateManager.getElapsedTime();
-      return elapsedTime >= level.timeLimit && !this.unitManager.isDogDisappeared();
-    }
-
-    return false;
   }
 
   handleWin() {
-    const level = this.levelManager.getCurrentLevel();
-    const timeUsed = this.gameStateManager.getElapsedTime();
+    const level = this.puzzleManager.getCurrentLevel();
+    const timeUsed = this.elapsedTime;
     
-    const stars = this.levelManager.calculateStars(level, timeUsed);
-    const score = this.levelManager.calculateScore(level, timeUsed);
+    const stars = this.puzzleManager.calculateStars(level, timeUsed);
+    const score = this.puzzleManager.calculateScore(level, timeUsed);
     
-    this.levelManager.completeLevel(stars, score);
-    this.gameStateManager.win();
+    this.puzzleManager.completeLevel(stars, score);
+    this.gameState = GameState.WIN;
+    
+    if (this.onWin) {
+      this.onWin();
+    }
   }
 
   handleLose() {
-    this.gameStateManager.lose();
+    this.gameState = GameState.LOSE;
+    
+    if (this.onLose) {
+      this.onLose();
+    }
   }
 
   handleClick(x, y) {
-    if (!this.gameStateManager.isRunning()) {
+    if (this.gameState !== GameState.PLAYING) {
       return false;
     }
 
-    const unit = this.unitManager.getUnitAtPosition(x, y);
-    if (unit) {
-      return this.unitManager.clickUnit(unit);
+    const tile = this.getTileAtPosition(x, y);
+    
+    if (tile) {
+      const result = this.puzzleManager.slideTile(tile);
+      return result.moved;
     }
+
     return false;
   }
 
-  pause() {
-    this.gameStateManager.pause();
+  getTileAtPosition(x, y) {
+    const tiles = this.puzzleManager.getTiles();
+    const tileSize = Math.min(this.screenWidth, this.screenHeight) / TILE_CONFIG.gridSize;
+    const offsetX = (this.screenWidth - tileSize * TILE_CONFIG.gridSize) / 2;
+    const offsetY = (this.screenHeight - tileSize * TILE_CONFIG.gridSize) / 2;
+
+    for (const tile of tiles) {
+      const tileX = offsetX + (tile.gridCol - 1) * tileSize;
+      const tileY = offsetY + (tile.gridRow - 1) * tileSize;
+      const tileWidth = tile.gridColSpan * tileSize;
+      const tileHeight = tile.gridRowSpan * tileSize;
+
+      if (x >= tileX && x < tileX + tileWidth &&
+          y >= tileY && y < tileY + tileHeight) {
+        return tile;
+      }
+    }
+
+    return null;
   }
 
-  resume() {
-    this.gameStateManager.resume();
+  undo() {
+    if (this.gameState !== GameState.PLAYING) {
+      return false;
+    }
+
+    return this.puzzleManager.undo();
   }
 
   reset() {
-    this.unitManager.reset();
-    this.levelManager.resetLevel();
-    this.gameStateManager.reset();
+    if (this.gameState !== GameState.PLAYING) {
+      return false;
+    }
+
+    this.puzzleManager.resetLevel();
+    this.elapsedTime = 0;
+    
+    return true;
+  }
+
+  getHint() {
+    if (this.gameState !== GameState.PLAYING) {
+      return null;
+    }
+
+    const tiles = this.puzzleManager.getTiles();
+    const dogTile = this.puzzleManager.getDogTile();
+    
+    if (!dogTile) return null;
+
+    for (const tile of tiles) {
+      const result = this.canSlideTile(tile);
+      if (result.canSlide) {
+        return {
+          tile: tile,
+          direction: tile.direction
+        };
+      }
+    }
+
+    return null;
+  }
+
+  canSlideTile(tile) {
+    const direction = tile.direction;
+    const vector = this.puzzleManager.DIRECTION_VECTORS?.[direction];
+    
+    if (!vector) {
+      return { canSlide: false, reason: 'invalid_direction' };
+    }
+
+    let newCol = tile.gridCol;
+    let newRow = tile.gridRow;
+
+    while (true) {
+      const nextCol = newCol + vector.col;
+      const nextRow = newRow + vector.row;
+
+      if (nextCol < 1 || nextCol > this.puzzleManager.gridSize || 
+          nextRow < 1 || nextRow > this.puzzleManager.gridSize) {
+        return { canSlide: true, willDisappear: true };
+      }
+
+      const hasCollision = this.puzzleManager.checkCollision(tile, nextCol, nextRow);
+      if (hasCollision) {
+        return { canSlide: nextCol !== tile.gridCol || nextRow !== tile.gridRow };
+      }
+
+      newCol = nextCol;
+      newRow = nextRow;
+    }
+  }
+
+  pause() {
+    if (this.gameState === GameState.PLAYING) {
+      this.gameState = GameState.PAUSED;
+    }
+  }
+
+  resume() {
+    if (this.gameState === GameState.PAUSED) {
+      this.gameState = GameState.PLAYING;
+    }
   }
 
   render() {
     if (!this.ctx || !this.canvas) return;
 
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    
+
     this.drawBackground();
-    this.drawUnits();
+    this.drawTiles();
     this.drawUI();
   }
 
   drawBackground() {
     this.ctx.fillStyle = GAME_CONFIG.BACKGROUND_COLOR;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    
-    this.ctx.save();
-    this.ctx.translate(this.canvas.width / 2, this.canvas.height / 2);
-    this.ctx.rotate(GAME_CONFIG.BOARD_ROTATION * Math.PI / 180);
-    this.ctx.translate(-this.canvas.width / 2, -this.canvas.height / 2);
-    
-    const gridSize = GAME_CONFIG.GRID_SIZE;
-    const cellSize = GAME_CONFIG.CELL_SIZE;
-    
-    this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
-    this.ctx.lineWidth = 1;
-    
-    for (let i = 0; i <= gridSize; i++) {
-      const pos = i * cellSize;
-      this.ctx.beginPath();
-      this.ctx.moveTo(pos, 0);
-      this.ctx.lineTo(pos, gridSize * cellSize);
-      this.ctx.stroke();
-      
-      this.ctx.beginPath();
-      this.ctx.moveTo(0, pos);
-      this.ctx.lineTo(gridSize * cellSize, pos);
-      this.ctx.stroke();
-    }
-    
-    this.ctx.restore();
   }
 
-  drawUnits() {
-    const units = this.unitManager.getActiveUnits();
+  drawGrid() {
+    const tileSize = Math.min(this.screenWidth, this.screenHeight) / TILE_CONFIG.gridSize;
+    const offsetX = (this.screenWidth - tileSize * TILE_CONFIG.gridSize) / 2;
+    const offsetY = (this.screenHeight - tileSize * TILE_CONFIG.gridSize) / 2;
+
+    this.ctx.strokeStyle = TILE_CONFIG.gridColor;
+    this.ctx.lineWidth = 0.5;
+
+    for (let i = 0; i <= TILE_CONFIG.gridSize; i++) {
+      const x = offsetX + i * tileSize;
+      this.ctx.beginPath();
+      this.ctx.moveTo(x, offsetY);
+      this.ctx.lineTo(x, offsetY + tileSize * TILE_CONFIG.gridSize);
+      this.ctx.stroke();
+
+      const y = offsetY + i * tileSize;
+      this.ctx.beginPath();
+      this.ctx.moveTo(offsetX, y);
+      this.ctx.lineTo(offsetX + tileSize * TILE_CONFIG.gridSize, y);
+      this.ctx.stroke();
+    }
+  }
+
+  drawTiles() {
+    const tiles = this.puzzleManager.getTiles();
     
-    units.forEach(unit => {
-      this.drawUnit(unit);
+    const sqrt2 = Math.sqrt(2);
+    const maxGridWidth = this.screenWidth / sqrt2;
+    const maxGridHeight = this.screenHeight / sqrt2;
+    
+    const tileSize = Math.min(maxGridWidth, maxGridHeight) / TILE_CONFIG.gridSize;
+    const gridWidth = tileSize * TILE_CONFIG.gridSize;
+    const gridHeight = tileSize * TILE_CONFIG.gridSize;
+    
+    const offsetX = (this.screenWidth - gridWidth) / 2;
+    const offsetY = (this.screenHeight - gridHeight) / 2;
+
+    this.ctx.save();
+
+    const centerX = this.screenWidth / 2;
+    const centerY = this.screenHeight / 2;
+
+    this.ctx.translate(centerX, centerY);
+    this.ctx.rotate(45 * Math.PI / 180);
+    this.ctx.translate(-centerX, -centerY);
+
+    tiles.forEach(tile => {
+      const x = offsetX + (tile.gridCol - 1) * tileSize;
+      const y = offsetY + (tile.gridRow - 1) * tileSize;
+      const width = tile.gridColSpan * tileSize;
+      const height = tile.gridRowSpan * tileSize;
+
+      this.drawTile(tile, x, y, width, height);
     });
-  }
 
-  drawUnit(unit) {
-    this.ctx.save();
-    this.ctx.globalAlpha = unit.opacity;
-    this.ctx.translate(unit.x, unit.y);
-    this.ctx.scale(unit.scale, unit.scale);
-    
-    if (unit.type === 'vegetable_dog') {
-      this.drawVegetableDog(unit);
-    } else if (unit.type === 'wolf') {
-      this.drawWolf(unit);
-    }
-    
     this.ctx.restore();
   }
 
-  drawVegetableDog(unit) {
-    const size = unit.size;
+  drawTile(tile, x, y, width, height) {
+    this.ctx.save();
+
+    const isDog = tile.unitType === 'dog';
+    const direction = tile.direction;
+
+    this.ctx.fillStyle = isDog ? '#FFEB3B' : '#F5E6D3';
+    this.ctx.fillRect(x, y, width, height);
+
+    const directionAngle = this.getDirectionAngle(direction);
     
-    this.ctx.fillStyle = '#52C41A';
-    this.ctx.beginPath();
-    this.ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
-    this.ctx.fill();
+    this.ctx.save();
+    this.ctx.translate(x + width / 2, y + height / 2);
+    this.ctx.rotate(directionAngle * Math.PI / 180);
     
-    this.ctx.strokeStyle = '#FFD700';
-    this.ctx.lineWidth = 3;
-    this.ctx.stroke();
-    
-    this.ctx.shadowColor = 'rgba(255, 215, 0, 0.6)';
-    this.ctx.shadowBlur = 20;
-    this.ctx.stroke();
-    this.ctx.shadowBlur = 0;
-    
-    this.ctx.fillStyle = '#fff';
-    this.ctx.font = `${size / 3}px Arial`;
+    this.ctx.fillStyle = '#333333';
+    this.ctx.font = `${Math.min(width, height) * 0.5}px Arial`;
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
-    this.ctx.fillText('🐕', 0, 0);
+    this.ctx.fillText(isDog ? '🐕' : '🐺', 0, 0);
+    
+    this.ctx.restore();
+    this.ctx.restore();
   }
 
-  drawWolf(unit) {
-    const size = unit.size;
-    
-    this.ctx.fillStyle = '#64748b';
-    this.ctx.beginPath();
-    this.ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
-    this.ctx.fill();
-    
-    this.ctx.strokeStyle = '#475569';
-    this.ctx.lineWidth = 2;
-    this.ctx.stroke();
-    
-    this.ctx.fillStyle = '#fff';
-    this.ctx.font = `${size / 3}px Arial`;
-    this.ctx.textAlign = 'center';
-    this.ctx.textBaseline = 'middle';
-    this.ctx.fillText('🐺', 0, 0);
+  getDirectionAngle(direction) {
+    const angles = {
+      'up_left': 225,
+      'up_right': 315,
+      'down_left': 135,
+      'down_right': 45
+    };
+    return angles[direction] || 0;
   }
 
   drawUI() {
-    const level = this.levelManager.getCurrentLevel();
+    const level = this.puzzleManager.getCurrentLevel();
     if (!level) return;
-    
+
     this.ctx.fillStyle = '#1f2937';
     this.ctx.font = '16px Arial';
     this.ctx.textAlign = 'left';
     this.ctx.fillText(`${level.name}`, 20, 30);
-    
+
     if (level.type === 'timed' && level.timeLimit) {
-      const elapsedTime = this.gameStateManager.getElapsedTime();
-      const timeRemaining = Math.max(0, level.timeLimit - elapsedTime);
+      const timeRemaining = Math.max(0, level.timeLimit - this.elapsedTime);
       
       this.ctx.textAlign = 'right';
       this.ctx.fillText(`时间: ${timeRemaining.toFixed(1)}s`, this.screenWidth - 20, 30);
@@ -305,6 +371,7 @@ class GameEngine {
     this.canvas = null;
     this.ctx = null;
     this.isInitialized = false;
+    this.gameState = GameState.IDLE;
   }
 }
 

@@ -1,4 +1,4 @@
-const LevelManager = require('../../utils/levelManager');
+const PuzzleManager = require('../../utils/puzzleManager');
 
 const app = getApp();
 
@@ -10,11 +10,11 @@ Page({
     currentChapter: '第一章'
   },
 
-  levelManager: null,
+  puzzleManager: null,
 
   onLoad() {
     console.log('关卡页加载');
-    this.levelManager = new LevelManager();
+    this.puzzleManager = new PuzzleManager();
     this.loadLevels();
   },
 
@@ -24,9 +24,9 @@ Page({
   },
 
   loadLevels() {
-    const levels = this.levelManager.getLevels();
-    const totalStars = this.levelManager.getTotalStars();
-    const maxStars = this.levelManager.getMaxStars();
+    const levels = this.puzzleManager.getLevels();
+    const totalStars = this.puzzleManager.getTotalStars();
+    const maxStars = this.puzzleManager.getMaxStars();
 
     this.setData({
       levels,
@@ -37,7 +37,7 @@ Page({
 
   selectLevel(e) {
     const levelId = e.currentTarget.dataset.id;
-    const level = this.levelManager.getLevel(levelId);
+    const level = this.puzzleManager.getLevel(levelId);
 
     if (!level.unlocked) {
       wx.showToast({

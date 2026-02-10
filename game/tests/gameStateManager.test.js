@@ -147,13 +147,13 @@ describe('GameStateManager', () => {
     test('should reset to IDLE state', () => {
       gameStateManager.setState(GameState.RUNNING);
       gameStateManager.elapsedTime = 10;
-      gameStateManager.isPaused = true;
+      gameStateManager.pause();
       
       gameStateManager.reset();
       
       expect(gameStateManager.getState()).toBe(GameState.IDLE);
       expect(gameStateManager.elapsedTime).toBe(0);
-      expect(gameStateManager.isPaused).toBe(false);
+      expect(gameStateManager.isPaused()).toBe(false);
     });
   });
 

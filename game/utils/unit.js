@@ -102,8 +102,4 @@ class Wolf extends Unit {
   }
 }
 
-module.exports = {
-  Unit,
-  VegetableDog,
-  Wolf
-};
+module.exports = { Unit, VegetableDog, Wolf };

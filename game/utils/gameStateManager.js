@@ -65,11 +65,11 @@ class GameStateManager {
   reset() {
     this.setState(GameState.IDLE);
     this.elapsedTime = 0;
-    this.isPaused = false;
+    this._isPaused = false;
   }
 
   getElapsedTime() {
-    if (this.state === GameState.RUNNING && !this.isPaused) {
+    if (this.state === GameState.RUNNING && !this._isPaused) {
       this.elapsedTime = (Date.now() - this.startTime) / 1000;
     }
     return this.elapsedTime;

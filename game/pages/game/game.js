@@ -1,5 +1,4 @@
-const GameEngine = require('../../utils/gameEngine');
-const { GameState } = require('../../utils/constants');
+const PuzzleManager = require('../../utils/puzzleManager');
 
 const app = getApp();
 
@@ -7,26 +6,27 @@ Page({
   data: {
     levelId: 0,
     levelName: '',
-    timeRemaining: 0,
-    isTimed: false,
-    isPaused: false,
+    tiles: [],
+    dogImageUrl: '',
+    wolfImageUrl: '',
     gameActive: false
   },
 
-  gameEngine: null,
-  canvas: null,
-  ctx: null,
-  timerInterval: null,
+  puzzleManager: null,
 
   onLoad(options) {
     console.log('游戏页加载', options);
     const levelId = parseInt(options.levelId) || 1;
-    this.setData({ levelId });
+    this.setData({ 
+      levelId,
+      dogImageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuApwgydymAcHiZkKh1m7yRT8Ux1Athx7JWBLVxihj0GvKV9YGLaF_cjL-sNIkQzfCrkFQHfkVcxRYKtcJAeyJ0XuUiQ52EbkxxQKFUe1VqgijE18eZUWu8xuiccee7G2qmudVaCILYLA_reP36lOJoRpFG8Dj0GyAEZ4xI7EBR7FcNmiSck-l2nppKSOQ1Z0GzyHPSxkY1p2RCT0knSz1FXGmGLa7fpJbpRBZPleUWj5Cp2-5aZW3TxoSOe6yQ3mXvdBAmkBB5c5nc',
+      wolfImageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o'
+    });
     this.initGame();
   },
 
   onReady() {
-    this.createCanvas();
+    this.startLevel();
   },
 
   onShow() {
@@ -41,75 +41,25 @@ Page({
     this.destroyGame();
   },
 
-  createCanvas() {
-    const query = wx.createSelectorQuery();
-    query.select('#gameCanvas')
-      .fields({ node: true, size: true })
-      .exec((res) => {
-        if (!res[0]) {
-          console.error('Canvas not found');
-          return;
-        }
-
-        const canvas = res[0].node;
-        const ctx = canvas.getContext('2d');
-        
-        const dpr = wx.getSystemInfoSync().pixelRatio;
-        canvas.width = res[0].width * dpr;
-        canvas.height = res[0].height * dpr;
-        ctx.scale(dpr, dpr);
-
-        this.canvas = canvas;
-        this.ctx = ctx;
-
-        this.initGameEngine(res[0].width, res[0].height);
-      });
-  },
-
-  initGameEngine(width, height) {
-    this.gameEngine = new GameEngine();
-    this.gameEngine.init(this.canvas, this.ctx, width, height);
-
-    this.gameEngine.onWin = () => {
-      this.handleWin();
-    };
-
-    this.gameEngine.onLose = () => {
-      this.handleLose();
-    };
-
-    this.gameEngine.onUpdate = (elapsedTime) => {
-      this.updateUI(elapsedTime);
-    };
-
-    this.startLevel();
-  },
-
   initGame() {
-    const level = this.gameEngine ? this.gameEngine.levelManager.getLevel(this.data.levelId) : null;
+    this.puzzleManager = new PuzzleManager();
+    const level = this.puzzleManager.getLevel(this.data.levelId);
     if (level) {
       this.setData({
-        levelName: level.name,
-        isTimed: level.type === 'timed',
-        timeRemaining: level.timeLimit || 0
+        levelName: level.name
       });
     }
   },
 
   startLevel() {
-    const success = this.gameEngine.startLevel(this.data.levelId);
+    const success = this.puzzleManager.setCurrentLevel(this.data.levelId);
     if (success) {
-      const level = this.gameEngine.levelManager.getCurrentLevel();
+      const level = this.puzzleManager.getCurrentLevel();
       this.setData({
         levelName: level.name,
-        isTimed: level.type === 'timed',
-        timeRemaining: level.timeLimit || 0,
         gameActive: true
       });
-
-      if (this.data.isTimed) {
-        this.startTimer();
-      }
+      this.updateTiles();
     } else {
       wx.showToast({
         title: '关卡加载失败',
@@ -121,53 +71,59 @@ Page({
     }
   },
 
-  startTimer() {
-    if (this.timerInterval) {
-      clearInterval(this.timerInterval);
-    }
-    
-    this.timerInterval = setInterval(() => {
-      if (!this.data.isPaused && this.data.gameActive) {
-        const elapsedTime = this.gameEngine.gameStateManager.getElapsedTime();
-        const level = this.gameEngine.levelManager.getCurrentLevel();
-        const timeRemaining = Math.max(0, level.timeLimit - elapsedTime);
-        
-        this.setData({ timeRemaining });
-      }
-    }, 100);
+  updateTiles() {
+    const tiles = this.puzzleManager.getTiles();
+    this.setData({
+      tiles: tiles.map(tile => ({
+        id: tile.id,
+        type: tile.type,
+        unitType: tile.unitType,
+        gridCol: tile.gridCol,
+        gridRow: tile.gridRow,
+        gridColSpan: tile.gridColSpan,
+        gridRowSpan: tile.gridRowSpan,
+        direction: tile.direction
+      }))
+    });
   },
 
-  updateUI(elapsedTime) {
-    if (this.data.isTimed) {
-      const level = this.gameEngine.levelManager.getCurrentLevel();
-      const timeRemaining = Math.max(0, level.timeLimit - elapsedTime);
-      this.setData({ timeRemaining });
-    }
-  },
-
-  handleCanvasTouch(e) {
-    if (!this.data.gameActive || this.data.isPaused) {
+  handleTileTap(e) {
+    if (!this.data.gameActive) {
       return;
     }
 
-    const touch = e.touches[0];
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = touch.clientX - rect.left;
-    const y = touch.clientY - rect.top;
+    const tileIndex = e.currentTarget.dataset.tileIndex;
+    const tiles = this.data.tiles;
+    const tile = tiles[tileIndex];
 
-    this.gameEngine.handleClick(x, y);
+    if (!tile) return;
+
+    const puzzleTile = this.puzzleManager.getTiles().find(t => t.id === tile.id);
+    if (!puzzleTile) return;
+
+    const result = this.puzzleManager.slideTile(puzzleTile);
+    
+    if (result.moved) {
+      this.updateTiles();
+      
+      if (result.disappeared) {
+        if (puzzleTile.unitType === 'dog') {
+          this.handleWin();
+        }
+      }
+    }
   },
 
   handleWin() {
     this.setData({ gameActive: false });
-    
-    if (this.timerInterval) {
-      clearInterval(this.timerInterval);
-    }
 
-    const level = this.gameEngine.levelManager.getCurrentLevel();
-    const stars = level.stars;
-    const score = level.score;
+    const level = this.puzzleManager.getCurrentLevel();
+    const timeUsed = 0;
+    
+    const stars = this.puzzleManager.calculateStars(level, timeUsed);
+    const score = this.puzzleManager.calculateScore(level, timeUsed);
+    
+    this.puzzleManager.completeLevel(stars, score);
 
     setTimeout(() => {
       wx.redirectTo({
@@ -178,10 +134,6 @@ Page({
 
   handleLose() {
     this.setData({ gameActive: false });
-    
-    if (this.timerInterval) {
-      clearInterval(this.timerInterval);
-    }
 
     setTimeout(() => {
       wx.redirectTo({
@@ -190,31 +142,152 @@ Page({
     }, 500);
   },
 
-  pauseGame() {
-    if (!this.data.gameActive || this.data.isPaused) {
-      return;
-    }
-    
-    this.gameEngine.pause();
-    this.setData({ isPaused: true });
-  },
-
-  resumeGame() {
-    if (!this.data.gameActive || !this.data.isPaused) {
-      return;
-    }
-    
-    this.gameEngine.resume();
-    this.setData({ isPaused: false });
-  },
-
-  resetGame() {
+  handleUndo() {
     if (!this.data.gameActive) {
       return;
     }
-    
-    this.gameEngine.reset();
-    this.startLevel();
+
+    const success = this.puzzleManager.undo();
+    if (success) {
+      this.updateTiles();
+      wx.showToast({
+        title: '已撤销',
+        icon: 'success',
+        duration: 1000
+      });
+    } else {
+      wx.showToast({
+        title: '无法撤销',
+        icon: 'none',
+        duration: 1000
+      });
+    }
+  },
+
+  handleHint() {
+    if (!this.data.gameActive) {
+      return;
+    }
+
+    const tiles = this.puzzleManager.getTiles();
+    let hintTile = null;
+
+    for (const tile of tiles) {
+      const direction = tile.direction;
+      const vector = {
+        up_left: { col: -1, row: -1 },
+        up_right: { col: 1, row: -1 },
+        down_left: { col: -1, row: 1 },
+        down_right: { col: 1, row: 1 }
+      }[direction];
+
+      if (!vector) continue;
+
+      let newCol = tile.gridCol;
+      let newRow = tile.gridRow;
+      let canSlide = false;
+
+      while (true) {
+        const nextCol = newCol + vector.col;
+        const nextRow = newRow + vector.row;
+
+        if (nextCol < 1 || nextCol > 14 || 
+            nextRow < 1 || nextRow > 14) {
+          canSlide = true;
+          break;
+        }
+
+        const hasCollision = this.checkCollision(tile, nextCol, nextRow);
+        if (hasCollision) {
+          canSlide = nextCol !== tile.gridCol || nextRow !== tile.gridRow;
+          break;
+        }
+
+        newCol = nextCol;
+        newRow = nextRow;
+      }
+
+      if (canSlide) {
+        hintTile = tile;
+        break;
+      }
+    }
+
+    if (hintTile) {
+      const directionTexts = {
+        up_left: '向左上',
+        up_right: '向右上',
+        down_left: '向左下',
+        down_right: '向右下'
+      };
+      
+      wx.showToast({
+        title: `提示: 点击${directionTexts[hintTile.direction]}的方块`,
+        icon: 'none',
+        duration: 2000
+      });
+    } else {
+      wx.showToast({
+        title: '没有可移动的方块',
+        icon: 'none',
+        duration: 2000
+      });
+    }
+  },
+
+  checkCollision(tile, col, row) {
+    const tiles = this.puzzleManager.getTiles().filter(t => 
+      t.id !== tile.id && t.state !== 'disappeared'
+    );
+
+    for (const otherTile of tiles) {
+      const colOverlap = col < otherTile.gridCol + otherTile.gridColSpan &&
+                         col + tile.gridColSpan > otherTile.gridCol;
+      const rowOverlap = row < otherTile.gridRow + otherTile.gridRowSpan &&
+                         row + tile.gridRowSpan > otherTile.gridRow;
+
+      if (colOverlap && rowOverlap) {
+        return true;
+      }
+    }
+
+    return false;
+  },
+
+  handleReset() {
+    if (!this.data.gameActive) {
+      return;
+    }
+
+    wx.showModal({
+      title: '确认重置',
+      content: '确定要重置当前关卡吗？',
+      success: (res) => {
+        if (res.confirm) {
+          const success = this.puzzleManager.resetLevel();
+          if (success) {
+            this.updateTiles();
+            wx.showToast({
+              title: '已重置',
+              icon: 'success',
+              duration: 1000
+            });
+          }
+        }
+      }
+    });
+  },
+
+  pauseGame() {
+    if (!this.data.gameActive) {
+      return;
+    }
+  },
+
+  resumeGame() {
+    if (!this.data.gameActive) {
+      return;
+    }
   },
 
   goBack() {
@@ -234,18 +307,15 @@ Page({
     }
   },
 
+  showSettings() {
+    wx.showToast({
+      title: '设置功能开发中',
+      icon: 'none',
+      duration: 1500
+    });
+  },
+
   destroyGame() {
-    if (this.timerInterval) {
-      clearInterval(this.timerInterval);
-      this.timerInterval = null;
-    }
-
-    if (this.gameEngine) {
-      this.gameEngine.destroy();
-      this.gameEngine = null;
-    }
-
-    this.canvas = null;
-    this.ctx = null;
+    this.puzzleManager = null;
   }
 });

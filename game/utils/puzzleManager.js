@@ -1,0 +1,495 @@
+const { TileType, UnitType, UnitState, GameState, Direction, DIRECTION_VECTORS, generateId } = require('./constants');
+
+class Tile {
+  constructor(config) {
+    this.id = generateId();
+    this.type = config.type;
+    this.unitType = config.unitType || UnitType.WOLF;
+    this.gridCol = config.gridCol;
+    this.gridRow = config.gridRow;
+    this.gridColSpan = config.gridColSpan || 1;
+    this.gridRowSpan = config.gridRowSpan || 1;
+    this.direction = config.direction || Direction.UP_RIGHT;
+    this.state = UnitState.IDLE;
+    this.imageUrl = config.imageUrl;
+  }
+}
+
+class PuzzleLevel {
+  constructor(config) {
+    this.id = config.id;
+    this.name = config.name;
+    this.type = config.type || 'normal';
+    this.timeLimit = config.timeLimit;
+    this.tiles = [];
+    this.dogTile = null;
+    this.completed = false;
+    this.stars = 0;
+    this.score = 0;
+    this.unlocked = config.unlocked || false;
+    
+    if (config.tiles) {
+      config.tiles.forEach(tileConfig => {
+        const tile = new Tile(tileConfig);
+        this.tiles.push(tile);
+        if (tile.unitType === UnitType.DOG) {
+          this.dogTile = tile;
+        }
+      });
+    }
+  }
+}
+
+class PuzzleManager {
+  constructor() {
+    this.levels = [];
+    this.currentLevel = null;
+    this.currentLevelIndex = 0;
+    this.gridSize = 14;
+    this.tileSize = 18;
+    this.history = [];
+    this.maxHistory = 50;
+    this.initLevels();
+  }
+
+  initLevels() {
+    const levels = [
+      {
+        id: 1,
+        name: '第1关',
+        type: 'normal',
+        unlocked: true,
+        tiles: this.generateLevel1Tiles()
+      },
+      {
+        id: 2,
+        name: '第2关',
+        type: 'normal',
+        unlocked: false,
+        tiles: this.generateLevel2Tiles()
+      },
+      {
+        id: 3,
+        name: '第3关',
+        type: 'normal',
+        unlocked: false,
+        tiles: this.generateLevel3Tiles()
+      }
+    ];
+
+    levels.forEach(config => {
+      this.levels.push(new PuzzleLevel(config));
+    });
+  }
+
+  generateLevel1Tiles() {
+    const tiles = [];
+    const gridSize = 14;
+    const center = Math.ceil(gridSize / 2);
+
+    const directions = [Direction.UP_RIGHT, Direction.UP_LEFT, Direction.DOWN_LEFT, Direction.DOWN_RIGHT];
+
+    const createTile = (col, row, colSpan, rowSpan, unitType, direction) => ({
+      type: colSpan > 1 ? TileType.HORIZONTAL : TileType.VERTICAL,
+      unitType: unitType,
+      gridCol: col,
+      gridRow: row,
+      gridColSpan: colSpan,
+      gridRowSpan: rowSpan,
+      direction: direction
+    });
+
+    const usedPositions = new Set();
+    const posKey = (c, r) => `${c},${r}`;
+
+    let tileId = 0;
+
+    for (let row = 1; row <= gridSize; row++) {
+      const distanceFromCenter = Math.abs(row - center);
+      const maxColInRow = gridSize - distanceFromCenter;
+      const startCol = Math.ceil((gridSize - maxColInRow) / 2);
+
+      for (let col = startCol; col < startCol + maxColInRow; col++) {
+        if (usedPositions.has(posKey(col, row))) continue;
+
+        const direction = directions[tileId % 4];
+        const isCenter = (col === center && row === center);
+        const isHorizontal = tileId % 2 === 0;
+
+        const canPlaceHorizontal = col + 1 <= gridSize && !usedPositions.has(posKey(col + 1, row)) && (col + 1 - startCol) < maxColInRow;
+        const canPlaceVertical = row + 1 <= gridSize && !usedPositions.has(posKey(col, row + 1));
+
+        if (isCenter) {
+          if (isHorizontal && canPlaceHorizontal) {
+            tiles.push(createTile(col, row, 2, 1, UnitType.DOG, direction));
+            usedPositions.add(posKey(col, row));
+            usedPositions.add(posKey(col + 1, row));
+            tileId++;
+          } else if (!isHorizontal && canPlaceVertical) {
+            tiles.push(createTile(col, row, 1, 2, UnitType.DOG, direction));
+            usedPositions.add(posKey(col, row));
+            usedPositions.add(posKey(col, row + 1));
+            tileId++;
+          } else {
+            tiles.push(createTile(col, row, 2, 1, UnitType.DOG, direction));
+            usedPositions.add(posKey(col, row));
+            usedPositions.add(posKey(col + 1, row));
+            tileId++;
+          }
+        } else if (isHorizontal && canPlaceHorizontal) {
+          tiles.push(createTile(col, row, 2, 1, UnitType.WOLF, direction));
+          usedPositions.add(posKey(col, row));
+          usedPositions.add(posKey(col + 1, row));
+          tileId++;
+        } else if (!isHorizontal && canPlaceVertical) {
+          tiles.push(createTile(col, row, 1, 2, UnitType.WOLF, direction));
+          usedPositions.add(posKey(col, row));
+          usedPositions.add(posKey(col, row + 1));
+          tileId++;
+        } else if (canPlaceHorizontal) {
+          tiles.push(createTile(col, row, 2, 1, UnitType.WOLF, direction));
+          usedPositions.add(posKey(col, row));
+          usedPositions.add(posKey(col + 1, row));
+          tileId++;
+        } else {
+          tiles.push(createTile(col, row, 1, 2, UnitType.WOLF, direction));
+          usedPositions.add(posKey(col, row));
+          usedPositions.add(posKey(col, row + 1));
+          tileId++;
+        }
+      }
+    }
+
+    return tiles;
+  }
+
+  generateLevel2Tiles() {
+    const tiles = [];
+    const gridSize = 14;
+    const center = Math.ceil(gridSize / 2);
+
+    const directions = [Direction.UP_RIGHT, Direction.UP_LEFT, Direction.DOWN_LEFT, Direction.DOWN_RIGHT];
+
+    const createTile = (col, row, colSpan, rowSpan, unitType, direction) => ({
+      type: colSpan > 1 ? TileType.HORIZONTAL : (rowSpan > 1 ? TileType.VERTICAL : TileType.SINGLE),
+      unitType: unitType,
+      gridCol: col,
+      gridRow: row,
+      gridColSpan: colSpan,
+      gridRowSpan: rowSpan,
+      direction: direction
+    });
+
+    const usedPositions = new Set();
+    const posKey = (c, r) => `${c},${r}`;
+
+    let tileId = 0;
+
+    for (let row = 1; row <= gridSize; row++) {
+      const distanceFromCenter = Math.abs(row - center);
+      const maxColInRow = gridSize - distanceFromCenter;
+      const startCol = Math.ceil((gridSize - maxColInRow) / 2);
+
+      for (let i = 0; i < maxColInRow; i++) {
+        const col = startCol + i;
+
+        if (usedPositions.has(posKey(col, row))) continue;
+
+        const direction = directions[tileId % 4];
+        const isHorizontal = tileId % 2 === 0;
+        const isCenter = (col === center && row === center);
+
+        if (isHorizontal && col + 1 <= gridSize && !usedPositions.has(posKey(col + 1, row))) {
+          tiles.push(createTile(col, row, 2, 1, isCenter ? UnitType.DOG : UnitType.WOLF, direction));
+          usedPositions.add(posKey(col, row));
+          usedPositions.add(posKey(col + 1, row));
+          tileId++;
+        } else if (!isHorizontal && row + 1 <= gridSize && !usedPositions.has(posKey(col, row + 1))) {
+          tiles.push(createTile(col, row, 1, 2, isCenter ? UnitType.DOG : UnitType.WOLF, direction));
+          usedPositions.add(posKey(col, row));
+          usedPositions.add(posKey(col, row + 1));
+          tileId++;
+        } else {
+          tiles.push(createTile(col, row, 1, 1, isCenter ? UnitType.DOG : UnitType.WOLF, direction));
+          usedPositions.add(posKey(col, row));
+          tileId++;
+        }
+      }
+    }
+
+    return tiles;
+  }
+
+  generateLevel3Tiles() {
+    const tiles = [];
+    const gridSize = 14;
+    const center = Math.ceil(gridSize / 2);
+
+    const directions = [Direction.UP_RIGHT, Direction.UP_LEFT, Direction.DOWN_LEFT, Direction.DOWN_RIGHT];
+
+    const createTile = (col, row, colSpan, rowSpan, unitType, direction) => ({
+      type: colSpan > 1 ? TileType.HORIZONTAL : (rowSpan > 1 ? TileType.VERTICAL : TileType.SINGLE),
+      unitType: unitType,
+      gridCol: col,
+      gridRow: row,
+      gridColSpan: colSpan,
+      gridRowSpan: rowSpan,
+      direction: direction
+    });
+
+    const usedPositions = new Set();
+    const posKey = (c, r) => `${c},${r}`;
+
+    let tileId = 0;
+
+    for (let row = 1; row <= gridSize; row++) {
+      const distanceFromCenter = Math.abs(row - center);
+      const maxColInRow = gridSize - distanceFromCenter;
+      const startCol = Math.ceil((gridSize - maxColInRow) / 2);
+
+      for (let i = 0; i < maxColInRow; i++) {
+        const col = startCol + i;
+
+        if (usedPositions.has(posKey(col, row))) continue;
+
+        const direction = directions[tileId % 4];
+        const isHorizontal = tileId % 2 === 0;
+        const isCenter = (col === center && row === center);
+
+        if (isHorizontal && col + 1 <= gridSize && !usedPositions.has(posKey(col + 1, row))) {
+          tiles.push(createTile(col, row, 2, 1, isCenter ? UnitType.DOG : UnitType.WOLF, direction));
+          usedPositions.add(posKey(col, row));
+          usedPositions.add(posKey(col + 1, row));
+          tileId++;
+        } else if (!isHorizontal && row + 1 <= gridSize && !usedPositions.has(posKey(col, row + 1))) {
+          tiles.push(createTile(col, row, 1, 2, isCenter ? UnitType.DOG : UnitType.WOLF, direction));
+          usedPositions.add(posKey(col, row));
+          usedPositions.add(posKey(col, row + 1));
+          tileId++;
+        } else {
+          tiles.push(createTile(col, row, 1, 1, isCenter ? UnitType.DOG : UnitType.WOLF, direction));
+          usedPositions.add(posKey(col, row));
+          tileId++;
+        }
+      }
+    }
+
+    return tiles;
+  }
+
+  getLevel(id) {
+    return this.levels.find(level => level.id === id);
+  }
+
+  getLevels() {
+    return this.levels;
+  }
+
+  getCurrentLevel() {
+    return this.currentLevel;
+  }
+
+  setCurrentLevel(id) {
+    const level = this.getLevel(id);
+    if (level && level.unlocked) {
+      this.currentLevel = level;
+      this.currentLevelIndex = this.levels.findIndex(l => l.id === id);
+      this.history = [];
+      this.saveState();
+      return true;
+    }
+    return false;
+  }
+
+  getTiles() {
+    return this.currentLevel ? this.currentLevel.tiles.filter(t => t.state !== UnitState.DISAPPEARED) : [];
+  }
+
+  getDogTile() {
+    return this.currentLevel ? this.currentLevel.dogTile : null;
+  }
+
+  slideTile(tile) {
+    if (tile.state !== UnitState.IDLE) {
+      return { moved: false, reason: 'tile_not_idle' };
+    }
+
+    const direction = tile.direction;
+    const vector = DIRECTION_VECTORS[direction];
+    
+    if (!vector) {
+      return { moved: false, reason: 'invalid_direction' };
+    }
+
+    this.saveState();
+
+    let newCol = tile.gridCol;
+    let newRow = tile.gridRow;
+    let moved = false;
+    let disappeared = false;
+
+    while (true) {
+      const nextCol = newCol + vector.col;
+      const nextRow = newRow + vector.row;
+
+      if (nextCol < 1 || nextCol > this.gridSize || 
+          nextRow < 1 || nextRow > this.gridSize) {
+        disappeared = true;
+        moved = true;
+        break;
+      }
+
+      const hasCollision = this.checkCollision(tile, nextCol, nextRow);
+      if (hasCollision) {
+        moved = true;
+        break;
+      }
+
+      newCol = nextCol;
+      newRow = nextRow;
+    }
+
+    if (moved) {
+      tile.gridCol = newCol;
+      tile.gridRow = newRow;
+      
+      if (disappeared) {
+        tile.state = UnitState.DISAPPEARED;
+      } else {
+        tile.state = UnitState.SLIDING;
+        setTimeout(() => {
+          tile.state = UnitState.IDLE;
+        }, 300);
+      }
+    }
+
+    return { moved, disappeared, tile };
+  }
+
+  checkCollision(tile, col, row) {
+    const tiles = this.currentLevel.tiles.filter(t => 
+      t.id !== tile.id && t.state !== UnitState.DISAPPEARED
+    );
+
+    for (const otherTile of tiles) {
+      const colOverlap = col < otherTile.gridCol + otherTile.gridColSpan &&
+                         col + tile.gridColSpan > otherTile.gridCol;
+      const rowOverlap = row < otherTile.gridRow + otherTile.gridRowSpan &&
+                         row + tile.gridRowSpan > otherTile.gridRow;
+
+      if (colOverlap && rowOverlap) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  saveState() {
+    if (!this.currentLevel) return;
+
+    const state = {
+      tiles: this.currentLevel.tiles.map(tile => ({
+        id: tile.id,
+        gridCol: tile.gridCol,
+        gridRow: tile.gridRow,
+        state: tile.state
+      }))
+    };
+
+    this.history.push(state);
+    if (this.history.length > this.maxHistory) {
+      this.history.shift();
+    }
+  }
+
+  undo() {
+    if (this.history.length <= 1) return false;
+
+    this.history.pop();
+    const previousState = this.history[this.history.length - 1];
+
+    previousState.tiles.forEach(savedTile => {
+      const tile = this.currentLevel.tiles.find(t => t.id === savedTile.id);
+      if (tile) {
+        tile.gridCol = savedTile.gridCol;
+        tile.gridRow = savedTile.gridRow;
+        tile.state = savedTile.state;
+      }
+    });
+
+    return true;
+  }
+
+  checkWinCondition() {
+    const dogTile = this.getDogTile();
+    if (!dogTile) return false;
+
+    return dogTile.state === UnitState.DISAPPEARED;
+  }
+
+  completeLevel(stars, score) {
+    if (this.currentLevel) {
+      this.currentLevel.completed = true;
+      this.currentLevel.stars = stars;
+      this.currentLevel.score = score;
+      return this.unlockNextLevel();
+    }
+    return null;
+  }
+
+  unlockNextLevel() {
+    const nextIndex = this.currentLevelIndex + 1;
+    if (nextIndex < this.levels.length) {
+      this.levels[nextIndex].unlocked = true;
+      return this.levels[nextIndex];
+    }
+    return null;
+  }
+
+  resetLevel() {
+    if (!this.currentLevel) return;
+
+    this.history = [];
+    const originalTiles = this.getLevel(this.currentLevel.id).tiles;
+    
+    this.currentLevel.tiles.forEach((tile, index) => {
+      if (originalTiles[index]) {
+        tile.gridCol = originalTiles[index].gridCol;
+        tile.gridRow = originalTiles[index].gridRow;
+        tile.state = UnitState.IDLE;
+      }
+    });
+
+    this.saveState();
+  }
+
+  calculateStars(level, timeUsed) {
+    let stars = 1;
+
+    if (level.type === 'timed' && level.timeLimit) {
+      const timeRatio = timeUsed / level.timeLimit;
+      if (timeRatio < 0.5) stars = 3;
+      else if (timeRatio < 0.75) stars = 2;
+    } else {
+      stars = 2;
+    }
+
+    return stars;
+  }
+
+  calculateScore(level, timeUsed) {
+    let score = 0;
+
+    score += 500;
+
+    if (level.type === 'timed' && level.timeLimit) {
+      const timeRemaining = level.timeLimit - timeUsed;
+      score += Math.floor(timeRemaining * 5);
+    }
+
+    return score;
+  }
+}
+
+module.exports = PuzzleManager;

@@ -1,18 +1,9 @@
 const {
   Direction,
-  DIRECTION_VECTORS,
-  UnitType,
-  UnitState,
-  GameState,
-  LevelType,
-  VEGETABLE_DOG_CONFIG,
-  WOLF_CONFIG,
-  GAME_CONFIG,
   getRandomDirection,
   isNearCenter,
   generateId
 } = require('./constants');
-
 const { Unit, VegetableDog, Wolf } = require('./unit');
 
 class UnitManager {
@@ -105,7 +96,7 @@ class UnitManager {
     const disappearedUnits = [];
     
     this.units.forEach(unit => {
-      if (unit.isRunning && !unit.isDisappeared && unit.isOutOfBounds(this.screenWidth, this.screenHeight)) {
+      if (!unit.isDisappeared && unit.isOutOfBounds(this.screenWidth, this.screenHeight)) {
         unit.disappear();
         disappearedUnits.push(unit);
       }
@@ -131,7 +122,7 @@ class UnitManager {
   }
 
   getRunningUnits() {
-    return this.units.filter(unit => unit.isRunning && !unit.isDisappeared);
+    return this.units.filter(unit => unit.isRunning);
   }
 
   isDogDisappeared() {

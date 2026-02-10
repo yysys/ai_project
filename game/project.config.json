@@ -1,5 +1,14 @@
 {
-  "deviceOrientation": "portrait",
-  "showStatusBar": false,
-  "networkTimeout": 60000
+  "miniprogramRoot": "./",
+  "projectname": "拼图游戏",
+  "description": "拼图小游戏",
+  "appid": "touristappid",
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "postcss": true,
+    "minified": true
+  },
+  "compileType": "miniprogram",
+  "libVersion": "2.19.4"
 }

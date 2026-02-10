@@ -1,39 +1,69 @@
 <view class="container">
-  <view class="top-bar">
-    <view class="icon-btn" bindtap="goBack">
-      <text>←</text>
+  <view class="header">
+    <view class="header-left">
+      <button class="icon-btn" bindtap="goBack">
+        <text class="material-symbols-outlined">arrow_back</text>
+      </button>
     </view>
-    <text class="level-title">{{levelName}}</text>
-    <view class="time-display" wx:if="{{isTimed}}">
-      <text>⏱️ {{timeRemaining.toFixed(1)}}s</text>
+    <view class="header-center">
+      <text class="level-title">{{levelName}}</text>
+      <view class="level-info">
+        <text class="material-symbols-outlined">pets</text>
+        <text>100% 完整拼图</text>
+      </view>
+    </view>
+    <view class="header-right">
+      <button class="icon-btn" bindtap="showSettings">
+        <text class="material-symbols-outlined">settings</text>
+      </button>
     </view>
   </view>
 
   <view class="game-area">
-    <canvas 
-      type="2d" 
-      id="gameCanvas" 
-      class="game-canvas"
-      bindtouchstart="handleCanvasTouch"
-    ></canvas>
-    
-    <view class="pause-overlay" wx:if="{{isPaused}}">
-      <text class="pause-text">游戏暂停</text>
-      <view class="btn-secondary" bindtap="resumeGame">
-        <text>继续游戏</text>
+    <view class="board-rotate-wrapper">
+      <view class="parquet-grid">
+        <block wx:for="{{tiles}}" wx:key="id">
+          <view 
+            class="tile {{tile.type === 'horizontal' ? 'tile-h' : tile.type === 'vertical' ? 'tile-v' : ''}} {{tile.unitType === 'dog' ? 'tile-dog' : 'tile-wolf'}}"
+            style="grid-column:{{tile.gridCol}}/{{tile.gridCol + tile.gridColSpan}}; grid-row:{{tile.gridRow}}/{{tile.gridRow + tile.gridRowSpan}};"
+            bindtap="handleTileTap"
+            data-tile-index="{{index}}"
+          >
+            <view class="tile-content tile-direction-{{tile.direction}}">
+              <image 
+                class="unit-img" 
+                src="{{tile.unitType === 'dog' ? dogImageUrl : wolfImageUrl}}"
+                mode="aspectFill"
+              />
+            </view>
+          </view>
+        </block>
       </view>
     </view>
   </view>
 
-  <view class="bottom-bar">
-    <view class="btn-icon" bindtap="resetGame">
-      <text>🔄</text>
-    </view>
-    <view class="btn-icon" bindtap="pauseGame" wx:if="{{!isPaused}}">
-      <text>⏸️</text>
-    </view>
-    <view class="btn-icon" bindtap="resumeGame" wx:if="{{isPaused}}">
-      <text>▶️</text>
+  <view class="footer">
+    <view class="footer-content">
+      <button class="footer-btn" bindtap="handleUndo">
+        <view class="btn-icon-wrapper">
+          <text class="material-symbols-outlined">undo</text>
+        </view>
+        <text class="btn-text">撤销</text>
+      </button>
+      
+      <button class="footer-btn main-btn" bindtap="handleHint">
+        <view class="btn-icon-wrapper large">
+          <text class="material-symbols-outlined">lightbulb</text>
+        </view>
+        <text class="btn-text">提示</text>
+      </button>
+      
+      <button class="footer-btn" bindtap="handleReset">
+        <view class="btn-icon-wrapper">
+          <text class="material-symbols-outlined">refresh</text>
+        </view>
+        <text class="btn-text">重置</text>
+      </button>
     </view>
   </view>
 </view>
