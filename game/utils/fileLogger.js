@@ -3,7 +3,7 @@ const path = require('path');
 
 class FileLogger {
   constructor() {
-    this.debugDir = path.join(__dirname, '../debug');
+    this.debugDir = path.join(__dirname, '../../debug');
     this.ensureDebugDir();
     this.currentLogFile = null;
     this.init();
