@@ -378,7 +378,7 @@ class PuzzleManager {
     if (tile.state !== UnitState.IDLE) {
       logger.log('格子不是 IDLE 状态:', tile.state);
       if (fileLogger) fileLogger.log('格子不是 IDLE 状态:', tile.state);
-      return { moved: false, reason: 'tile_not_idle' };
+      return { moved: false, disappeared: false, reason: 'tile_not_idle' };
     }
 
     const direction = tile.direction;
@@ -392,7 +392,7 @@ class PuzzleManager {
     if (!vector) {
       logger.log('无效的方向:', direction);
       if (fileLogger) fileLogger.log('无效的方向:', direction);
-      return { moved: false, reason: 'invalid_direction' };
+      return { moved: false, disappeared: false, reason: 'invalid_direction' };
     }
 
     logger.log('=== slideTile 开始 ===');
@@ -413,6 +413,8 @@ class PuzzleManager {
     let newCol = tile.gridCol;
     let newRow = tile.gridRow;
     let moved = false;
+    let initialCol = tile.gridCol;
+    let initialRow = tile.gridRow;
 
     let stepCount = 0;
     while (true) {
@@ -440,7 +442,7 @@ class PuzzleManager {
         const collisionLog = `碰到障碍！停止在当前位置 (${newCol}, ${newRow})`;
         console.log(collisionLog);
         if (fileLogger) fileLogger.log(collisionLog);
-        moved = newCol !== tile.gridCol || newRow !== tile.gridRow;
+        moved = newCol !== initialCol || newRow !== initialRow;
         break;
       }
 
@@ -452,7 +454,7 @@ class PuzzleManager {
         const stopLog = `到达边界！停止在当前位置 (${newCol}, ${newRow})`;
         console.log(stopLog);
         if (fileLogger) fileLogger.log(stopLog);
-        moved = newCol !== tile.gridCol || newRow !== tile.gridRow;
+        moved = newCol !== initialCol || newRow !== initialRow;
         break;
       }
 
@@ -536,8 +538,8 @@ class PuzzleManager {
       console.log('  检查格子:', other.id, '位置:', otherLeft, otherTop, 'span:', other.gridColSpan, other.gridRowSpan);
       fileLogger.log(checkInfo);
 
-      if (tileLeft < otherRight && tileRight > otherLeft &&
-          tileTop < otherBottom && tileBottom > otherTop) {
+      if (tileLeft <= otherRight && tileRight >= otherLeft &&
+          tileTop <= otherBottom && tileBottom >= otherTop) {
         const collisionFound = `  *** 碰撞！与格子 ${other.id} 相交`;
         const collisionDetail = `  *** 碰撞详情: [${tileLeft}, ${tileTop}] - [${tileRight}, ${tileBottom}] 与 [${otherLeft}, ${otherTop}] - [${otherRight}, ${otherBottom}]`;
         console.log('  *** 碰撞！与格子', other.id, '相交');
@@ -663,3 +665,5 @@ class PuzzleManager {
 }
 
 module.exports = PuzzleManager;
+module.exports.PuzzleLevel = PuzzleLevel;
+
