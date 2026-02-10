@@ -19,6 +19,12 @@ class Tile {
     this.startGridRow = config.gridRow;
     this.targetGridCol = config.gridCol;
     this.targetGridRow = config.gridRow;
+    this.startX = 0;
+    this.startY = 0;
+    this.targetX = 0;
+    this.targetY = 0;
+    this.currentX = 0;
+    this.currentY = 0;
   }
 }
 
@@ -56,7 +62,47 @@ class PuzzleManager {
     this.tileSize = 18;
     this.history = [];
     this.maxHistory = 50;
+    this.screenWidth = 0;
+    this.screenHeight = 0;
     this.initLevels();
+  }
+
+  setScreenSize(width, height) {
+    this.screenWidth = width;
+    this.screenHeight = height;
+  }
+
+  getTileScreenPosition(tile) {
+    if (this.screenWidth === 0 || this.screenHeight === 0) {
+      return null;
+    }
+
+    const sqrt2 = Math.sqrt(2);
+    const maxGridWidth = this.screenWidth / sqrt2;
+    const maxGridHeight = this.screenHeight / sqrt2;
+    const tileSize = Math.min(maxGridWidth, maxGridHeight) / this.gridSize;
+    const gridWidth = tileSize * this.gridSize;
+    const gridHeight = tileSize * this.gridSize;
+    const offsetX = (this.screenWidth - gridWidth) / 2;
+    const offsetY = (this.screenHeight - gridHeight) / 2;
+
+    const centerX = this.screenWidth / 2;
+    const centerY = this.screenHeight / 2;
+
+    const localX = offsetX + (tile.gridCol - 1) * tileSize;
+    const localY = offsetY + (tile.gridRow - 1) * tileSize;
+
+    const dx = localX - centerX;
+    const dy = localY - centerY;
+
+    const angle = 45 * Math.PI / 180;
+    const rotatedX = dx * Math.cos(angle) - dy * Math.sin(angle);
+    const rotatedY = dx * Math.sin(angle) + dy * Math.cos(angle);
+
+    return {
+      x: rotatedX + centerX,
+      y: rotatedY + centerY
+    };
   }
 
   initLevels() {
@@ -333,10 +379,11 @@ class PuzzleManager {
 
     this.saveState();
 
+    const startPos = this.getTileScreenPosition(tile);
     tile.startGridCol = tile.gridCol;
     tile.startGridRow = tile.gridRow;
-    tile.targetGridCol = tile.gridCol;
-    tile.targetGridRow = tile.gridRow;
+    tile.startX = startPos.x;
+    tile.startY = startPos.y;
 
     let newCol = tile.gridCol;
     let newRow = tile.gridRow;
@@ -367,6 +414,25 @@ class PuzzleManager {
     if (moved) {
       tile.targetGridCol = newCol;
       tile.targetGridRow = newRow;
+      
+      const tempTile = {
+        gridCol: newCol,
+        gridRow: newRow,
+        gridColSpan: tile.gridColSpan,
+        gridRowSpan: tile.gridRowSpan,
+        type: tile.type,
+        unitType: tile.unitType,
+        direction: tile.direction,
+        state: tile.state,
+        imageUrl: tile.imageUrl
+      };
+      
+      const endPos = this.getTileScreenPosition(tempTile);
+      tile.targetX = endPos.x;
+      tile.targetY = endPos.y;
+      tile.currentX = tile.startX;
+      tile.currentY = tile.startY;
+      
       tile.animating = true;
       tile.animationProgress = 0;
       tile.state = UnitState.SLIDING;
@@ -389,13 +455,13 @@ class PuzzleManager {
         tile.state = UnitState.DISAPPEARED;
       } else {
         tile.state = UnitState.IDLE;
+        tile.gridCol = tile.targetGridCol;
+        tile.gridRow = tile.targetGridRow;
       }
     } else {
       const progress = tile.animationProgress;
-      const currentCol = tile.startGridCol + (tile.targetGridCol - tile.startGridCol) * progress;
-      const currentRow = tile.startGridRow + (tile.targetGridRow - tile.startGridRow) * progress;
-      tile.gridCol = currentCol;
-      tile.gridRow = currentRow;
+      tile.currentX = tile.startX + (tile.targetX - tile.startX) * progress;
+      tile.currentY = tile.startY + (tile.targetY - tile.startY) * progress;
     }
   }
 
