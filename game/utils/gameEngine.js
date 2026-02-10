@@ -345,16 +345,11 @@ class GameEngine {
     this.ctx.rotate(45 * Math.PI / 180);
     this.ctx.translate(-centerX, -centerY);
 
-    console.log('Drawing tiles:', tiles.length);
     tiles.forEach((tile, index) => {
       const x = offsetX + (tile.gridCol - 1) * tileSize;
       const y = offsetY + (tile.gridRow - 1) * tileSize;
       const width = tile.gridColSpan * tileSize;
       const height = tile.gridRowSpan * tileSize;
-
-      if (index < 5) {
-        console.log(`Tile ${index}:`, tile, `size: ${width.toFixed(1)}x${height.toFixed(1)}`);
-      }
 
       this.drawTile(tile, x, y, width, height);
     });
