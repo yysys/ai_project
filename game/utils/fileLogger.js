@@ -53,7 +53,11 @@ class FileLogger {
         this.fs.mkdir({
           dirPath: this.debugDir,
           success: () => console.log('Debug 目录已创建:', this.debugDir),
-          fail: (err) => console.error('创建 debug 目录失败:', err)
+          fail: (err) => {
+            if (err.errNo !== 21102) {
+              console.error('创建 debug 目录失败:', err);
+            }
+          }
         });
       } else if (typeof this.fs.existsSync === 'function' && !this.fs.existsSync(this.debugDir)) {
         if (typeof this.fs.mkdirSync === 'function') {
@@ -67,44 +71,32 @@ class FileLogger {
   }
 
   log(message) {
-    try {
-      const timestamp = new Date().toISOString();
-      const logEntry = `[${timestamp}] ${message}`;
-      console.log(logEntry);
-      this.logBuffer.push(logEntry);
-      if (this.logBuffer.length >= 10) {
-        this.flushLogBuffer();
-      }
-    } catch (e) {
-      console.error('fileLogger.log 出错:', e);
+    const timestamp = new Date().toISOString();
+    const logEntry = `[${timestamp}] ${message}`;
+    console.log(logEntry);
+    this.logBuffer.push(logEntry);
+    if (this.logBuffer.length >= 10) {
+      this.flushLogBuffer();
     }
   }
 
   error(message) {
-    try {
-      const timestamp = new Date().toISOString();
-      const logEntry = `[${timestamp}] [ERROR] ${message}`;
-      console.error(logEntry);
-      this.logBuffer.push(logEntry);
-      if (this.logBuffer.length >= 10) {
-        this.flushLogBuffer();
-      }
-    } catch (e) {
-      console.error('fileLogger.error 出错:', e);
+    const timestamp = new Date().toISOString();
+    const logEntry = `[${timestamp}] [ERROR] ${message}`;
+    console.error(logEntry);
+    this.logBuffer.push(logEntry);
+    if (this.logBuffer.length >= 10) {
+      this.flushLogBuffer();
     }
   }
 
   warn(message) {
-    try {
-      const timestamp = new Date().toISOString();
-      const logEntry = `[${timestamp}] [WARN] ${message}`;
-      console.warn(logEntry);
-      this.logBuffer.push(logEntry);
-      if (this.logBuffer.length >= 10) {
-        this.flushLogBuffer();
-      }
-    } catch (e) {
-      console.error('fileLogger.warn 出错:', e);
+    const timestamp = new Date().toISOString();
+    const logEntry = `[${timestamp}] [WARN] ${message}`;
+    console.warn(logEntry);
+    this.logBuffer.push(logEntry);
+    if (this.logBuffer.length >= 10) {
+      this.flushLogBuffer();
     }
   }
 
@@ -205,12 +197,16 @@ class FileLogger {
 
 const fileLogger = new FileLogger();
 
-if (typeof window !== 'undefined' && window.addEventListener) {
+if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
   window.addEventListener('hide', () => {
     fileLogger.flushLogBuffer();
   });
 } else if (typeof tt !== 'undefined' && tt.onHide) {
   tt.onHide(() => {
+    fileLogger.flushLogBuffer();
+  });
+} else if (typeof wx !== 'undefined' && wx.onHide) {
+  wx.onHide(() => {
     fileLogger.flushLogBuffer();
   });
 }

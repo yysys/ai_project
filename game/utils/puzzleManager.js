@@ -436,23 +436,21 @@ class PuzzleManager {
       console.log(areaLog);
       if (fileLogger) fileLogger.log(areaLog);
 
-      newCol = nextCol;
-      newRow = nextRow;
-
-      const hasCollision = this.checkCollision(tile, newCol, newRow);
+      const hasCollision = this.checkCollision(tile, nextCol, nextRow);
       if (hasCollision) {
-        const collisionLog = `碰到障碍！停止在当前位置 (${tile.gridCol}, ${tile.gridRow})`;
+        const collisionLog = `碰到障碍！停止在当前位置 (${newCol}, ${newRow})`;
         console.log(collisionLog);
         if (fileLogger) fileLogger.log(collisionLog);
-        newCol = tile.gridCol;
-        newRow = tile.gridRow;
         moved = true;
         break;
       }
 
-      if (newCol < 1 || nextRight > this.gridSize || 
-          newRow < 1 || nextBottom > this.gridSize) {
-        const boundaryLog = `⚠️ 超出边界！gridSize=${this.gridSize}, 区域=[${newCol},${newRow}]-[${nextRight},${nextBottom}]`;
+      newCol = nextCol;
+      newRow = nextRow;
+
+      if (nextCol < 1 || nextRight > this.gridSize || 
+          nextRow < 1 || nextBottom > this.gridSize) {
+        const boundaryLog = `⚠️ 超出边界！gridSize=${this.gridSize}, 区域=[${nextCol},${nextRow}]-[${nextRight},${nextBottom}]`;
         console.log(boundaryLog);
         if (fileLogger) fileLogger.log(boundaryLog);
         const disappearLog = `超出边界！格子将消失，最终位置: (${newCol}, ${newRow})`;

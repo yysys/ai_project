@@ -318,13 +318,6 @@ class GameEngine {
   drawTiles() {
     const tiles = this.puzzleManager.getTiles();
     
-    if (!this.drawTilesLogShown) {
-      logger.log('=== drawTiles 被调用 ===');
-      logger.log('tiles 数量:', tiles.length);
-      logger.log('gameState:', this.gameState);
-      this.drawTilesLogShown = true;
-    }
-    
     const sqrt2 = Math.sqrt(2);
     const maxGridWidth = this.screenWidth / sqrt2;
     const maxGridHeight = this.screenHeight / sqrt2;

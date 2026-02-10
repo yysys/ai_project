@@ -1,3 +1,11 @@
+const LOG_LEVEL = {
+  ERROR: 0,
+  WARN: 1,
+  INFO: 2,
+  DEBUG: 3,
+  VERBOSE: 4
+};
+
 class DebugLogger {
   constructor() {
     this.logs = [];
@@ -6,6 +14,7 @@ class DebugLogger {
     this.fs = null;
     this.logPath = null;
     this.logBuffer = [];
+    this.logLevel = LOG_LEVEL.INFO;
   }
 
   init() {
@@ -14,11 +23,9 @@ class DebugLogger {
         this.fs = tt.getFileSystemManager();
         this.isTt = true;
         this.logPath = 'ttfile://user/debug/game_debug.log';
-        console.log('[logger] 抖音小游戏日志系统初始化成功');
       } else if (typeof wx !== 'undefined' && wx.getFileSystemManager) {
         this.fs = wx.getFileSystemManager();
         this.logPath = 'wxfile://user/debug/game_debug.log';
-        console.log('[logger] 微信小程序日志系统初始化成功');
       } else if (typeof require === 'function') {
         const fs = require('fs');
         const path = require('path');
@@ -27,21 +34,49 @@ class DebugLogger {
           appendFileSync: (path, content, encoding) => fs.appendFileSync(path, content, encoding)
         };
         this.logPath = path.join(__dirname, '../../debug/game_debug.log');
-        console.log('[logger] Node.js 日志系统初始化成功');
       } else {
         console.warn('[logger] 无法初始化文件系统，日志将只输出到控制台');
+      }
+
+      const envLevel = (typeof process !== 'undefined' && process.env?.LOG_LEVEL) || (typeof global !== 'undefined' && global.GAME_LOG_LEVEL);
+      if (envLevel) {
+        const level = LOG_LEVEL[envLevel.toUpperCase()];
+        if (level !== undefined) {
+          this.logLevel = level;
+        }
       }
     } catch (e) {
       console.error('[logger] 日志系统初始化失败:', e);
     }
   }
 
-  log(message) {
+  setLogLevel(level) {
+    const logLevel = typeof level === 'string' ? LOG_LEVEL[level.toUpperCase()] : level;
+    if (logLevel !== undefined) {
+      this.logLevel = logLevel;
+    }
+  }
+
+  getLogLevel() {
+    return this.logLevel;
+  }
+
+  _shouldLog(level) {
+    return level <= this.logLevel;
+  }
+
+  _writeLog(level, levelName, message, color = null) {
     try {
       const timestamp = new Date().toISOString();
-      const logEntry = `[${timestamp}] ${message}`;
+      const logEntry = `[${timestamp}] [${levelName}] ${message}`;
       this.logs.push(logEntry);
-      console.log(logEntry);
+      
+      if (color) {
+        console.log(`%c${logEntry}`, color);
+      } else {
+        console.log(logEntry);
+      }
+      
       this.logBuffer.push(logEntry);
       if (this.logBuffer.length >= 10) {
         this.flushLogBuffer();
@@ -51,33 +86,39 @@ class DebugLogger {
     }
   }
 
+  log(message) {
+    if (this._shouldLog(LOG_LEVEL.INFO)) {
+      this._writeLog(LOG_LEVEL.INFO, 'INFO', message);
+    }
+  }
+
+  info(message) {
+    if (this._shouldLog(LOG_LEVEL.INFO)) {
+      this._writeLog(LOG_LEVEL.INFO, 'INFO', message);
+    }
+  }
+
+  debug(message) {
+    if (this._shouldLog(LOG_LEVEL.DEBUG)) {
+      this._writeLog(LOG_LEVEL.DEBUG, 'DEBUG', message, 'color: #888;');
+    }
+  }
+
+  verbose(message) {
+    if (this._shouldLog(LOG_LEVEL.VERBOSE)) {
+      this._writeLog(LOG_LEVEL.VERBOSE, 'VERBOSE', message, 'color: #aaa;');
+    }
+  }
+
   error(message) {
-    try {
-      const timestamp = new Date().toISOString();
-      const logEntry = `[${timestamp}] [ERROR] ${message}`;
-      this.logs.push(logEntry);
-      console.error(logEntry);
-      this.logBuffer.push(logEntry);
-      if (this.logBuffer.length >= 10) {
-        this.flushLogBuffer();
-      }
-    } catch (e) {
-      console.error('[logger] error error:', e);
+    if (this._shouldLog(LOG_LEVEL.ERROR)) {
+      this._writeLog(LOG_LEVEL.ERROR, 'ERROR', message, 'color: #f44336;');
     }
   }
 
   warn(message) {
-    try {
-      const timestamp = new Date().toISOString();
-      const logEntry = `[${timestamp}] [WARN] ${message}`;
-      this.logs.push(logEntry);
-      console.warn(logEntry);
-      this.logBuffer.push(logEntry);
-      if (this.logBuffer.length >= 10) {
-        this.flushLogBuffer();
-      }
-    } catch (e) {
-      console.error('[logger] warn error:', e);
+    if (this._shouldLog(LOG_LEVEL.WARN)) {
+      this._writeLog(LOG_LEVEL.WARN, 'WARN', message, 'color: #ff9800;');
     }
   }
 
@@ -92,7 +133,6 @@ class DebugLogger {
           data: content,
           encoding: 'utf8',
           success: () => {
-            console.log('[logger] 日志写入成功:', this.logPath);
             this.logBuffer = [];
           },
           fail: (err) => {
@@ -101,6 +141,9 @@ class DebugLogger {
         });
       } else if (typeof this.fs.appendFileSync === 'function') {
         this.fs.appendFileSync(this.logPath, content, 'utf8');
+        this.logBuffer = [];
+      } else if (typeof this.fs.writeFileSync === 'function') {
+        this.fs.writeFileSync(this.logPath, content, 'utf8');
         this.logBuffer = [];
       }
     } catch (e) {
@@ -128,7 +171,6 @@ class DebugLogger {
           data: content,
           encoding: 'utf8',
           success: () => {
-            console.log('[logger] 日志已保存到:', savePath);
             this.log('日志已保存到: ' + savePath);
           },
           fail: (err) => {
@@ -137,7 +179,6 @@ class DebugLogger {
         });
       } else {
         this.fs.writeFileSync(savePath, content, 'utf8');
-        console.log('[logger] 日志已保存到:', savePath);
         this.log('日志已保存到: ' + savePath);
       }
       return savePath;
