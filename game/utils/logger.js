@@ -2,12 +2,40 @@ class DebugLogger {
   constructor() {
     this.logs = [];
     this.startTime = Date.now();
-    this.fs = typeof tt !== 'undefined' && tt.getFileSystemManager ? tt.getFileSystemManager() : null;
-    this.logPath = `wxfile://tmp/game_debug_${Date.now()}.log`;
+    this.isTt = false;
+    this.fs = null;
+    this.logPath = null;
+    this.logBuffer = [];
     this.init();
   }
 
   init() {
+    try {
+      if (typeof tt !== 'undefined' && tt.getFileSystemManager) {
+        this.fs = tt.getFileSystemManager();
+        this.isTt = true;
+        this.logPath = 'ttfile://user/debug/game_debug.log';
+        console.log('抖音小游戏日志系统初始化成功');
+      } else if (typeof wx !== 'undefined' && wx.getFileSystemManager) {
+        this.fs = wx.getFileSystemManager();
+        this.logPath = 'wxfile://user/debug/game_debug.log';
+        console.log('微信小程序日志系统初始化成功');
+      } else if (typeof require === 'function') {
+        const fs = require('fs');
+        const path = require('path');
+        this.fs = {
+          writeFileSync: (path, content, encoding) => fs.writeFileSync(path, content, encoding),
+          appendFileSync: (path, content, encoding) => fs.appendFileSync(path, content, encoding)
+        };
+        this.logPath = path.join(__dirname, '../../debug/game_debug.log');
+        console.log('Node.js 日志系统初始化成功');
+      } else {
+        console.warn('无法初始化文件系统，日志将只输出到控制台');
+      }
+    } catch (e) {
+      console.error('日志系统初始化失败:', e);
+    }
+
     this.log('日志系统初始化');
   }
 
@@ -16,7 +44,10 @@ class DebugLogger {
     const logEntry = `[${timestamp}] ${message}`;
     this.logs.push(logEntry);
     console.log(logEntry);
-    this.appendToFile(logEntry);
+    this.logBuffer.push(logEntry);
+    if (this.logBuffer.length >= 10) {
+      this.flushLogBuffer();
+    }
   }
 
   error(message) {
@@ -24,7 +55,10 @@ class DebugLogger {
     const logEntry = `[${timestamp}] [ERROR] ${message}`;
     this.logs.push(logEntry);
     console.error(logEntry);
-    this.appendToFile(logEntry);
+    this.logBuffer.push(logEntry);
+    if (this.logBuffer.length >= 10) {
+      this.flushLogBuffer();
+    }
   }
 
   warn(message) {
@@ -32,15 +66,43 @@ class DebugLogger {
     const logEntry = `[${timestamp}] [WARN] ${message}`;
     this.logs.push(logEntry);
     console.warn(logEntry);
-    this.appendToFile(logEntry);
+    this.logBuffer.push(logEntry);
+    if (this.logBuffer.length >= 10) {
+      this.flushLogBuffer();
+    }
+  }
+
+  flushLogBuffer() {
+    if (this.logBuffer.length === 0 || !this.fs) return;
+    try {
+      const content = this.logBuffer.join('\n') + '\n';
+      
+      if (this.isTt) {
+        this.fs.writeFile({
+          filePath: this.logPath,
+          data: content,
+          encoding: 'utf8',
+          success: () => {
+            console.log('日志写入成功:', this.logPath);
+            this.logBuffer = [];
+          },
+          fail: (err) => {
+            console.error('写入日志文件失败:', err);
+          }
+        });
+      } else if (typeof this.fs.appendFileSync === 'function') {
+        this.fs.appendFileSync(this.logPath, content, 'utf8');
+        this.logBuffer = [];
+      }
+    } catch (e) {
+      console.error('写入日志文件失败:', e);
+    }
   }
 
   appendToFile(message) {
-    if (!this.fs) return;
-    try {
-      this.fs.appendFileSync(this.logPath, message + '\n', 'utf8');
-    } catch (e) {
-      console.error('写入日志文件失败:', e);
+    this.logBuffer.push(message);
+    if (this.logBuffer.length >= 10) {
+      this.flushLogBuffer();
     }
   }
 
@@ -56,10 +118,26 @@ class DebugLogger {
     
     try {
       const content = this.getLogs();
-      const savePath = `wxfile://tmp/debug_log_${Date.now()}.log`;
-      this.fs.writeFileSync(savePath, content, 'utf8');
-      console.log('日志已保存到:', savePath);
-      this.log('日志已保存到: ' + savePath);
+      const savePath = this.isTt ? 'ttfile://user/debug/saved_log.log' : this.logPath.replace('game_debug', 'saved_log');
+      
+      if (this.isTt) {
+        this.fs.writeFile({
+          filePath: savePath,
+          data: content,
+          encoding: 'utf8',
+          success: () => {
+            console.log('日志已保存到:', savePath);
+            this.log('日志已保存到: ' + savePath);
+          },
+          fail: (err) => {
+            console.error('保存日志失败:', err);
+          }
+        });
+      } else {
+        this.fs.writeFileSync(savePath, content, 'utf8');
+        console.log('日志已保存到:', savePath);
+        this.log('日志已保存到: ' + savePath);
+      }
       return savePath;
     } catch (e) {
       console.error('保存日志失败:', e);
@@ -74,4 +152,9 @@ class DebugLogger {
 }
 
 const logger = new DebugLogger();
+
+window.addEventListener('hide', () => {
+  logger.flushLogBuffer();
+});
+
 module.exports = logger;
