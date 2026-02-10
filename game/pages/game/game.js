@@ -1,4 +1,5 @@
 const PuzzleManager = require('../../utils/puzzleManager');
+const logger = require('../../utils/logger');
 
 const app = getApp();
 
@@ -9,28 +10,38 @@ Page({
     tiles: [],
     dogImageUrl: '',
     wolfImageUrl: '',
-    gameActive: false
+    gameActive: false,
+    debugLogs: [],
+    showDebug: false
   },
 
   puzzleManager: null,
+  
+  addDebugLog(message) {
+    const timestamp = new Date().toLocaleTimeString();
+    const log = `[${timestamp}] ${message}`;
+    const logs = this.data.debugLogs.concat(log).slice(-50);
+    this.setData({ debugLogs: logs });
+  },
 
   onLoad(options) {
-    console.log('游戏页加载', options);
+    logger.log('=== pages/game/game.js onLoad ===');
     const levelId = parseInt(options.levelId) || 1;
     this.setData({ 
       levelId,
-      dogImageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuApwgydymAcHiZkKh1m7yRT8Ux1Athx7JWBLVxihj0GvKV9YGLaF_cjL-sNIkQzfCrkFQHfkVcxRYKtcJAeyJ0XuUiQ52EbkxxQKFUe1VqgijE18eZUWu8xuiccee7G2qmudVaCILYLA_reP36lOJoRpFG8Dj0GyAEZ4xI7EBR7FcNmiSck-l2nppKSOQ1Z0GzyHPSxkY1p2RCT0knSz1FXGmGLa7fpJbpRBZPleUWj5Cp2-5aZW3TxoSOe6yQ3mXvdBAmkBB5c5nc',
-      wolfImageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyWwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o'
+      dogImageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuApwgydymAcHiZkKh1m7yRT8Ux1Athx7JWBLVxihj0GvKV9YGLaF_cjL-sNIkQzfCrkFQHfkVcxRYKtcJAeyJ0XuUiQ52EbkxxQKFUe1VqgijE18eZUWu8xuiccee7G2qmudVaCILYLA_reP36lOJoRpFG8Dj0GyAEZ4xI7EBR7FcNmiSck-l2nppKSOQ1Z0GzyHPSxkY1p2RCT0knSz1FXGmGLa7fpJbpRBZPleUWj5Cp2-5aZW3TxuSOe6yQ3mXvdBAmkBB5c5nc',
+      wolfImageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyVwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o'
     });
     this.initGame();
   },
 
   onReady() {
+    logger.log('=== pages/game/game.js onReady ===');
     this.startLevel();
   },
 
   onShow() {
-    console.log('游戏页显示');
+    logger.log('=== pages/game/game.js onShow ===');
   },
 
   onHide() {
@@ -88,20 +99,26 @@ Page({
   },
 
   handleTileTap(e) {
+    logger.log('=== handleTileTap 触发 ===');
     if (!this.data.gameActive) {
+      logger.log('游戏未激活');
       return;
     }
 
     const tileIndex = e.currentTarget.dataset.tileIndex;
+    logger.log('tileIndex:', tileIndex);
     const tiles = this.data.tiles;
     const tile = tiles[tileIndex];
+    logger.log('点击的 tile:', tile);
 
     if (!tile) return;
 
     const puzzleTile = this.puzzleManager.getTiles().find(t => t.id === tile.id);
+    logger.log('找到的 puzzleTile:', puzzleTile);
     if (!puzzleTile) return;
 
     const result = this.puzzleManager.slideTile(puzzleTile);
+    logger.log('slideTile 结果:', result);
     
     if (result.moved) {
       this.updateTiles();
@@ -308,11 +325,16 @@ Page({
   },
 
   showSettings() {
+    logger.saveLog();
     wx.showToast({
-      title: '设置功能开发中',
+      title: '日志已保存',
       icon: 'none',
       duration: 1500
     });
+  },
+
+  saveLog() {
+    return logger.saveLog();
   },
 
   destroyGame() {

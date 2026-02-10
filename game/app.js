@@ -1,6 +1,9 @@
+const logger = require('./utils/logger');
+
 App({
   onLaunch(options) {
     console.log('App launched', options);
+    this.setupDebugHelpers();
   },
 
   onShow(options) {
@@ -13,6 +16,10 @@ App({
 
   onError(msg) {
     console.error('App error:', msg);
+  },
+
+  setupDebugHelpers() {
+    this.logger = logger;
   },
 
   globalData: {

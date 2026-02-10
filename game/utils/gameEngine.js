@@ -1,5 +1,6 @@
 const { GameState, TILE_CONFIG, GAME_CONFIG } = require('./constants');
 const PuzzleManager = require('./puzzleManager');
+const logger = require('./logger');
 
 class GameEngine {
   constructor() {
@@ -120,17 +121,27 @@ class GameEngine {
   }
 
   handleClick(x, y) {
+    console.log('=== handleClick 被调用 ===');
+    console.log('点击坐标:', x, y);
+    console.log('gameState:', this.gameState);
+    console.log('GameState.PLAYING:', GameState.PLAYING);
+    
     if (this.gameState !== GameState.PLAYING) {
+      console.log('点击事件：游戏不在 PLAYING 状态');
       return false;
     }
 
     const tile = this.getTileAtPosition(x, y);
     
+    console.log('点击事件：getTileAtPosition 返回', tile ? tile.id : 'null');
+
     if (tile) {
       const result = this.puzzleManager.slideTile(tile);
+      console.log('点击事件：slideTile 返回', result);
       return result.moved;
     }
 
+    console.log('点击事件：没有点击到格子');
     return false;
   }
 
@@ -298,6 +309,13 @@ class GameEngine {
 
   drawTiles() {
     const tiles = this.puzzleManager.getTiles();
+    
+    if (!this.drawTilesLogShown) {
+      logger.log('=== drawTiles 被调用 ===');
+      logger.log('tiles 数量:', tiles.length);
+      logger.log('gameState:', this.gameState);
+      this.drawTilesLogShown = true;
+    }
     
     const sqrt2 = Math.sqrt(2);
     const maxGridWidth = this.screenWidth / sqrt2;

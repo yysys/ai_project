@@ -1,5 +1,8 @@
 const { TileType, UnitType, UnitState, GameState, Direction, DIRECTION_VECTORS, generateId } = require('./constants');
 
+const logger = require('./logger');
+const fileLogger = require('./fileLogger');
+
 class Tile {
   constructor(config) {
     this.id = generateId();
@@ -353,28 +356,82 @@ class PuzzleManager {
   }
 
   slideTile(tile) {
+    if (!this.slideTileLogShown) {
+      logger.log('=== slideTile 方法被调用 ===');
+      fileLogger.log('=== slideTile 方法被调用 ===');
+      this.slideTileLogShown = true;
+    }
+    
+    fileLogger.log('=== slideTile 开始 ===');
+    fileLogger.log('格子 ID:', tile.id);
+    fileLogger.log('格子类型:', tile.unitType);
+    fileLogger.log('格子状态:', tile.state);
+    
     if (tile.state !== UnitState.IDLE) {
+      logger.log('格子不是 IDLE 状态:', tile.state);
+      fileLogger.log('格子不是 IDLE 状态:', tile.state);
       return { moved: false, reason: 'tile_not_idle' };
     }
 
     const direction = tile.direction;
     const vector = DIRECTION_VECTORS[direction];
     
+    fileLogger.log('格子方向:', direction);
+    fileLogger.log('方向向量:', JSON.stringify(vector));
+    
     if (!vector) {
+      logger.log('无效的方向:', direction);
+      fileLogger.log('无效的方向:', direction);
       return { moved: false, reason: 'invalid_direction' };
     }
+
+    logger.log('=== slideTile 开始 ===');
+    logger.log('格子 ID:', tile.id);
+    logger.log('格子类型:', tile.unitType);
+    logger.log('格子方向:', direction);
+    logger.log('方向向量:', vector);
+    logger.log('初始位置:', tile.gridCol, tile.gridRow);
+    logger.log('格子大小:', tile.gridColSpan, 'x', tile.gridRowSpan);
+    logger.log('格子占据区域: [', tile.gridCol, ',', tile.gridRow, '] 到 [', tile.gridCol + tile.gridColSpan - 1, ',', tile.gridRow + tile.gridRowSpan - 1, ']');
+    
+    fileLogger.log('初始位置:', tile.gridCol, tile.gridRow);
+    fileLogger.log('格子大小:', tile.gridColSpan, 'x', tile.gridRowSpan);
+    fileLogger.log('格子占据区域: [', tile.gridCol, ',', tile.gridRow, '] 到 [', tile.gridCol + tile.gridColSpan - 1, ',', tile.gridRow + tile.gridRowSpan - 1, ']');
 
     let newCol = tile.gridCol;
     let newRow = tile.gridRow;
     let moved = false;
     let disappeared = false;
 
+    let stepCount = 0;
     while (true) {
       const nextCol = newCol + vector.col;
       const nextRow = newRow + vector.row;
+      stepCount++;
 
-      if (nextCol < 1 || nextCol > this.gridSize || 
-          nextRow < 1 || nextRow > this.gridSize) {
+      const stepLog = `步骤 ${stepCount}: 当前位置 (${newCol}, ${newRow}) -> 尝试移动到 (${nextCol}, ${nextRow})`;
+      console.log(stepLog);
+      fileLogger.log(stepLog);
+      
+      const spanLog = `格子 span: ${tile.gridColSpan}x${tile.gridRowSpan}, 方向: ${direction}`;
+      console.log(spanLog);
+      fileLogger.log(spanLog);
+
+      const nextRight = nextCol + tile.gridColSpan - 1;
+      const nextBottom = nextRow + tile.gridRowSpan - 1;
+      
+      const areaLog = `格子将占据区域: [${nextCol}, ${nextRow}] 到 [${nextRight}, ${nextBottom}]`;
+      console.log(areaLog);
+      fileLogger.log(areaLog);
+
+      if (nextCol < 1 || nextRight > this.gridSize || 
+          nextRow < 1 || nextBottom > this.gridSize) {
+        const boundaryLog = `⚠️ 超出边界！gridSize=${this.gridSize}, 区域=[${nextCol},${nextRow}]-[${nextRight},${nextBottom}]`;
+        console.log(boundaryLog);
+        fileLogger.log(boundaryLog);
+        const disappearLog = `超出边界！格子将消失，最终位置: (${newCol}, ${newRow})`;
+        console.log(disappearLog);
+        fileLogger.log(disappearLog);
         disappeared = true;
         moved = true;
         break;
@@ -382,6 +439,9 @@ class PuzzleManager {
 
       const hasCollision = this.checkCollision(tile, nextCol, nextRow);
       if (hasCollision) {
+        const collisionLog = `碰到障碍！停止在当前位置 (${newCol}, ${newRow})`;
+        console.log(collisionLog);
+        fileLogger.log(collisionLog);
         moved = true;
         break;
       }
@@ -396,10 +456,24 @@ class PuzzleManager {
       
       if (disappeared) {
         tile.state = UnitState.DISAPPEARED;
+        const disappearMsg = '格子消失！最终位置: (' + newCol + ', ' + newRow + ')';
+        console.log(disappearMsg);
+        fileLogger.log(disappearMsg);
       } else {
         tile.state = UnitState.IDLE;
+        const stopMsg = '格子停止！最终位置: (' + newCol + ', ' + newRow + ')';
+        console.log(stopMsg);
+        fileLogger.log(stopMsg);
       }
+    } else {
+      const noMoveMsg = '格子没有移动！';
+      console.log(noMoveMsg);
+      fileLogger.log(noMoveMsg);
     }
+
+    const endMsg = '=== slideTile 结束 === 返回: moved=' + moved + ', disappeared=' + disappeared;
+    console.log('=== slideTile 结束 ===');
+    fileLogger.log(endMsg);
 
     return { moved, disappeared, tile };
   }
@@ -438,17 +512,43 @@ class PuzzleManager {
     const tileTop = row;
     const tileBottom = row + tile.gridRowSpan - 1;
 
+    const collisionStart = '--- 碰撞检测开始 ---';
+    console.log(collisionStart);
+    fileLogger.log(collisionStart);
+    
+    const tileInfo = `移动的格子: ${tile.id} 位置: (${col}, ${row}) span: ${tile.gridColSpan}x${tile.gridRowSpan}`;
+    console.log('移动的格子:', tile.id, '位置:', col, row, 'span:', tile.gridColSpan, tile.gridRowSpan);
+    fileLogger.log(tileInfo);
+    
+    const boundaryInfo = `检测边界: [${tileLeft}, ${tileTop}] 到 [${tileRight}, ${tileBottom}]`;
+    console.log('检测边界:', tileLeft, tileTop, tileRight, tileBottom);
+    fileLogger.log(boundaryInfo);
+
     for (const other of tiles) {
       const otherLeft = other.gridCol;
       const otherRight = other.gridCol + other.gridColSpan - 1;
       const otherTop = other.gridRow;
       const otherBottom = other.gridRow + other.gridRowSpan - 1;
 
+      const checkInfo = `  检查格子: ${other.id} 位置: (${otherLeft}, ${otherTop}) span: ${other.gridColSpan}x${other.gridRowSpan}`;
+      console.log('  检查格子:', other.id, '位置:', otherLeft, otherTop, 'span:', other.gridColSpan, other.gridRowSpan);
+      fileLogger.log(checkInfo);
+
       if (tileLeft < otherRight && tileRight > otherLeft &&
           tileTop < otherBottom && tileBottom > otherTop) {
+        const collisionFound = `  *** 碰撞！与格子 ${other.id} 相交`;
+        const collisionDetail = `  *** 碰撞详情: [${tileLeft}, ${tileTop}] - [${tileRight}, ${tileBottom}] 与 [${otherLeft}, ${otherTop}] - [${otherRight}, ${otherBottom}]`;
+        console.log('  *** 碰撞！与格子', other.id, '相交');
+        console.log('  *** 碰撞详情: [', tileLeft, ',', tileTop, '] - [', tileRight, ',', tileBottom, '] 与 [', otherLeft, ',', otherTop, '] - [', otherRight, ',', otherBottom, ']');
+        fileLogger.log(collisionFound);
+        fileLogger.log(collisionDetail);
         return true;
       }
     }
+
+    const collisionEnd = '--- 碰撞检测结束：无碰撞 ---';
+    console.log(collisionEnd);
+    fileLogger.log(collisionEnd);
 
     return false;
   }
