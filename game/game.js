@@ -50,12 +50,14 @@ function initGame() {
       updateUI(elapsedTime);
     };
 
-    logger.log('注册 onTouchStart 事件监听器...');
-    tt.onTouchStart((e) => {
-      logger.log('=== onTouchStart 触发 ===');
+    logger.log('注册 canvas 触摸事件监听器...');
+    canvas.addEventListener('touchstart', (e) => {
+      logger.log('=== touchstart 触发 ===');
       logger.log('gameActive:', gameActive);
       logger.log('触摸事件对象类型:', typeof e);
       logger.log('触摸事件:', JSON.stringify(e));
+      
+      e.preventDefault();
       
       if (!gameActive) {
         logger.log('gameActive 为 false，忽略触摸');
@@ -70,8 +72,8 @@ function initGame() {
       } else {
         logger.error('touch 对象为 null!');
       }
-    });
-    logger.log('onTouchStart 事件监听器已注册');
+    }, { passive: false });
+    logger.log('canvas 触摸事件监听器已注册');
 
     startLevel(1);
   } catch (error) {
