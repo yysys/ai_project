@@ -410,76 +410,55 @@ class PuzzleManager {
       fileLogger.log('格子占据区域: [', tile.gridCol, ',', tile.gridRow, '] 到 [', tile.gridCol + tile.gridColSpan - 1, ',', tile.gridRow + tile.gridRowSpan - 1, ']');
     }
 
-    let newCol = tile.gridCol;
-    let newRow = tile.gridRow;
-    let moved = false;
-    let initialCol = tile.gridCol;
-    let initialRow = tile.gridRow;
+    const nextCol = tile.gridCol + vector.col;
+    const nextRow = tile.gridRow + vector.row;
 
-    let stepCount = 0;
-    while (true) {
-      const nextCol = newCol + vector.col;
-      const nextRow = newRow + vector.row;
-      stepCount++;
+    const stepLog = `格子从 (${tile.gridCol}, ${tile.gridRow}) 尝试移动到 (${nextCol}, ${nextRow})`;
+    console.log(stepLog);
+    if (fileLogger) fileLogger.log(stepLog);
 
-      const stepLog = `步骤 ${stepCount}: 当前位置 (${newCol}, ${newRow}) -> 尝试移动到 (${nextCol}, ${nextRow})`;
-      console.log(stepLog);
-      if (fileLogger) fileLogger.log(stepLog);
-      
-      const spanLog = `格子 span: ${tile.gridColSpan}x${tile.gridRowSpan}, 方向: ${direction}`;
-      console.log(spanLog);
-      if (fileLogger) fileLogger.log(spanLog);
+    const nextRight = nextCol + tile.gridColSpan - 1;
+    const nextBottom = nextRow + tile.gridRowSpan - 1;
 
-      const nextRight = nextCol + tile.gridColSpan - 1;
-      const nextBottom = nextRow + tile.gridRowSpan - 1;
-      
-      const areaLog = `格子将占据区域: [${nextCol}, ${nextRow}] 到 [${nextRight}, ${nextBottom}]`;
-      console.log(areaLog);
-      if (fileLogger) fileLogger.log(areaLog);
+    const areaLog = `格子将占据区域: [${nextCol}, ${nextRow}] 到 [${nextRight}, ${nextBottom}]`;
+    console.log(areaLog);
+    if (fileLogger) fileLogger.log(areaLog);
 
-      const hasCollision = this.checkCollision(tile, nextCol, nextRow);
-      if (hasCollision) {
-        const collisionLog = `碰到障碍！停止在当前位置 (${newCol}, ${newRow})`;
-        console.log(collisionLog);
-        if (fileLogger) fileLogger.log(collisionLog);
-        moved = newCol !== initialCol || newRow !== initialRow;
-        break;
-      }
-
-      if (nextCol < 1 || nextRight > this.gridSize || 
-          nextRow < 1 || nextBottom > this.gridSize) {
-        const boundaryLog = `⚠️ 到达边界！gridSize=${this.gridSize}, 区域=[${nextCol},${nextRow}]-[${nextRight},${nextBottom}]`;
-        console.log(boundaryLog);
-        if (fileLogger) fileLogger.log(boundaryLog);
-        const stopLog = `到达边界！停止在当前位置 (${newCol}, ${newRow})`;
-        console.log(stopLog);
-        if (fileLogger) fileLogger.log(stopLog);
-        moved = newCol !== initialCol || newRow !== initialRow;
-        break;
-      }
-
-      newCol = nextCol;
-      newRow = nextRow;
+    const hasCollision = this.checkCollision(tile, nextCol, nextRow);
+    if (hasCollision) {
+      const collisionLog = `碰到障碍！无法移动，保持在 (${tile.gridCol}, ${tile.gridRow})`;
+      console.log(collisionLog);
+      if (fileLogger) fileLogger.log(collisionLog);
+      logger.log('格子移动被阻挡');
+      if (fileLogger) fileLogger.log('格子移动被阻挡');
+      return { moved: false, disappeared: false, reason: 'collision' };
     }
 
-    if (moved) {
-      tile.gridCol = newCol;
-      tile.gridRow = newRow;
-      tile.state = UnitState.IDLE;
-      const stopMsg = '格子停止！最终位置: (' + newCol + ', ' + newRow + ')';
-      console.log(stopMsg);
-      if (fileLogger) fileLogger.log(stopMsg);
-    } else {
-      const noMoveMsg = '格子没有移动！';
-      console.log(noMoveMsg);
-      if (fileLogger) fileLogger.log(noMoveMsg);
+    if (nextCol < 1 || nextRight > this.gridSize || 
+        nextRow < 1 || nextBottom > this.gridSize) {
+      const boundaryLog = `⚠️ 超出边界！gridSize=${this.gridSize}, 区域=[${nextCol},${nextRow}]-[${nextRight},${nextBottom}]`;
+      console.log(boundaryLog);
+      if (fileLogger) fileLogger.log(boundaryLog);
+      logger.log('格子移动超出边界');
+      if (fileLogger) fileLogger.log('格子移动超出边界');
+      return { moved: false, disappeared: false, reason: 'out_of_bounds' };
     }
 
-    const endMsg = '=== slideTile 结束 === 返回: moved=' + moved;
+    const newCol = nextCol;
+    const newRow = nextRow;
+
+    tile.gridCol = newCol;
+    tile.gridRow = newRow;
+    tile.state = UnitState.IDLE;
+    const stopMsg = '格子停止！最终位置: (' + newCol + ', ' + newRow + ')';
+    console.log(stopMsg);
+    if (fileLogger) fileLogger.log(stopMsg);
+
+    const endMsg = '=== slideTile 结束 === 返回: moved=true';
     console.log('=== slideTile 结束 ===');
     if (fileLogger) fileLogger.log(endMsg);
 
-    return { moved, disappeared: false, tile };
+    return { moved: true, disappeared: false, tile };
   }
 
   updateTileAnimation(tile, deltaTime) {

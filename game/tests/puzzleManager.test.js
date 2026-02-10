@@ -23,14 +23,14 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
           gridRow: 5,
           gridColSpan: 1,
           gridRowSpan: 1,
-          direction: Direction.RIGHT
+          direction: Direction.UP
         },
         {
           id: generateId(),
           type: TileType.VERTICAL,
           unitType: UnitType.WOLF,
-          gridCol: 8,
-          gridRow: 5,
+          gridCol: 10,
+          gridRow: 10,
           gridColSpan: 1,
           gridRowSpan: 1,
           direction: Direction.UP
@@ -80,16 +80,15 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
       tile1.gridRow = 5;
 
       tile2.direction = Direction.RIGHT;
-      tile2.gridCol = 8;
+      tile2.gridCol = 6;
       tile2.gridRow = 5;
 
       const result = puzzleManager.slideTile(tile1);
 
       expect(result).toBeDefined();
       expect(result.disappeared).toBe(false);
-      if (result.moved) {
-        expect(tile1.gridCol).toBe(7);
-      }
+      expect(result.moved).toBe(false);
+      expect(tile1.gridCol).toBe(5);
     });
 
     test('should not move if initial position is blocked', () => {
@@ -182,8 +181,8 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
       expect(result).toBeDefined();
       expect(result.disappeared).toBe(false);
       expect(result.moved).toBe(true);
-      expect(tile.gridCol).toBeGreaterThan(5);
-      expect(tile.gridRow).toBeLessThan(10);
+      expect(tile.gridCol).toBe(6);
+      expect(tile.gridRow).toBe(9);
     });
 
     test('should stop when diagonal movement hits obstacle', () => {
@@ -194,15 +193,16 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
       tile1.gridCol = 5;
       tile1.gridRow = 5;
 
-      tile2.gridCol = 7;
-      tile2.gridRow = 3;
+      tile2.gridCol = 6;
+      tile2.gridRow = 4;
 
       const result = puzzleManager.slideTile(tile1);
 
       expect(result).toBeDefined();
       expect(result.disappeared).toBe(false);
-      expect(result.moved).toBe(true);
-      expect(tile1.gridCol).toBeLessThan(7);
+      expect(result.moved).toBe(false);
+      expect(tile1.gridCol).toBe(5);
+      expect(tile1.gridRow).toBe(5);
     });
   });
 
