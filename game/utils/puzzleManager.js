@@ -12,19 +12,6 @@ class Tile {
     this.direction = config.direction || Direction.UP_RIGHT;
     this.state = UnitState.IDLE;
     this.imageUrl = config.imageUrl;
-    
-    this.animating = false;
-    this.animationProgress = 0;
-    this.startGridCol = config.gridCol;
-    this.startGridRow = config.gridRow;
-    this.targetGridCol = config.gridCol;
-    this.targetGridRow = config.gridRow;
-    this.startX = 0;
-    this.startY = 0;
-    this.targetX = 0;
-    this.targetY = 0;
-    this.currentX = 0;
-    this.currentY = 0;
   }
 }
 
@@ -377,14 +364,6 @@ class PuzzleManager {
       return { moved: false, reason: 'invalid_direction' };
     }
 
-    this.saveState();
-
-    const startPos = this.getTileScreenPosition(tile);
-    tile.startGridCol = tile.gridCol;
-    tile.startGridRow = tile.gridRow;
-    tile.startX = startPos.x;
-    tile.startY = startPos.y;
-
     let newCol = tile.gridCol;
     let newRow = tile.gridRow;
     let moved = false;
@@ -412,30 +391,14 @@ class PuzzleManager {
     }
 
     if (moved) {
-      tile.targetGridCol = newCol;
-      tile.targetGridRow = newRow;
+      tile.gridCol = newCol;
+      tile.gridRow = newRow;
       
-      const tempTile = {
-        gridCol: newCol,
-        gridRow: newRow,
-        gridColSpan: tile.gridColSpan,
-        gridRowSpan: tile.gridRowSpan,
-        type: tile.type,
-        unitType: tile.unitType,
-        direction: tile.direction,
-        state: tile.state,
-        imageUrl: tile.imageUrl
-      };
-      
-      const endPos = this.getTileScreenPosition(tempTile);
-      tile.targetX = endPos.x;
-      tile.targetY = endPos.y;
-      tile.currentX = tile.startX;
-      tile.currentY = tile.startY;
-      
-      tile.animating = true;
-      tile.animationProgress = 0;
-      tile.state = UnitState.SLIDING;
+      if (disappeared) {
+        tile.state = UnitState.DISAPPEARED;
+      } else {
+        tile.state = UnitState.IDLE;
+      }
     }
 
     return { moved, disappeared, tile };
@@ -470,13 +433,19 @@ class PuzzleManager {
       t.id !== tile.id && t.state !== UnitState.DISAPPEARED
     );
 
-    for (const otherTile of tiles) {
-      const colOverlap = col < otherTile.gridCol + otherTile.gridColSpan &&
-                         col + tile.gridColSpan > otherTile.gridCol;
-      const rowOverlap = row < otherTile.gridRow + otherTile.gridRowSpan &&
-                         row + tile.gridRowSpan > otherTile.gridRow;
+    const tileLeft = col;
+    const tileRight = col + tile.gridColSpan - 1;
+    const tileTop = row;
+    const tileBottom = row + tile.gridRowSpan - 1;
 
-      if (colOverlap && rowOverlap) {
+    for (const other of tiles) {
+      const otherLeft = other.gridCol;
+      const otherRight = other.gridCol + other.gridColSpan - 1;
+      const otherTop = other.gridRow;
+      const otherBottom = other.gridRow + other.gridRowSpan - 1;
+
+      if (tileLeft < otherRight && tileRight > otherLeft &&
+          tileTop < otherBottom && tileBottom > otherTop) {
         return true;
       }
     }

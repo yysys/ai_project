@@ -87,11 +87,6 @@ class GameEngine {
 
     this.elapsedTime += this.deltaTime;
 
-    const tiles = this.puzzleManager.getTiles();
-    for (const tile of tiles) {
-      this.puzzleManager.updateTileAnimation(tile, this.deltaTime);
-    }
-
     if (this.puzzleManager.checkWinCondition()) {
       this.handleWin();
     }
@@ -347,25 +342,17 @@ class GameEngine {
     const isDog = tile.unitType === 'dog';
     const direction = tile.direction;
 
-    let drawX = x;
-    let drawY = y;
-
-    if (tile.animating) {
-      drawX = tile.currentX;
-      drawY = tile.currentY;
-    }
-
     this.ctx.fillStyle = isDog ? '#FFEB3B' : '#F5E6D3';
-    this.ctx.fillRect(drawX, drawY, width, height);
+    this.ctx.fillRect(x, y, width, height);
 
     this.ctx.strokeStyle = '#333333';
     this.ctx.lineWidth = 3;
-    this.ctx.strokeRect(drawX, drawY, width, height);
+    this.ctx.strokeRect(x, y, width, height);
 
     const directionAngle = this.getDirectionAngle(direction);
 
     this.ctx.save();
-    this.ctx.translate(drawX + width / 2, drawY + height / 2);
+    this.ctx.translate(x + width / 2, y + height / 2);
     this.ctx.rotate(directionAngle * Math.PI / 180);
 
     this.ctx.fillStyle = '#333333';
