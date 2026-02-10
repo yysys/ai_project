@@ -40,47 +40,35 @@ class DebugLogger {
   }
 
   log(message) {
-    try {
-      const timestamp = new Date().toISOString();
-      const logEntry = `[${timestamp}] ${message}`;
-      this.logs.push(logEntry);
-      console.log(logEntry);
-      this.logBuffer.push(logEntry);
-      if (this.logBuffer.length >= 10) {
-        this.flushLogBuffer();
-      }
-    } catch (e) {
-      console.error('logger.log 出错:', e);
+    const timestamp = new Date().toISOString();
+    const logEntry = `[${timestamp}] ${message}`;
+    this.logs.push(logEntry);
+    console.log(logEntry);
+    this.logBuffer.push(logEntry);
+    if (this.logBuffer.length >= 10) {
+      this.flushLogBuffer();
     }
   }
 
   error(message) {
-    try {
-      const timestamp = new Date().toISOString();
-      const logEntry = `[${timestamp}] [ERROR] ${message}`;
-      this.logs.push(logEntry);
-      console.error(logEntry);
-      this.logBuffer.push(logEntry);
-      if (this.logBuffer.length >= 10) {
-        this.flushLogBuffer();
-      }
-    } catch (e) {
-      console.error('logger.error 出错:', e);
+    const timestamp = new Date().toISOString();
+    const logEntry = `[${timestamp}] [ERROR] ${message}`;
+    this.logs.push(logEntry);
+    console.error(logEntry);
+    this.logBuffer.push(logEntry);
+    if (this.logBuffer.length >= 10) {
+      this.flushLogBuffer();
     }
   }
 
   warn(message) {
-    try {
-      const timestamp = new Date().toISOString();
-      const logEntry = `[${timestamp}] [WARN] ${message}`;
-      this.logs.push(logEntry);
-      console.warn(logEntry);
-      this.logBuffer.push(logEntry);
-      if (this.logBuffer.length >= 10) {
-        this.flushLogBuffer();
-      }
-    } catch (e) {
-      console.error('logger.warn 出错:', e);
+    const timestamp = new Date().toISOString();
+    const logEntry = `[${timestamp}] [WARN] ${message}`;
+    this.logs.push(logEntry);
+    console.warn(logEntry);
+    this.logBuffer.push(logEntry);
+    if (this.logBuffer.length >= 10) {
+      this.flushLogBuffer();
     }
   }
 
@@ -165,14 +153,22 @@ class DebugLogger {
 
 const logger = new DebugLogger();
 
-if (typeof window !== 'undefined' && window.addEventListener) {
-  window.addEventListener('hide', () => {
-    logger.flushLogBuffer();
-  });
-} else if (typeof tt !== 'undefined' && tt.onHide) {
-  tt.onHide(() => {
-    logger.flushLogBuffer();
-  });
+try {
+  if (typeof tt !== 'undefined' && tt.onHide) {
+    tt.onHide(() => {
+      logger.flushLogBuffer();
+    });
+  } else if (typeof wx !== 'undefined' && wx.onHide) {
+    wx.onHide(() => {
+      logger.flushLogBuffer();
+    });
+  } else if (typeof window !== 'undefined' && window.addEventListener) {
+    window.addEventListener('hide', () => {
+      logger.flushLogBuffer();
+    });
+  }
+} catch (e) {
+  console.error('设置页面隐藏监听失败:', e);
 }
 
 module.exports = logger;
