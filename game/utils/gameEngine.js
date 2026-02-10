@@ -298,11 +298,16 @@ class GameEngine {
     this.ctx.rotate(45 * Math.PI / 180);
     this.ctx.translate(-centerX, -centerY);
 
-    tiles.forEach(tile => {
+    console.log('Drawing tiles:', tiles.length);
+    tiles.forEach((tile, index) => {
       const x = offsetX + (tile.gridCol - 1) * tileSize;
       const y = offsetY + (tile.gridRow - 1) * tileSize;
       const width = tile.gridColSpan * tileSize;
       const height = tile.gridRowSpan * tileSize;
+
+      if (index < 5) {
+        console.log(`Tile ${index}:`, tile, `size: ${width.toFixed(1)}x${height.toFixed(1)}`);
+      }
 
       this.drawTile(tile, x, y, width, height);
     });
@@ -319,18 +324,22 @@ class GameEngine {
     this.ctx.fillStyle = isDog ? '#FFEB3B' : '#F5E6D3';
     this.ctx.fillRect(x, y, width, height);
 
+    this.ctx.strokeStyle = '#333333';
+    this.ctx.lineWidth = 3;
+    this.ctx.strokeRect(x, y, width, height);
+
     const directionAngle = this.getDirectionAngle(direction);
-    
+
     this.ctx.save();
     this.ctx.translate(x + width / 2, y + height / 2);
     this.ctx.rotate(directionAngle * Math.PI / 180);
-    
+
     this.ctx.fillStyle = '#333333';
     this.ctx.font = `${Math.min(width, height) * 0.5}px Arial`;
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
     this.ctx.fillText(isDog ? '🐕' : '🐺', 0, 0);
-    
+
     this.ctx.restore();
     this.ctx.restore();
   }

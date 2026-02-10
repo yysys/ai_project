@@ -53,13 +53,17 @@ class PuzzleManager {
   }
 
   initLevels() {
+    const level1Tiles = this.generateLevel1Tiles();
+    console.log('Level 1 tiles generated:', level1Tiles.length);
+    console.log('Level 1 dog tiles:', level1Tiles.filter(t => t.unitType === 'dog').length);
+
     const levels = [
       {
         id: 1,
         name: '第1关',
         type: 'normal',
         unlocked: true,
-        tiles: this.generateLevel1Tiles()
+        tiles: level1Tiles
       },
       {
         id: 2,
@@ -113,30 +117,12 @@ class PuzzleManager {
         if (usedPositions.has(posKey(col, row))) continue;
 
         const direction = directions[tileId % 4];
-        const isCenter = (col === center && row === center);
         const isHorizontal = tileId % 2 === 0;
 
         const canPlaceHorizontal = col + 1 <= gridSize && !usedPositions.has(posKey(col + 1, row)) && (col + 1 - startCol) < maxColInRow;
         const canPlaceVertical = row + 1 <= gridSize && !usedPositions.has(posKey(col, row + 1));
 
-        if (isCenter) {
-          if (isHorizontal && canPlaceHorizontal) {
-            tiles.push(createTile(col, row, 2, 1, UnitType.DOG, direction));
-            usedPositions.add(posKey(col, row));
-            usedPositions.add(posKey(col + 1, row));
-            tileId++;
-          } else if (!isHorizontal && canPlaceVertical) {
-            tiles.push(createTile(col, row, 1, 2, UnitType.DOG, direction));
-            usedPositions.add(posKey(col, row));
-            usedPositions.add(posKey(col, row + 1));
-            tileId++;
-          } else {
-            tiles.push(createTile(col, row, 2, 1, UnitType.DOG, direction));
-            usedPositions.add(posKey(col, row));
-            usedPositions.add(posKey(col + 1, row));
-            tileId++;
-          }
-        } else if (isHorizontal && canPlaceHorizontal) {
+        if (isHorizontal && canPlaceHorizontal) {
           tiles.push(createTile(col, row, 2, 1, UnitType.WOLF, direction));
           usedPositions.add(posKey(col, row));
           usedPositions.add(posKey(col + 1, row));
@@ -159,6 +145,23 @@ class PuzzleManager {
         }
       }
     }
+
+    const centerTileIndex = tiles.findIndex(tile => 
+      tile.gridCol <= center && 
+      tile.gridCol + tile.gridColSpan - 1 >= center &&
+      tile.gridRow <= center && 
+      tile.gridRow + tile.gridRowSpan - 1 >= center
+    );
+
+    if (centerTileIndex !== -1) {
+      tiles[centerTileIndex].unitType = UnitType.DOG;
+      console.log('Center tile found and set to DOG:', tiles[centerTileIndex]);
+    } else {
+      console.error('No tile found covering center position', center, center);
+    }
+
+    console.log('Total tiles generated:', tiles.length);
+    console.log('Dog tiles count:', tiles.filter(t => t.unitType === 'dog').length);
 
     return tiles;
   }
