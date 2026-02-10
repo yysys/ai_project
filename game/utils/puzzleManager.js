@@ -12,6 +12,13 @@ class Tile {
     this.direction = config.direction || Direction.UP_RIGHT;
     this.state = UnitState.IDLE;
     this.imageUrl = config.imageUrl;
+    
+    this.animating = false;
+    this.animationProgress = 0;
+    this.startGridCol = config.gridCol;
+    this.startGridRow = config.gridRow;
+    this.targetGridCol = config.gridCol;
+    this.targetGridRow = config.gridRow;
   }
 }
 
@@ -326,6 +333,11 @@ class PuzzleManager {
 
     this.saveState();
 
+    tile.startGridCol = tile.gridCol;
+    tile.startGridRow = tile.gridRow;
+    tile.targetGridCol = tile.gridCol;
+    tile.targetGridRow = tile.gridRow;
+
     let newCol = tile.gridCol;
     let newRow = tile.gridRow;
     let moved = false;
@@ -353,20 +365,38 @@ class PuzzleManager {
     }
 
     if (moved) {
-      tile.gridCol = newCol;
-      tile.gridRow = newRow;
-      
-      if (disappeared) {
-        tile.state = UnitState.DISAPPEARED;
-      } else {
-        tile.state = UnitState.SLIDING;
-        setTimeout(() => {
-          tile.state = UnitState.IDLE;
-        }, 300);
-      }
+      tile.targetGridCol = newCol;
+      tile.targetGridRow = newRow;
+      tile.animating = true;
+      tile.animationProgress = 0;
+      tile.state = UnitState.SLIDING;
     }
 
     return { moved, disappeared, tile };
+  }
+
+  updateTileAnimation(tile, deltaTime) {
+    if (!tile.animating) return;
+
+    tile.animationProgress += deltaTime * 3;
+
+    if (tile.animationProgress >= 1) {
+      tile.animationProgress = 1;
+      tile.animating = false;
+
+      if (tile.targetGridCol < 1 || tile.targetGridCol > this.gridSize ||
+          tile.targetGridRow < 1 || tile.targetGridRow > this.gridSize) {
+        tile.state = UnitState.DISAPPEARED;
+      } else {
+        tile.state = UnitState.IDLE;
+      }
+    } else {
+      const progress = tile.animationProgress;
+      const currentCol = tile.startGridCol + (tile.targetGridCol - tile.startGridCol) * progress;
+      const currentRow = tile.startGridRow + (tile.targetGridRow - tile.startGridRow) * progress;
+      tile.gridCol = currentCol;
+      tile.gridRow = currentRow;
+    }
   }
 
   checkCollision(tile, col, row) {

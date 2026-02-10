@@ -85,6 +85,11 @@ class GameEngine {
 
     this.elapsedTime += this.deltaTime;
 
+    const tiles = this.puzzleManager.getTiles();
+    for (const tile of tiles) {
+      this.puzzleManager.updateTileAnimation(tile, this.deltaTime);
+    }
+
     if (this.puzzleManager.checkWinCondition()) {
       this.handleWin();
     }
@@ -132,11 +137,30 @@ class GameEngine {
     return false;
   }
 
-  getTileAtPosition(x, y) {
+  getTileAtPosition(screenX, screenY) {
     const tiles = this.puzzleManager.getTiles();
-    const tileSize = Math.min(this.screenWidth, this.screenHeight) / TILE_CONFIG.gridSize;
-    const offsetX = (this.screenWidth - tileSize * TILE_CONFIG.gridSize) / 2;
-    const offsetY = (this.screenHeight - tileSize * TILE_CONFIG.gridSize) / 2;
+    
+    const sqrt2 = Math.sqrt(2);
+    const maxGridWidth = this.screenWidth / sqrt2;
+    const maxGridHeight = this.screenHeight / sqrt2;
+    const tileSize = Math.min(maxGridWidth, maxGridHeight) / TILE_CONFIG.gridSize;
+    const gridWidth = tileSize * TILE_CONFIG.gridSize;
+    const gridHeight = tileSize * TILE_CONFIG.gridSize;
+    const offsetX = (this.screenWidth - gridWidth) / 2;
+    const offsetY = (this.screenHeight - gridHeight) / 2;
+
+    const centerX = this.screenWidth / 2;
+    const centerY = this.screenHeight / 2;
+
+    const dx = screenX - centerX;
+    const dy = screenY - centerY;
+
+    const angle = -45 * Math.PI / 180;
+    const rotatedX = dx * Math.cos(angle) - dy * Math.sin(angle);
+    const rotatedY = dx * Math.sin(angle) + dy * Math.cos(angle);
+
+    const localX = rotatedX + centerX;
+    const localY = rotatedY + centerY;
 
     for (const tile of tiles) {
       const tileX = offsetX + (tile.gridCol - 1) * tileSize;
@@ -144,8 +168,8 @@ class GameEngine {
       const tileWidth = tile.gridColSpan * tileSize;
       const tileHeight = tile.gridRowSpan * tileSize;
 
-      if (x >= tileX && x < tileX + tileWidth &&
-          y >= tileY && y < tileY + tileHeight) {
+      if (localX >= tileX && localX < tileX + tileWidth &&
+          localY >= tileY && localY < tileY + tileHeight) {
         return tile;
       }
     }
