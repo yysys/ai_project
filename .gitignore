@@ -1,0 +1,12 @@
+# Debug logs
+debug/*.log
+debug/*.png
+debug/*.jpg
+debug/*.jpeg
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node modules (if exists)
+node_modules/
