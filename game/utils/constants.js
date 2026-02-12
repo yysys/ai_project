@@ -26,7 +26,8 @@ const UnitType = {
 const UnitState = {
   IDLE: 'idle',
   SLIDING: 'sliding',
-  DISAPPEARED: 'disappeared'
+  DISAPPEARED: 'disappeared',
+  FADING_OUT: 'fading_out'
 };
 
 const GameState = {
@@ -62,6 +63,12 @@ const GAME_CONFIG = {
   TARGET_FPS: 60
 };
 
+const ANIMATION_CONFIG = {
+  MOVE_SPEED: 300,
+  FADE_OUT_DURATION: 500,
+  FRAME_RATE: 60
+};
+
 function getRandomDirection() {
   const directions = [Direction.UP_LEFT, Direction.UP_RIGHT, Direction.DOWN_LEFT, Direction.DOWN_RIGHT];
   return directions[Math.floor(Math.random() * directions.length)];
@@ -81,6 +88,7 @@ module.exports = {
   LevelType,
   TILE_CONFIG,
   GAME_CONFIG,
+  ANIMATION_CONFIG,
   getRandomDirection,
   generateId
 };

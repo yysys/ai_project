@@ -24,8 +24,9 @@
       <view class="parquet-grid">
         <block wx:for="{{tiles}}" wx:key="id">
           <view 
-            class="tile {{tile.type === 'horizontal' ? 'tile-h' : tile.type === 'vertical' ? 'tile-v' : ''}} {{tile.unitType === 'dog' ? 'tile-dog' : 'tile-wolf'}}"
-            style="grid-column:{{tile.gridCol}}/{{tile.gridCol + tile.gridColSpan}}; grid-row:{{tile.gridRow}}/{{tile.gridRow + tile.gridRowSpan}};"
+            wx:if="{{tile.state !== 'disappeared'}}"
+            class="tile {{tile.type === 'horizontal' ? 'tile-h' : tile.type === 'vertical' ? 'tile-v' : ''}} {{tile.unitType === 'dog' ? 'tile-dog' : 'tile-wolf'}} {{tile.state === 'sliding' ? 'tile-animating' : ''}}"
+            style="grid-column:{{tile.gridCol}}/{{tile.gridCol + tile.gridColSpan}}; grid-row:{{tile.gridRow}}/{{tile.gridRow + tile.gridRowSpan}}; opacity: {{tile.opacity}}; transition: opacity 0.5s ease-out;"
             bindtap="handleTileTap"
             data-tile-index="{{index}}"
           >

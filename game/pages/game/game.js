@@ -1,5 +1,6 @@
 const PuzzleManager = require('../../utils/puzzleManager');
 const logger = require('../../utils/logger');
+const { ANIMATION_CONFIG } = require('../../utils/constants');
 
 const app = getApp();
 
@@ -12,10 +13,13 @@ Page({
     wolfImageUrl: '',
     gameActive: false,
     debugLogs: [],
-    showDebug: false
+    showDebug: false,
+    animatingTiles: []
   },
 
   puzzleManager: null,
+  lastTimestamp: 0,
+  animationFrameId: null,
   
   addDebugLog(message) {
     const timestamp = new Date().toLocaleTimeString();
@@ -85,16 +89,27 @@ Page({
   updateTiles() {
     const tiles = this.puzzleManager.getTiles();
     this.setData({
-      tiles: tiles.map(tile => ({
-        id: tile.id,
-        type: tile.type,
-        unitType: tile.unitType,
-        gridCol: tile.gridCol,
-        gridRow: tile.gridRow,
-        gridColSpan: tile.gridColSpan,
-        gridRowSpan: tile.gridRowSpan,
-        direction: tile.direction
-      }))
+      tiles: tiles.map(tile => {
+        const screenPos = this.puzzleManager.getTileScreenPosition(tile);
+        return {
+          id: tile.id,
+          type: tile.type,
+          unitType: tile.unitType,
+          gridCol: tile.gridCol,
+          gridRow: tile.gridRow,
+          gridColSpan: tile.gridColSpan,
+          gridRowSpan: tile.gridRowSpan,
+          direction: tile.direction,
+          state: tile.state,
+          animating: tile.animating,
+          animationProgress: tile.animationProgress,
+          opacity: tile.opacity !== undefined ? tile.opacity : 1,
+          currentX: tile.currentX,
+          currentY: tile.currentY,
+          targetX: tile.targetX,
+          targetY: tile.targetY
+        };
+      })
     });
   },
 
@@ -122,13 +137,52 @@ Page({
     
     if (result.moved) {
       this.updateTiles();
+      this.startAnimationLoop();
       
       if (result.disappeared) {
-        if (puzzleTile.unitType === 'dog') {
+        this.watchTileDisappearance(puzzleTile);
+      }
+    }
+  },
+
+  startAnimationLoop() {
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+    }
+    this.lastTimestamp = performance.now();
+    this.animationLoop();
+  },
+
+  animationLoop(timestamp = this.lastTimestamp) {
+    const deltaTime = (timestamp - this.lastTimestamp) / 1000;
+    this.lastTimestamp = timestamp;
+    
+    const tiles = this.puzzleManager.getTiles();
+    let hasAnimatingTiles = false;
+    
+    tiles.forEach(tile => {
+      if (tile.animating) {
+        this.puzzleManager.updateTileAnimation(tile, deltaTime);
+        hasAnimatingTiles = true;
+      }
+    });
+    
+    if (hasAnimatingTiles) {
+      this.updateTiles();
+      this.animationFrameId = requestAnimationFrame(this.animationLoop.bind(this));
+    }
+  },
+
+  watchTileDisappearance(tile) {
+    const checkInterval = setInterval(() => {
+      const currentTile = this.puzzleManager.getTiles().find(t => t.id === tile.id);
+      if (!currentTile || currentTile.state === 'disappeared') {
+        clearInterval(checkInterval);
+        if (tile.unitType === 'dog') {
           this.handleWin();
         }
       }
-    }
+    }, 100);
   },
 
   handleWin() {
@@ -338,6 +392,10 @@ Page({
   },
 
   destroyGame() {
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
     this.puzzleManager = null;
   }
 });

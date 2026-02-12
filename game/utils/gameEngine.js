@@ -164,8 +164,10 @@ class GameEngine {
     const dy = screenY - centerY;
 
     const angle = -45 * Math.PI / 180;
-    const rotatedX = dx * Math.cos(angle) - dy * Math.sin(angle);
-    const rotatedY = dx * Math.sin(angle) + dy * Math.cos(angle);
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    const rotatedX = dx * cos - dy * sin;
+    const rotatedY = dx * sin + dy * cos;
 
     const localX = rotatedX + centerX;
     const localY = rotatedY + centerY;

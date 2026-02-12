@@ -21,6 +21,18 @@ class Tile {
     this.direction = config.direction || Direction.UP_RIGHT;
     this.state = UnitState.IDLE;
     this.imageUrl = config.imageUrl;
+    
+    this.animating = false;
+    this.animationProgress = 0;
+    this.startX = 0;
+    this.startY = 0;
+    this.currentX = 0;
+    this.currentY = 0;
+    this.targetX = 0;
+    this.targetY = 0;
+    this.targetGridCol = 0;
+    this.targetGridRow = 0;
+    this.opacity = 1;
   }
 }
 
@@ -99,6 +111,25 @@ class PuzzleManager {
       x: rotatedX + centerX,
       y: rotatedY + centerY
     };
+  }
+
+  isPositionInDiamond(col, row, colSpan, rowSpan) {
+    const gridSize = this.gridSize;
+    const center = Math.ceil(gridSize / 2);
+
+    for (let r = row; r < row + rowSpan; r++) {
+      const distanceFromCenter = Math.abs(r - center);
+      const maxColInRow = gridSize - distanceFromCenter;
+      const startCol = Math.ceil((gridSize - maxColInRow) / 2);
+
+      for (let c = col; c < col + colSpan; c++) {
+        if (c < startCol || c >= startCol + maxColInRow) {
+          return false;
+        }
+      }
+    }
+
+    return true;
   }
 
   initLevels() {
@@ -395,93 +426,170 @@ class PuzzleManager {
       return { moved: false, disappeared: false, reason: 'invalid_direction' };
     }
 
+    const targetPosition = this.calculateTargetPosition(tile, vector);
+    
+    if (!targetPosition.canMove) {
+      return { moved: false, disappeared: false, reason: 'cannot_move' };
+    }
+
+    const startPos = this.getTileScreenPosition(tile);
+    
+    tile.state = UnitState.SLIDING;
+    tile.animating = true;
+    tile.animationProgress = 0;
+    tile.startX = startPos ? startPos.x : 0;
+    tile.startY = startPos ? startPos.y : 0;
+    tile.currentX = tile.startX;
+    tile.currentY = tile.startY;
+    tile.targetGridCol = targetPosition.gridCol;
+    tile.targetGridRow = targetPosition.gridRow;
+    
+    const tempTile = { ...tile, gridCol: targetPosition.gridCol, gridRow: targetPosition.gridRow };
+    const endPos = this.getTileScreenPosition(tempTile);
+    tile.targetX = endPos ? endPos.x : 0;
+    tile.targetY = endPos ? endPos.y : 0;
+
     logger.log('=== slideTile 开始 ===');
     logger.log('格子 ID:', tile.id);
     logger.log('格子类型:', tile.unitType);
     logger.log('格子方向:', direction);
-    logger.log('方向向量:', vector);
     logger.log('初始位置:', tile.gridCol, tile.gridRow);
-    logger.log('格子大小:', tile.gridColSpan, 'x', tile.gridRowSpan);
-    logger.log('格子占据区域: [', tile.gridCol, ',', tile.gridRow, '] 到 [', tile.gridCol + tile.gridColSpan - 1, ',', tile.gridRow + tile.gridRowSpan - 1, ']');
+    logger.log('目标位置:', tile.targetGridCol, tile.targetGridRow);
+    logger.log('是否消失:', targetPosition.willDisappear);
+
+    return { 
+      moved: true, 
+      disappeared: targetPosition.willDisappear, 
+      tile,
+      distance: targetPosition.distance
+    };
+  }
+
+  calculateTargetPosition(tile, vector) {
+    let currentCol = tile.gridCol;
+    let currentRow = tile.gridRow;
+    let distance = 0;
     
-    if (fileLogger) {
-      fileLogger.log('初始位置:', tile.gridCol, tile.gridRow);
-      fileLogger.log('格子大小:', tile.gridColSpan, 'x', tile.gridRowSpan);
-      fileLogger.log('格子占据区域: [', tile.gridCol, ',', tile.gridRow, '] 到 [', tile.gridCol + tile.gridColSpan - 1, ',', tile.gridRow + tile.gridRowSpan - 1, ']');
+    while (true) {
+      const nextCol = currentCol + vector.col;
+      const nextRow = currentRow + vector.row;
+      const nextRight = nextCol + tile.gridColSpan - 1;
+      const nextBottom = nextRow + tile.gridRowSpan - 1;
+      
+      const isOutOfBounds = nextCol < 1 || nextRight > this.gridSize || 
+                            nextRow < 1 || nextBottom > this.gridSize;
+      
+      const isInsideDiamond = this.isPositionInDiamond(nextCol, nextRow, tile.gridColSpan, tile.gridRowSpan);
+      
+      if (isOutOfBounds || !isInsideDiamond) {
+        return {
+          gridCol: currentCol,
+          gridRow: currentRow,
+          willDisappear: true,
+          distance,
+          canMove: distance > 0
+        };
+      }
+      
+      if (this.checkCollision(tile, nextCol, nextRow)) {
+        return {
+          gridCol: currentCol,
+          gridRow: currentRow,
+          willDisappear: false,
+          distance,
+          canMove: distance > 0
+        };
+      }
+      
+      currentCol = nextCol;
+      currentRow = nextRow;
+      distance++;
     }
-
-    const nextCol = tile.gridCol + vector.col;
-    const nextRow = tile.gridRow + vector.row;
-
-    const stepLog = `格子从 (${tile.gridCol}, ${tile.gridRow}) 尝试移动到 (${nextCol}, ${nextRow})`;
-    console.log(stepLog);
-    if (fileLogger) fileLogger.log(stepLog);
-
-    const nextRight = nextCol + tile.gridColSpan - 1;
-    const nextBottom = nextRow + tile.gridRowSpan - 1;
-
-    const areaLog = `格子将占据区域: [${nextCol}, ${nextRow}] 到 [${nextRight}, ${nextBottom}]`;
-    console.log(areaLog);
-    if (fileLogger) fileLogger.log(areaLog);
-
-    const hasCollision = this.checkCollision(tile, nextCol, nextRow);
-    if (hasCollision) {
-      const collisionLog = `碰到障碍！无法移动，保持在 (${tile.gridCol}, ${tile.gridRow})`;
-      console.log(collisionLog);
-      if (fileLogger) fileLogger.log(collisionLog);
-      logger.log('格子移动被阻挡');
-      if (fileLogger) fileLogger.log('格子移动被阻挡');
-      return { moved: false, disappeared: false, reason: 'collision' };
-    }
-
-    if (nextCol < 1 || nextRight > this.gridSize || 
-        nextRow < 1 || nextBottom > this.gridSize) {
-      const boundaryLog = `⚠️ 超出边界！gridSize=${this.gridSize}, 区域=[${nextCol},${nextRow}]-[${nextRight},${nextBottom}]`;
-      console.log(boundaryLog);
-      if (fileLogger) fileLogger.log(boundaryLog);
-      logger.log('格子移动超出边界');
-      if (fileLogger) fileLogger.log('格子移动超出边界');
-      return { moved: false, disappeared: false, reason: 'out_of_bounds' };
-    }
-
-    const newCol = nextCol;
-    const newRow = nextRow;
-
-    tile.gridCol = newCol;
-    tile.gridRow = newRow;
-    tile.state = UnitState.IDLE;
-    const stopMsg = '格子停止！最终位置: (' + newCol + ', ' + newRow + ')';
-    console.log(stopMsg);
-    if (fileLogger) fileLogger.log(stopMsg);
-
-    const endMsg = '=== slideTile 结束 === 返回: moved=true';
-    console.log('=== slideTile 结束 ===');
-    if (fileLogger) fileLogger.log(endMsg);
-
-    return { moved: true, disappeared: false, tile };
   }
 
   updateTileAnimation(tile, deltaTime) {
     if (!tile.animating) return;
 
-    tile.animationProgress += deltaTime * 3;
+    const { ANIMATION_CONFIG } = require('./constants');
+    const moveSpeed = ANIMATION_CONFIG.MOVE_SPEED;
+    const fadeOutDuration = ANIMATION_CONFIG.FADE_OUT_DURATION;
 
-    if (tile.animationProgress >= 1) {
-      tile.animationProgress = 1;
-      tile.animating = false;
-
-      if (tile.targetGridCol < 1 || tile.targetGridCol > this.gridSize ||
-          tile.targetGridRow < 1 || tile.targetGridRow > this.gridSize) {
-        tile.state = UnitState.DISAPPEARED;
-      } else {
-        tile.state = UnitState.IDLE;
+    if (tile.state === UnitState.SLIDING) {
+      const totalDistance = Math.sqrt(
+        Math.pow(tile.targetX - tile.startX, 2) + 
+        Math.pow(tile.targetY - tile.startY, 2)
+      );
+      
+      if (totalDistance === 0) {
+        tile.currentX = tile.targetX;
+        tile.currentY = tile.targetY;
+        tile.animationProgress = 1;
+        tile.animating = false;
+        
+        if (tile.targetGridCol > 0 && tile.targetGridRow > 0) {
+          tile.gridCol = tile.targetGridCol;
+          tile.gridRow = tile.targetGridRow;
+          
+          const isInsideDiamond = this.isPositionInDiamond(
+            tile.gridCol, tile.gridRow, 
+            tile.gridColSpan, tile.gridRowSpan
+          );
+          
+          if (!isInsideDiamond || tile.gridCol < 1 || tile.gridCol > this.gridSize ||
+              tile.gridRow < 1 || tile.gridRow > this.gridSize) {
+            tile.state = UnitState.FADING_OUT;
+            tile.animating = true;
+            tile.animationProgress = 0;
+          } else {
+            tile.state = UnitState.IDLE;
+          }
+        } else {
+          tile.state = UnitState.IDLE;
+        }
+        return;
+      }
+      
+      const moveStep = moveSpeed * deltaTime;
+      tile.animationProgress += moveStep / totalDistance;
+      
+      if (tile.animationProgress >= 1) {
+        tile.animationProgress = 1;
+        tile.currentX = tile.targetX;
+        tile.currentY = tile.targetY;
+        
         tile.gridCol = tile.targetGridCol;
         tile.gridRow = tile.targetGridRow;
+        tile.animating = false;
+        
+        const isInsideDiamond = this.isPositionInDiamond(
+          tile.gridCol, tile.gridRow, 
+          tile.gridColSpan, tile.gridRowSpan
+        );
+        
+        if (!isInsideDiamond || tile.gridCol < 1 || tile.gridCol > this.gridSize ||
+            tile.gridRow < 1 || tile.gridRow > this.gridSize) {
+          tile.state = UnitState.FADING_OUT;
+          tile.animating = true;
+          tile.animationProgress = 0;
+        } else {
+          tile.state = UnitState.IDLE;
+        }
+      } else {
+        const clampedProgress = Math.min(tile.animationProgress, 1);
+        tile.currentX = tile.startX + (tile.targetX - tile.startX) * clampedProgress;
+        tile.currentY = tile.startY + (tile.targetY - tile.startY) * clampedProgress;
       }
-    } else {
-      const progress = tile.animationProgress;
-      tile.currentX = tile.startX + (tile.targetX - tile.startX) * progress;
-      tile.currentY = tile.startY + (tile.targetY - tile.startY) * progress;
+    } else if (tile.state === UnitState.FADING_OUT) {
+      tile.animationProgress += deltaTime * 1000 / fadeOutDuration;
+      
+      if (tile.animationProgress >= 1) {
+        tile.animationProgress = 1;
+        tile.opacity = 0;
+        tile.state = UnitState.DISAPPEARED;
+        tile.animating = false;
+      } else {
+        tile.opacity = 1 - tile.animationProgress;
+      }
     }
   }
 
@@ -645,4 +753,5 @@ class PuzzleManager {
 
 module.exports = PuzzleManager;
 module.exports.PuzzleLevel = PuzzleLevel;
+module.exports.Tile = Tile;
 

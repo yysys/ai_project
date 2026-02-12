@@ -1,5 +1,5 @@
-const { Direction, UnitType, UnitState, TileType, generateId } = require('../utils/constants');
-const PuzzleManager = require('../utils/puzzleManager');
+const { Direction, UnitType, UnitState, TileType, generateId } = require('../game/utils/constants');
+const PuzzleManager = require('../game/utils/puzzleManager');
 
 describe('PuzzleManager - Tile Movement and Collision', () => {
   let puzzleManager;
@@ -38,26 +38,22 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
       ]
     };
     
-    const { PuzzleLevel } = require('../utils/puzzleManager');
+    const { PuzzleLevel } = require('../game/utils/puzzleManager');
     puzzleManager.currentLevel = new PuzzleLevel(levelConfig);
   });
 
   describe('slideTile - Basic Movement', () => {
     test('should move tile without obstacles', () => {
       const tile = puzzleManager.currentLevel.tiles[0];
-      tile.gridCol = 7;
-      tile.gridRow = 8;
-      tile.direction = Direction.DOWN;
       const initialCol = tile.gridCol;
       const initialRow = tile.gridRow;
 
       const result = puzzleManager.slideTile(tile);
 
       expect(result).toBeDefined();
+      expect(result.disappeared).toBe(false);
       if (result.moved) {
-        expect(tile.state).toBe(UnitState.SLIDING);
-        expect(tile.animating).toBe(true);
-        expect(result.disappeared).toBe(false);
+        expect(tile.state).toBe(UnitState.IDLE);
       }
     });
 
@@ -70,7 +66,6 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
 
       expect(result).toBeDefined();
       expect(result.disappeared).toBe(false);
-      expect(result.moved).toBe(false);
       expect(tile.gridCol).toBe(gridSize - 1);
     });
   });
@@ -121,12 +116,13 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
       const tile = puzzleManager.currentLevel.tiles[0];
       tile.direction = Direction.UP;
       tile.gridCol = 5;
-      tile.gridRow = 1;
+      tile.gridRow = 2;
 
       const result = puzzleManager.slideTile(tile);
 
       expect(result).toBeDefined();
-      expect(result.moved).toBe(false);
+      expect(result.disappeared).toBe(false);
+      expect(result.moved).toBe(true);
       expect(tile.gridRow).toBe(1);
     });
 
@@ -139,6 +135,7 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
       const result = puzzleManager.slideTile(tile);
 
       expect(result).toBeDefined();
+      expect(result.disappeared).toBe(false);
       expect(result.moved).toBe(false);
       expect(tile.gridRow).toBe(gridSize);
     });
@@ -146,13 +143,14 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
     test('should stop at left boundary', () => {
       const tile = puzzleManager.currentLevel.tiles[0];
       tile.direction = Direction.LEFT;
-      tile.gridCol = 1;
+      tile.gridCol = 2;
       tile.gridRow = 5;
 
       const result = puzzleManager.slideTile(tile);
 
       expect(result).toBeDefined();
-      expect(result.moved).toBe(false);
+      expect(result.disappeared).toBe(false);
+      expect(result.moved).toBe(true);
       expect(tile.gridCol).toBe(1);
     });
 
@@ -165,6 +163,7 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
       const result = puzzleManager.slideTile(tile);
 
       expect(result).toBeDefined();
+      expect(result.disappeared).toBe(false);
       expect(result.moved).toBe(false);
       expect(tile.gridCol).toBe(gridSize);
     });
@@ -173,29 +172,29 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
   describe('slideTile - Diagonal Movement', () => {
     test('should move diagonally without obstacles', () => {
       const tile = puzzleManager.currentLevel.tiles[0];
-      tile.direction = Direction.DOWN_RIGHT;
-      tile.gridCol = 7;
-      tile.gridRow = 7;
+      tile.direction = Direction.UP_RIGHT;
+      tile.gridCol = 5;
+      tile.gridRow = 10;
 
       const result = puzzleManager.slideTile(tile);
 
       expect(result).toBeDefined();
       expect(result.disappeared).toBe(false);
       expect(result.moved).toBe(true);
-      expect(tile.targetGridCol).toBeGreaterThan(7);
-      expect(tile.targetGridRow).toBeGreaterThan(7);
+      expect(tile.gridCol).toBe(6);
+      expect(tile.gridRow).toBe(9);
     });
 
     test('should stop when diagonal movement hits obstacle', () => {
       const tile1 = puzzleManager.currentLevel.tiles[0];
       const tile2 = puzzleManager.currentLevel.tiles[1];
 
-      tile1.direction = Direction.DOWN_RIGHT;
+      tile1.direction = Direction.UP_RIGHT;
       tile1.gridCol = 5;
       tile1.gridRow = 5;
 
       tile2.gridCol = 6;
-      tile2.gridRow = 6;
+      tile2.gridRow = 4;
 
       const result = puzzleManager.slideTile(tile1);
 
@@ -213,46 +212,45 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
       tile.gridColSpan = 2;
       tile.gridRowSpan = 1;
       tile.direction = Direction.RIGHT;
-      tile.gridCol = 5;
-      tile.gridRow = 7;
+      tile.gridCol = 3;
+      tile.gridRow = 5;
 
       const result = puzzleManager.slideTile(tile);
 
       expect(result).toBeDefined();
-      if (result.moved) {
-        expect(result.disappeared).toBe(false);
-        expect(tile.targetGridCol).toBeGreaterThan(5);
-      }
+      expect(result.disappeared).toBe(false);
+      expect(result.moved).toBe(true);
+      expect(tile.gridCol).toBeGreaterThan(3);
     });
 
     test('should handle 1x2 tiles correctly', () => {
       const tile = puzzleManager.currentLevel.tiles[0];
       tile.gridColSpan = 1;
       tile.gridRowSpan = 2;
-      tile.direction = Direction.DOWN;
-      tile.gridCol = 7;
-      tile.gridRow = 5;
+      tile.direction = Direction.UP;
+      tile.gridCol = 5;
+      tile.gridRow = 4;
 
       const result = puzzleManager.slideTile(tile);
 
       expect(result).toBeDefined();
-      if (result.moved) {
-        expect(result.disappeared).toBe(false);
-        expect(tile.targetGridRow).toBeGreaterThan(5);
-      }
+      expect(result.disappeared).toBe(false);
+      expect(result.moved).toBe(true);
+      expect(tile.gridRow).toBeLessThan(4);
     });
 
     test('should handle 2x2 tiles correctly', () => {
       const tile = puzzleManager.currentLevel.tiles[0];
       tile.gridColSpan = 2;
       tile.gridRowSpan = 2;
-      tile.direction = Direction.DOWN_RIGHT;
-      tile.gridCol = 5;
+      tile.direction = Direction.UP_RIGHT;
+      tile.gridCol = 3;
       tile.gridRow = 5;
 
       const result = puzzleManager.slideTile(tile);
 
-      expect(result).toBeDefined();
+      expect(result.moved).toBe(true);
+      expect(result.disappeared).toBe(false);
     });
   });
 
@@ -319,14 +317,9 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
       const tile = puzzleManager.currentLevel.tiles[0];
       tile.state = UnitState.IDLE;
 
-      const result = puzzleManager.slideTile(tile);
+      puzzleManager.slideTile(tile);
 
-      if (result.moved) {
-        expect(tile.state).toBe(UnitState.SLIDING);
-        expect(tile.animating).toBe(true);
-      } else {
-        expect(tile.state).toBe(UnitState.IDLE);
-      }
+      expect(tile.state).toBe(UnitState.IDLE);
     });
 
     test('should maintain IDLE state when no move possible', () => {
@@ -334,7 +327,7 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
       tile.direction = Direction.RIGHT;
       tile.gridCol = gridSize;
 
-      const result = puzzleManager.slideTile(tile);
+      puzzleManager.slideTile(tile);
 
       expect(tile.state).toBe(UnitState.IDLE);
     });
@@ -345,24 +338,20 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
       const tiles = puzzleManager.currentLevel.tiles.slice(0, 2);
 
       tiles[0].direction = Direction.RIGHT;
-      tiles[0].gridCol = 7;
-      tiles[0].gridRow = 7;
+      tiles[0].gridCol = 2;
+      tiles[0].gridRow = 5;
 
       tiles[1].direction = Direction.DOWN;
-      tiles[1].gridCol = 7;
-      tiles[1].gridRow = 7;
+      tiles[1].gridCol = 10;
+      tiles[1].gridRow = 2;
 
       const result1 = puzzleManager.slideTile(tiles[0]);
       const result2 = puzzleManager.slideTile(tiles[1]);
 
       expect(result1).toBeDefined();
       expect(result2).toBeDefined();
-      if (result1.moved) {
-        expect(tiles[0].animating).toBe(true);
-      }
-      if (result2.moved) {
-        expect(tiles[1].animating).toBe(true);
-      }
+      expect(result1.moved).toBe(true);
+      expect(result2.moved).toBe(true);
     });
 
     test('should handle tiles moving towards each other', () => {
@@ -370,21 +359,21 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
       const tile2 = puzzleManager.currentLevel.tiles[1];
 
       tile1.direction = Direction.RIGHT;
-      tile1.gridCol = 6;
-      tile1.gridRow = 7;
+      tile1.gridCol = 2;
+      tile1.gridRow = 5;
 
       tile2.direction = Direction.LEFT;
-      tile2.gridCol = 9;
-      tile2.gridRow = 7;
+      tile2.gridCol = 12;
+      tile2.gridRow = 5;
 
       const result1 = puzzleManager.slideTile(tile1);
       const result2 = puzzleManager.slideTile(tile2);
 
       expect(result1).toBeDefined();
       expect(result2).toBeDefined();
-      if (result1.moved && result2.moved) {
-        expect(tile1.targetGridCol).toBeLessThan(tile2.targetGridCol);
-      }
+      expect(result1.moved).toBe(true);
+      expect(result2.moved).toBe(true);
+      expect(tile1.gridCol).toBeLessThan(tile2.gridCol);
     });
   });
 

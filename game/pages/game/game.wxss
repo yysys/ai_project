@@ -145,6 +145,11 @@
   background-color: #FFEB3B;
 }
 
+.tile-animating {
+  transition: all 0.05s linear;
+  pointer-events: none;
+}
+
 .tile-content {
   width: 100%;
   height: 100%;
