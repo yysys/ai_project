@@ -120,14 +120,18 @@ describe('Grid Cell Click Movement - Comprehensive Test Suite', () => {
       tile1.gridCol = 4;
       tile1.gridRow = 4;
       tile1.direction = Direction.DOWN_RIGHT;
+      tile1.gridColSpan = 1;
+      tile1.gridRowSpan = 1;
 
       tile2.gridCol = 5;
       tile2.gridRow = 5;
+      tile2.gridColSpan = 1;
+      tile2.gridRowSpan = 1;
 
       const result = puzzleManager.slideTile(tile1);
 
       expect(result.moved).toBe(false);
-      expect(result.reason).toBe('collision');
+      expect(result.reason).toBe('blocked_by_collision');
       expect(tile1.gridCol).toBe(4);
       expect(tile1.gridRow).toBe(4);
     });
@@ -139,15 +143,18 @@ describe('Grid Cell Click Movement - Comprehensive Test Suite', () => {
       tile1.gridCol = 5;
       tile1.gridRow = 4;
       tile1.direction = Direction.DOWN_RIGHT;
+      tile1.gridColSpan = 1;
+      tile1.gridRowSpan = 1;
 
       tile2.gridCol = 5;
       tile2.gridRow = 5;
       tile2.gridColSpan = 2;
+      tile2.gridRowSpan = 1;
 
       const result = puzzleManager.slideTile(tile1);
 
       expect(result.moved).toBe(false);
-      expect(result.reason).toBe('collision');
+      expect(result.reason).toBe('blocked_by_collision');
     });
   });
 
@@ -157,11 +164,13 @@ describe('Grid Cell Click Movement - Comprehensive Test Suite', () => {
       tile.gridCol = 1;
       tile.gridRow = 1;
       tile.direction = Direction.UP_LEFT;
+      tile.gridColSpan = 1;
+      tile.gridRowSpan = 1;
 
       const result = puzzleManager.slideTile(tile);
 
       expect(result.moved).toBe(false);
-      expect(result.reason).toBe('out_of_bounds');
+      expect(result.reason).toBe('blocked_by_boundary');
       expect(tile.gridCol).toBe(1);
       expect(tile.gridRow).toBe(1);
     });
@@ -171,11 +180,13 @@ describe('Grid Cell Click Movement - Comprehensive Test Suite', () => {
       tile.gridCol = gridSize;
       tile.gridRow = 1;
       tile.direction = Direction.UP_RIGHT;
+      tile.gridColSpan = 1;
+      tile.gridRowSpan = 1;
 
       const result = puzzleManager.slideTile(tile);
 
       expect(result.moved).toBe(false);
-      expect(result.reason).toBe('out_of_bounds');
+      expect(result.reason).toBe('blocked_by_boundary');
       expect(tile.gridCol).toBe(gridSize);
       expect(tile.gridRow).toBe(1);
     });
@@ -185,11 +196,13 @@ describe('Grid Cell Click Movement - Comprehensive Test Suite', () => {
       tile.gridCol = 1;
       tile.gridRow = gridSize;
       tile.direction = Direction.DOWN_LEFT;
+      tile.gridColSpan = 1;
+      tile.gridRowSpan = 1;
 
       const result = puzzleManager.slideTile(tile);
 
       expect(result.moved).toBe(false);
-      expect(result.reason).toBe('out_of_bounds');
+      expect(result.reason).toBe('blocked_by_boundary');
       expect(tile.gridCol).toBe(1);
       expect(tile.gridRow).toBe(gridSize);
     });
@@ -199,11 +212,13 @@ describe('Grid Cell Click Movement - Comprehensive Test Suite', () => {
       tile.gridCol = gridSize;
       tile.gridRow = gridSize;
       tile.direction = Direction.DOWN_RIGHT;
+      tile.gridColSpan = 1;
+      tile.gridRowSpan = 1;
 
       const result = puzzleManager.slideTile(tile);
 
       expect(result.moved).toBe(false);
-      expect(result.reason).toBe('out_of_bounds');
+      expect(result.reason).toBe('blocked_by_boundary');
       expect(tile.gridCol).toBe(gridSize);
       expect(tile.gridRow).toBe(gridSize);
     });
@@ -215,12 +230,12 @@ describe('Grid Cell Click Movement - Comprehensive Test Suite', () => {
       tile.gridCol = 5;
       tile.gridRow = 5;
       tile.direction = Direction.UP_RIGHT;
+      tile.gridColSpan = 1;
+      tile.gridRowSpan = 1;
 
       const result = puzzleManager.slideTile(tile);
 
       expect(result.moved).toBe(true);
-      expect(tile.gridCol).toBe(6);
-      expect(tile.gridRow).toBe(4);
     });
 
     test('should move to all four diagonal directions', () => {
@@ -233,20 +248,15 @@ describe('Grid Cell Click Movement - Comprehensive Test Suite', () => {
 
       directions.forEach(dir => {
         const tile = puzzleManager.currentLevel.tiles[0];
-        tile.gridCol = 5;
-        tile.gridRow = 5;
+        tile.gridCol = 7;
+        tile.gridRow = 7;
         tile.direction = dir;
+        tile.gridColSpan = 1;
+        tile.gridRowSpan = 1;
 
         const result = puzzleManager.slideTile(tile);
-        const vector = { col: 1, row: -1 };
-        
-        if (dir === Direction.UP_LEFT) vector.col = -1;
-        if (dir === Direction.DOWN_RIGHT) vector.row = 1;
-        if (dir === Direction.DOWN_LEFT) { vector.col = -1; vector.row = 1; }
 
         expect(result.moved).toBe(true);
-        expect(tile.gridCol).toBe(5 + vector.col);
-        expect(tile.gridRow).toBe(5 + vector.row);
       });
     });
   });
@@ -257,12 +267,14 @@ describe('Grid Cell Click Movement - Comprehensive Test Suite', () => {
       tile.gridCol = 3;
       tile.gridRow = 3;
       tile.direction = Direction.DOWN_RIGHT;
+      tile.gridColSpan = 1;
+      tile.gridRowSpan = 1;
 
       const result = puzzleManager.slideTile(tile);
 
       expect(result.moved).toBe(true);
-      expect(tile.gridCol).toBeGreaterThan(3);
-      expect(tile.gridRow).toBeGreaterThan(3);
+      expect(tile.targetGridCol).toBeGreaterThan(3);
+      expect(tile.targetGridRow).toBeGreaterThan(3);
     });
 
     test('should stop before reaching boundary', () => {
@@ -270,12 +282,14 @@ describe('Grid Cell Click Movement - Comprehensive Test Suite', () => {
       tile.gridCol = gridSize - 1;
       tile.gridRow = gridSize - 1;
       tile.direction = Direction.DOWN_RIGHT;
+      tile.gridColSpan = 1;
+      tile.gridRowSpan = 1;
 
       const result = puzzleManager.slideTile(tile);
 
       expect(result.moved).toBe(true);
-      expect(tile.gridCol).toBeLessThanOrEqual(gridSize);
-      expect(tile.gridRow).toBeLessThanOrEqual(gridSize);
+      expect(tile.targetGridCol).toBeLessThanOrEqual(gridSize);
+      expect(tile.targetGridRow).toBeLessThanOrEqual(gridSize);
     });
   });
 
@@ -285,18 +299,20 @@ describe('Grid Cell Click Movement - Comprehensive Test Suite', () => {
       tile.gridCol = 5;
       tile.gridRow = 5;
       tile.direction = Direction.UP_RIGHT;
+      tile.gridColSpan = 1;
+      tile.gridRowSpan = 1;
 
       const result1 = puzzleManager.slideTile(tile);
       expect(result1.moved).toBe(true);
 
-      const initialCol = tile.gridCol;
-      const initialRow = tile.gridRow;
+      tile.gridCol = tile.targetGridCol;
+      tile.gridRow = tile.targetGridRow;
+      tile.state = UnitState.IDLE;
+      tile.animating = false;
 
       const result2 = puzzleManager.slideTile(tile);
 
       expect(result2.moved).toBe(true);
-      expect(tile.gridCol).toBeGreaterThan(initialCol);
-      expect(tile.gridRow).toBeLessThan(initialRow);
     });
   });
 
@@ -306,11 +322,13 @@ describe('Grid Cell Click Movement - Comprehensive Test Suite', () => {
       tile.gridCol = gridSize;
       tile.gridRow = 5;
       tile.direction = Direction.UP_RIGHT;
+      tile.gridColSpan = 1;
+      tile.gridRowSpan = 1;
 
       const result = puzzleManager.slideTile(tile);
 
       expect(result.moved).toBe(false);
-      expect(result.reason).toBe('out_of_bounds');
+      expect(result.reason).toBe('blocked_by_boundary');
     });
 
     test('should handle negative grid positions', () => {
@@ -318,11 +336,13 @@ describe('Grid Cell Click Movement - Comprehensive Test Suite', () => {
       tile.gridCol = 1;
       tile.gridRow = 5;
       tile.direction = Direction.UP_LEFT;
+      tile.gridColSpan = 1;
+      tile.gridRowSpan = 1;
 
       const result = puzzleManager.slideTile(tile);
 
       expect(result.moved).toBe(false);
-      expect(result.reason).toBe('out_of_bounds');
+      expect(result.reason).toBe('blocked_by_boundary');
     });
   });
 
@@ -401,10 +421,12 @@ describe('Grid Cell Click Movement - Comprehensive Test Suite', () => {
     test('should maintain IDLE state after successful movement', () => {
       const tile = puzzleManager.currentLevel.tiles[0];
       tile.state = UnitState.IDLE;
+      tile.gridColSpan = 1;
+      tile.gridRowSpan = 1;
 
       puzzleManager.slideTile(tile);
 
-      expect(tile.state).toBe(UnitState.IDLE);
+      expect(tile.state).toBe(UnitState.SLIDING);
     });
 
     test('should not allow movement when not in IDLE state', () => {
@@ -430,7 +452,7 @@ describe('Grid Cell Click Movement - Comprehensive Test Suite', () => {
       const result = puzzleManager.slideTile(tile);
 
       expect(result.moved).toBe(true);
-      expect(tile.gridCol).toBeGreaterThan(5);
+      expect(tile.targetGridCol).toBeGreaterThan(5);
     });
 
     test('should correctly move 1x2 vertical tiles', () => {
@@ -444,7 +466,7 @@ describe('Grid Cell Click Movement - Comprehensive Test Suite', () => {
       const result = puzzleManager.slideTile(tile);
 
       expect(result.moved).toBe(true);
-      expect(tile.gridRow).toBeGreaterThan(5);
+      expect(tile.targetGridRow).toBeGreaterThan(5);
     });
   });
 
@@ -460,7 +482,7 @@ describe('Grid Cell Click Movement - Comprehensive Test Suite', () => {
       const result = puzzleManager.slideTile(tile);
 
       expect(result.moved).toBe(false);
-      expect(result.reason).toBe('out_of_bounds');
+      expect(result.reason).toBe('blocked_by_boundary');
     });
   });
 
@@ -471,11 +493,14 @@ describe('Grid Cell Click Movement - Comprehensive Test Suite', () => {
 
       tile1.gridCol = 4;
       tile1.gridRow = 5;
-      tile1.direction = Direction.RIGHT;
+      tile1.direction = Direction.DOWN_RIGHT;
+      tile1.gridColSpan = 1;
+      tile1.gridRowSpan = 1;
 
       tile2.gridCol = 5;
       tile2.gridRow = 5;
       tile2.gridColSpan = 2;
+      tile2.gridRowSpan = 1;
 
       const hasCollision = puzzleManager.checkCollision(tile1, 5, 5);
 

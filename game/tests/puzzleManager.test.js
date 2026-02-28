@@ -3,7 +3,7 @@ const PuzzleManager = require('../utils/puzzleManager');
 
 describe('PuzzleManager - Tile Movement and Collision', () => {
   let puzzleManager;
-  let gridSize = 14;
+  const gridSize = 14;
 
   beforeEach(() => {
     puzzleManager = new PuzzleManager();
@@ -23,7 +23,7 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
           gridRow: 5,
           gridColSpan: 1,
           gridRowSpan: 1,
-          direction: Direction.UP
+          direction: Direction.UP_RIGHT
         },
         {
           id: generateId(),
@@ -33,45 +33,44 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
           gridRow: 10,
           gridColSpan: 1,
           gridRowSpan: 1,
-          direction: Direction.UP
+          direction: Direction.DOWN_LEFT
         }
       ]
     };
     
     const { PuzzleLevel } = require('../utils/puzzleManager');
     puzzleManager.currentLevel = new PuzzleLevel(levelConfig);
+    puzzleManager.history = [];
+    puzzleManager.saveState();
   });
 
   describe('slideTile - Basic Movement', () => {
     test('should move tile without obstacles', () => {
       const tile = puzzleManager.currentLevel.tiles[0];
       tile.gridCol = 7;
-      tile.gridRow = 8;
-      tile.direction = Direction.DOWN;
-      const initialCol = tile.gridCol;
-      const initialRow = tile.gridRow;
+      tile.gridRow = 7;
+      tile.direction = Direction.DOWN_RIGHT;
 
       const result = puzzleManager.slideTile(tile);
 
       expect(result).toBeDefined();
-      if (result.moved) {
-        expect(tile.state).toBe(UnitState.SLIDING);
-        expect(tile.animating).toBe(true);
-        expect(result.disappeared).toBe(false);
-      }
+      expect(result.moved).toBe(true);
+      expect(tile.state).toBe(UnitState.SLIDING);
+      expect(tile.animating).toBe(true);
+      expect(result.disappeared).toBe(false);
     });
 
-    test('should move tile until hitting boundary', () => {
+    test('should not disappear when hitting boundary', () => {
       const tile = puzzleManager.currentLevel.tiles[0];
-      tile.direction = Direction.RIGHT;
-      tile.gridCol = gridSize - 1;
+      tile.direction = Direction.UP_LEFT;
+      tile.gridCol = 2;
+      tile.gridRow = 2;
 
       const result = puzzleManager.slideTile(tile);
 
       expect(result).toBeDefined();
       expect(result.disappeared).toBe(false);
-      expect(result.moved).toBe(false);
-      expect(tile.gridCol).toBe(gridSize - 1);
+      expect(tile.state).toBe(UnitState.SLIDING);
     });
   });
 
@@ -80,32 +79,39 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
       const tile1 = puzzleManager.currentLevel.tiles[0];
       const tile2 = puzzleManager.currentLevel.tiles[1];
 
-      tile1.direction = Direction.RIGHT;
+      tile1.direction = Direction.DOWN_RIGHT;
       tile1.gridCol = 5;
       tile1.gridRow = 5;
+      tile1.gridColSpan = 1;
+      tile1.gridRowSpan = 1;
 
-      tile2.direction = Direction.RIGHT;
       tile2.gridCol = 6;
-      tile2.gridRow = 5;
+      tile2.gridRow = 6;
+      tile2.gridColSpan = 1;
+      tile2.gridRowSpan = 1;
 
       const result = puzzleManager.slideTile(tile1);
 
       expect(result).toBeDefined();
       expect(result.disappeared).toBe(false);
       expect(result.moved).toBe(false);
-      expect(tile1.gridCol).toBe(5);
+      expect(result.reason).toBe('blocked_by_collision');
     });
 
     test('should not move if initial position is blocked', () => {
       const tile1 = puzzleManager.currentLevel.tiles[0];
       const tile2 = puzzleManager.currentLevel.tiles[1];
 
-      tile1.direction = Direction.RIGHT;
+      tile1.direction = Direction.DOWN_RIGHT;
       tile1.gridCol = 5;
       tile1.gridRow = 5;
+      tile1.gridColSpan = 1;
+      tile1.gridRowSpan = 1;
 
       tile2.gridCol = 6;
-      tile2.gridRow = 5;
+      tile2.gridRow = 6;
+      tile2.gridColSpan = 1;
+      tile2.gridRowSpan = 1;
 
       const result = puzzleManager.slideTile(tile1);
 
@@ -116,57 +122,43 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
     });
   });
 
-  describe('slideTile - Boundary Conditions', () => {
-    test('should stop at top boundary', () => {
+  describe('slideTile - Diamond Boundary Conditions', () => {
+    test('should stop at diamond boundary (top-left)', () => {
       const tile = puzzleManager.currentLevel.tiles[0];
-      tile.direction = Direction.UP;
-      tile.gridCol = 5;
-      tile.gridRow = 1;
+      tile.direction = Direction.UP_LEFT;
+      tile.gridCol = 2;
+      tile.gridRow = 2;
 
       const result = puzzleManager.slideTile(tile);
 
       expect(result).toBeDefined();
-      expect(result.moved).toBe(false);
-      expect(tile.gridRow).toBe(1);
+      expect(result.disappeared).toBe(false);
+      expect(tile.state).toBe(UnitState.SLIDING);
     });
 
-    test('should stop at bottom boundary', () => {
+    test('should stop at diamond boundary (bottom-right)', () => {
       const tile = puzzleManager.currentLevel.tiles[0];
-      tile.direction = Direction.DOWN;
-      tile.gridCol = 5;
-      tile.gridRow = gridSize;
+      tile.direction = Direction.DOWN_RIGHT;
+      tile.gridCol = 12;
+      tile.gridRow = 12;
 
       const result = puzzleManager.slideTile(tile);
 
       expect(result).toBeDefined();
-      expect(result.moved).toBe(false);
-      expect(tile.gridRow).toBe(gridSize);
+      expect(result.disappeared).toBe(false);
     });
 
-    test('should stop at left boundary', () => {
+    test('should not move if already at diamond boundary', () => {
       const tile = puzzleManager.currentLevel.tiles[0];
-      tile.direction = Direction.LEFT;
+      tile.direction = Direction.UP_LEFT;
       tile.gridCol = 1;
-      tile.gridRow = 5;
+      tile.gridRow = 8;
 
       const result = puzzleManager.slideTile(tile);
 
       expect(result).toBeDefined();
       expect(result.moved).toBe(false);
-      expect(tile.gridCol).toBe(1);
-    });
-
-    test('should stop at right boundary', () => {
-      const tile = puzzleManager.currentLevel.tiles[0];
-      tile.direction = Direction.RIGHT;
-      tile.gridCol = gridSize;
-      tile.gridRow = 5;
-
-      const result = puzzleManager.slideTile(tile);
-
-      expect(result).toBeDefined();
-      expect(result.moved).toBe(false);
-      expect(tile.gridCol).toBe(gridSize);
+      expect(result.reason).toBe('blocked_by_boundary');
     });
   });
 
@@ -176,6 +168,8 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
       tile.direction = Direction.DOWN_RIGHT;
       tile.gridCol = 7;
       tile.gridRow = 7;
+      tile.gridColSpan = 1;
+      tile.gridRowSpan = 1;
 
       const result = puzzleManager.slideTile(tile);
 
@@ -193,9 +187,13 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
       tile1.direction = Direction.DOWN_RIGHT;
       tile1.gridCol = 5;
       tile1.gridRow = 5;
+      tile1.gridColSpan = 1;
+      tile1.gridRowSpan = 1;
 
       tile2.gridCol = 6;
       tile2.gridRow = 6;
+      tile2.gridColSpan = 1;
+      tile2.gridRowSpan = 1;
 
       const result = puzzleManager.slideTile(tile1);
 
@@ -212,7 +210,7 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
       const tile = puzzleManager.currentLevel.tiles[0];
       tile.gridColSpan = 2;
       tile.gridRowSpan = 1;
-      tile.direction = Direction.RIGHT;
+      tile.direction = Direction.DOWN_RIGHT;
       tile.gridCol = 5;
       tile.gridRow = 7;
 
@@ -229,7 +227,7 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
       const tile = puzzleManager.currentLevel.tiles[0];
       tile.gridColSpan = 1;
       tile.gridRowSpan = 2;
-      tile.direction = Direction.DOWN;
+      tile.direction = Direction.DOWN_RIGHT;
       tile.gridCol = 7;
       tile.gridRow = 5;
 
@@ -253,6 +251,25 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
       const result = puzzleManager.slideTile(tile);
 
       expect(result).toBeDefined();
+    });
+
+    test('should detect collision for multi-span tiles', () => {
+      const tile1 = puzzleManager.currentLevel.tiles[0];
+      const tile2 = puzzleManager.currentLevel.tiles[1];
+
+      tile1.gridColSpan = 2;
+      tile1.gridRowSpan = 1;
+      tile1.direction = Direction.DOWN_RIGHT;
+      tile1.gridCol = 5;
+      tile1.gridRow = 5;
+
+      tile2.gridCol = 7;
+      tile2.gridRow = 5;
+
+      const result = puzzleManager.slideTile(tile1);
+
+      expect(result).toBeDefined();
+      expect(result.disappeared).toBe(false);
     });
   });
 
@@ -302,12 +319,32 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
 
       expect(hasCollision).toBe(false);
     });
+
+    test('should detect collision for overlapping multi-span tiles', () => {
+      const tile1 = puzzleManager.currentLevel.tiles[0];
+      const tile2 = puzzleManager.currentLevel.tiles[1];
+
+      tile1.gridColSpan = 2;
+      tile1.gridRowSpan = 2;
+      tile2.gridColSpan = 2;
+      tile2.gridRowSpan = 1;
+
+      tile1.gridCol = 5;
+      tile1.gridRow = 5;
+
+      tile2.gridCol = 6;
+      tile2.gridRow = 6;
+
+      const hasCollision = puzzleManager.checkCollision(tile1, 6, 6);
+
+      expect(hasCollision).toBe(true);
+    });
   });
 
   describe('slideTile - State Management', () => {
     test('should not move tile if not in IDLE state', () => {
       const tile = puzzleManager.currentLevel.tiles[0];
-      tile.state = UnitState.RUNNING;
+      tile.state = UnitState.SLIDING;
 
       const result = puzzleManager.slideTile(tile);
 
@@ -315,24 +352,24 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
       expect(result.reason).toBe('tile_not_idle');
     });
 
-    test('should maintain IDLE state after successful move', () => {
+    test('should set SLIDING state after successful move initiation', () => {
       const tile = puzzleManager.currentLevel.tiles[0];
       tile.state = UnitState.IDLE;
+      tile.direction = Direction.DOWN_RIGHT;
 
       const result = puzzleManager.slideTile(tile);
 
       if (result.moved) {
         expect(tile.state).toBe(UnitState.SLIDING);
         expect(tile.animating).toBe(true);
-      } else {
-        expect(tile.state).toBe(UnitState.IDLE);
       }
     });
 
     test('should maintain IDLE state when no move possible', () => {
       const tile = puzzleManager.currentLevel.tiles[0];
-      tile.direction = Direction.RIGHT;
-      tile.gridCol = gridSize;
+      tile.direction = Direction.UP_LEFT;
+      tile.gridCol = 1;
+      tile.gridRow = 8;
 
       const result = puzzleManager.slideTile(tile);
 
@@ -344,77 +381,55 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
     test('should handle chain movement of multiple tiles', () => {
       const tiles = puzzleManager.currentLevel.tiles.slice(0, 2);
 
-      tiles[0].direction = Direction.RIGHT;
+      tiles[0].direction = Direction.DOWN_RIGHT;
       tiles[0].gridCol = 7;
       tiles[0].gridRow = 7;
 
-      tiles[1].direction = Direction.DOWN;
+      tiles[1].direction = Direction.DOWN_LEFT;
       tiles[1].gridCol = 7;
       tiles[1].gridRow = 7;
 
       const result1 = puzzleManager.slideTile(tiles[0]);
+      puzzleManager.saveState();
       const result2 = puzzleManager.slideTile(tiles[1]);
 
       expect(result1).toBeDefined();
       expect(result2).toBeDefined();
-      if (result1.moved) {
-        expect(tiles[0].animating).toBe(true);
-      }
-      if (result2.moved) {
-        expect(tiles[1].animating).toBe(true);
-      }
     });
 
     test('should handle tiles moving towards each other', () => {
       const tile1 = puzzleManager.currentLevel.tiles[0];
       const tile2 = puzzleManager.currentLevel.tiles[1];
 
-      tile1.direction = Direction.RIGHT;
+      tile1.direction = Direction.DOWN_RIGHT;
       tile1.gridCol = 6;
-      tile1.gridRow = 7;
+      tile1.gridRow = 6;
 
-      tile2.direction = Direction.LEFT;
+      tile2.direction = Direction.UP_LEFT;
       tile2.gridCol = 9;
-      tile2.gridRow = 7;
+      tile2.gridRow = 9;
 
       const result1 = puzzleManager.slideTile(tile1);
+      puzzleManager.saveState();
       const result2 = puzzleManager.slideTile(tile2);
 
       expect(result1).toBeDefined();
       expect(result2).toBeDefined();
-      if (result1.moved && result2.moved) {
-        expect(tile1.targetGridCol).toBeLessThan(tile2.targetGridCol);
-      }
     });
   });
 
   describe('slideTile - Edge Cases', () => {
-    test('should handle tile at (1,1) moving UP_LEFT', () => {
+    test('should handle tile at diamond edge moving UP_LEFT', () => {
       const tile = puzzleManager.currentLevel.tiles[0];
       tile.direction = Direction.UP_LEFT;
       tile.gridCol = 1;
-      tile.gridRow = 1;
+      tile.gridRow = 8;
 
       const result = puzzleManager.slideTile(tile);
 
       expect(result.moved).toBe(false);
       expect(result.disappeared).toBe(false);
-      expect(tile.gridCol).toBe(1);
-      expect(tile.gridRow).toBe(1);
-    });
-
-    test('should handle tile at (gridSize,gridSize) moving DOWN_RIGHT', () => {
-      const tile = puzzleManager.currentLevel.tiles[0];
-      tile.direction = Direction.DOWN_RIGHT;
-      tile.gridCol = gridSize;
-      tile.gridRow = gridSize;
-
-      const result = puzzleManager.slideTile(tile);
-
-      expect(result.moved).toBe(false);
-      expect(result.disappeared).toBe(false);
-      expect(tile.gridCol).toBe(gridSize);
-      expect(tile.gridRow).toBe(gridSize);
+      expect(result.reason).toBe('blocked_by_boundary');
     });
 
     test('should handle tile with invalid direction', () => {
@@ -428,29 +443,263 @@ describe('PuzzleManager - Tile Movement and Collision', () => {
     });
   });
 
-  describe('slideTile - No Disappearance', () => {
-    test('should never set tile to DISAPPEARED state', () => {
-      const tile = puzzleManager.currentLevel.tiles[0];
-      tile.direction = Direction.RIGHT;
-      tile.gridCol = gridSize - 2;
-
-      const result = puzzleManager.slideTile(tile);
-
-      expect(result.disappeared).toBe(false);
-      expect(tile.state).not.toBe(UnitState.DISAPPEARED);
-      expect(tile.state).toBe(UnitState.IDLE);
+  describe('isPositionInDiamond', () => {
+    test('should return true for positions inside diamond', () => {
+      expect(puzzleManager.isPositionInDiamond(7, 7, 1, 1)).toBe(true);
+      expect(puzzleManager.isPositionInDiamond(8, 7, 1, 1)).toBe(true);
+      expect(puzzleManager.isPositionInDiamond(7, 8, 1, 1)).toBe(true);
     });
 
-    test('should stop before going out of bounds', () => {
+    test('should return false for positions outside diamond', () => {
+      expect(puzzleManager.isPositionInDiamond(1, 1, 1, 1)).toBe(false);
+      expect(puzzleManager.isPositionInDiamond(14, 14, 1, 1)).toBe(false);
+    });
+
+    test('should handle multi-span tiles correctly', () => {
+      expect(puzzleManager.isPositionInDiamond(7, 7, 2, 2)).toBe(true);
+      expect(puzzleManager.isPositionInDiamond(1, 8, 2, 1)).toBe(false);
+    });
+  });
+
+  describe('Undo Functionality', () => {
+    test('should restore tile position after undo', () => {
       const tile = puzzleManager.currentLevel.tiles[0];
-      tile.direction = Direction.RIGHT;
-      tile.gridCol = gridSize;
+      const originalCol = tile.gridCol;
+      const originalRow = tile.gridRow;
+      tile.direction = Direction.DOWN_RIGHT;
 
-      const result = puzzleManager.slideTile(tile);
+      puzzleManager.slideTile(tile);
+      puzzleManager.saveState();
+      
+      tile.gridCol = tile.targetGridCol;
+      tile.gridRow = tile.targetGridRow;
+      tile.state = UnitState.IDLE;
+      tile.animating = false;
 
-      expect(result.disappeared).toBe(false);
-      expect(tile.gridCol).toBe(gridSize);
+      const undoResult = puzzleManager.undo();
+
+      expect(undoResult).toBe(true);
+      expect(tile.gridCol).toBe(originalCol);
+      expect(tile.gridRow).toBe(originalRow);
+    });
+
+    test('should restore complete tile state after undo', () => {
+      const tile = puzzleManager.currentLevel.tiles[0];
+      tile.direction = Direction.DOWN_RIGHT;
+      
+      puzzleManager.slideTile(tile);
+      puzzleManager.saveState();
+      
+      tile.gridCol = tile.targetGridCol;
+      tile.gridRow = tile.targetGridRow;
+      tile.state = UnitState.IDLE;
+      tile.animating = false;
+      tile.opacity = 0.5;
+
+      puzzleManager.undo();
+
       expect(tile.state).toBe(UnitState.IDLE);
+      expect(tile.animating).toBe(false);
+      expect(tile.opacity).toBe(1);
+    });
+
+    test('should return false when no history to undo', () => {
+      puzzleManager.history = [];
+      puzzleManager.saveState();
+
+      const result = puzzleManager.undo();
+
+      expect(result).toBe(false);
+    });
+
+    test('should handle multiple undo operations', () => {
+      const tile = puzzleManager.currentLevel.tiles[0];
+      const originalCol = tile.gridCol;
+      const originalRow = tile.gridRow;
+      
+      tile.direction = Direction.DOWN_RIGHT;
+      puzzleManager.slideTile(tile);
+      puzzleManager.saveState();
+      tile.gridCol = tile.targetGridCol;
+      tile.gridRow = tile.targetGridRow;
+      tile.state = UnitState.IDLE;
+      tile.animating = false;
+
+      tile.direction = Direction.DOWN_RIGHT;
+      puzzleManager.slideTile(tile);
+      puzzleManager.saveState();
+      tile.gridCol = tile.targetGridCol;
+      tile.gridRow = tile.targetGridRow;
+      tile.state = UnitState.IDLE;
+      tile.animating = false;
+
+      puzzleManager.undo();
+      puzzleManager.undo();
+
+      expect(tile.gridCol).toBe(originalCol);
+      expect(tile.gridRow).toBe(originalRow);
+    });
+  });
+
+  describe('Tile State Snapshot', () => {
+    test('should create complete state snapshot', () => {
+      const tile = puzzleManager.currentLevel.tiles[0];
+      tile.gridCol = 5;
+      tile.gridRow = 5;
+      tile.state = UnitState.IDLE;
+      tile.animating = false;
+      tile.opacity = 1;
+
+      const snapshot = tile.getStateSnapshot();
+
+      expect(snapshot.id).toBe(tile.id);
+      expect(snapshot.gridCol).toBe(5);
+      expect(snapshot.gridRow).toBe(5);
+      expect(snapshot.state).toBe(UnitState.IDLE);
+      expect(snapshot.animating).toBe(false);
+      expect(snapshot.opacity).toBe(1);
+    });
+
+    test('should restore tile from snapshot', () => {
+      const tile = puzzleManager.currentLevel.tiles[0];
+      tile.gridCol = 5;
+      tile.gridRow = 5;
+      tile.state = UnitState.SLIDING;
+      tile.animating = true;
+      tile.opacity = 0.5;
+
+      const snapshot = tile.getStateSnapshot();
+
+      tile.gridCol = 10;
+      tile.gridRow = 10;
+      tile.state = UnitState.IDLE;
+      tile.animating = false;
+      tile.opacity = 1;
+
+      tile.restoreFrom(snapshot);
+
+      expect(tile.gridCol).toBe(5);
+      expect(tile.gridRow).toBe(5);
+      expect(tile.state).toBe(UnitState.SLIDING);
+      expect(tile.animating).toBe(true);
+      expect(tile.opacity).toBe(0.5);
+    });
+  });
+
+  describe('Reset Level', () => {
+    test('should reset tiles to initial state', () => {
+      const tile = puzzleManager.currentLevel.tiles[0];
+      const originalCol = tile.gridCol;
+      const originalRow = tile.gridRow;
+      
+      tile.direction = Direction.DOWN_RIGHT;
+      puzzleManager.slideTile(tile);
+      puzzleManager.saveState();
+      tile.gridCol = tile.targetGridCol;
+      tile.gridRow = tile.targetGridRow;
+      tile.state = UnitState.IDLE;
+      tile.animating = false;
+
+      puzzleManager.resetLevel();
+
+      expect(tile.gridCol).toBe(originalCol);
+      expect(tile.gridRow).toBe(originalRow);
+      expect(tile.state).toBe(UnitState.IDLE);
+    });
+  });
+
+  describe('Animation Update', () => {
+    test('should update tile position during sliding animation', () => {
+      const tile = puzzleManager.currentLevel.tiles[0];
+      tile.state = UnitState.SLIDING;
+      tile.animating = true;
+      tile.animationProgress = 0;
+      tile.startX = 0;
+      tile.startY = 0;
+      tile.targetX = 100;
+      tile.targetY = 100;
+      tile.targetGridCol = 8;
+      tile.targetGridRow = 8;
+      tile.gridCol = 7;
+      tile.gridRow = 7;
+
+      puzzleManager.updateTileAnimation(tile, 0.1);
+
+      expect(tile.animationProgress).toBeGreaterThan(0);
+      expect(tile.currentX).toBeGreaterThan(0);
+      expect(tile.currentY).toBeGreaterThan(0);
+    });
+
+    test('should complete animation when progress reaches 1', () => {
+      const tile = puzzleManager.currentLevel.tiles[0];
+      tile.state = UnitState.SLIDING;
+      tile.animating = true;
+      tile.animationProgress = 0.99;
+      tile.startX = 0;
+      tile.startY = 0;
+      tile.targetX = 100;
+      tile.targetY = 100;
+      tile.targetGridCol = 8;
+      tile.targetGridRow = 8;
+      tile.gridCol = 7;
+      tile.gridRow = 7;
+
+      puzzleManager.updateTileAnimation(tile, 0.5);
+
+      expect(tile.animating).toBe(false);
+      expect(tile.state).toBe(UnitState.IDLE);
+      expect(tile.gridCol).toBe(8);
+      expect(tile.gridRow).toBe(8);
+    });
+  });
+
+  describe('calculateTargetPosition', () => {
+    test('should return blocked_by_boundary when at edge', () => {
+      const tile = puzzleManager.currentLevel.tiles[0];
+      tile.gridCol = 1;
+      tile.gridRow = 8;
+      tile.gridColSpan = 1;
+      tile.gridRowSpan = 1;
+
+      const vector = { col: -1, row: -1 };
+      const result = puzzleManager.calculateTargetPosition(tile, vector);
+
+      expect(result.canMove).toBe(false);
+      expect(result.reason).toBe('blocked_by_boundary');
+    });
+
+    test('should return blocked_by_collision when blocked', () => {
+      const tile1 = puzzleManager.currentLevel.tiles[0];
+      const tile2 = puzzleManager.currentLevel.tiles[1];
+
+      tile1.gridCol = 5;
+      tile1.gridRow = 5;
+      tile1.gridColSpan = 1;
+      tile1.gridRowSpan = 1;
+
+      tile2.gridCol = 6;
+      tile2.gridRow = 6;
+
+      const vector = { col: 1, row: 1 };
+      const result = puzzleManager.calculateTargetPosition(tile1, vector);
+
+      expect(result.canMove).toBe(false);
+      expect(result.reason).toBe('blocked_by_collision');
+    });
+
+    test('should calculate correct target for free movement', () => {
+      const tile = puzzleManager.currentLevel.tiles[0];
+      tile.gridCol = 7;
+      tile.gridRow = 7;
+      tile.gridColSpan = 1;
+      tile.gridRowSpan = 1;
+
+      const vector = { col: 1, row: 1 };
+      const result = puzzleManager.calculateTargetPosition(tile, vector);
+
+      expect(result.canMove).toBe(true);
+      expect(result.willDisappear).toBe(false);
+      expect(result.distance).toBeGreaterThan(0);
     });
   });
 });

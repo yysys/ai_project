@@ -25,7 +25,7 @@ class DebugLogger {
         this.logPath = 'ttfile://user/debug/game_debug.log';
       } else if (typeof wx !== 'undefined' && wx.getFileSystemManager) {
         this.fs = wx.getFileSystemManager();
-        this.logPath = 'wxfile://user/debug/game_debug.log';
+        this.logPath = 'ttfile://user/debug/game_debug.log';
       } else if (typeof require === 'function') {
         const fs = require('fs');
         const path = require('path');

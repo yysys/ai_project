@@ -1,90 +1,580 @@
-# 测试运行指南 - 拯救菜狗
+# 测试指南 - 拯救菜狗
 
-## 单元测试结果
+## 目录
 
-✅ **测试状态**: 全部通过
+1. [测试概述](#测试概述)
+2. [测试环境配置](#测试环境配置)
+3. [运行测试](#运行测试)
+4. [测试覆盖率](#测试覆盖率)
+5. [测试用例说明](#测试用例说明)
+6. [编写测试](#编写测试)
+7. [持续集成](#持续集成)
+
+---
+
+## 测试概述
+
+### 测试状态
+
 - **总测试数**: 96
 - **通过数**: 96
 - **失败数**: 0
 - **通过率**: 100%
-- **执行时间**: 2.365秒
+- **执行时间**: ~2.4秒
 
-### 测试覆盖
+### 测试类型
 
-1. **常量测试** (11个) ✅
-   - 方向常量
-   - 方向向量
-   - 方向角度
-   - 工具函数
+| 类型 | 数量 | 说明 |
+|------|------|------|
+| 单元测试 | 96 | 测试单个模块和函数 |
+| 集成测试 | - | 测试模块间协作 |
+| E2E测试 | - | 测试完整游戏流程 |
 
-2. **单位测试** (17个) ✅
-   - Unit类构造和方法
-   - VegetableDog类
-   - Wolf类
+---
 
-3. **单位管理器测试** (23个) ✅
-   - 单位创建
-   - 点击处理
-   - 更新和边界检测
-   - 状态查询
+## 测试环境配置
 
-4. **关卡管理器测试** (20个) ✅
-   - 关卡初始化
-   - 关卡解锁
-   - 星级和分数计算
-   - 进度管理
+### 环境要求
 
-5. **游戏状态管理器测试** (25个) ✅
-   - 状态管理
-   - 暂停/继续
-   - 计时器
-   - 事件监听
+- Node.js >= 14.0.0
+- npm >= 6.0.0
 
-## 在开发者工具中运行
+### 安装依赖
 
-### 方法一：微信开发者工具
+```bash
+cd game
+npm install
+```
 
-1. **下载微信开发者工具**
-   - 访问：https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html
-   - 下载对应平台的版本
+### Jest 配置
 
-2. **打开项目**
-   - 启动微信开发者工具
-   - 点击"导入项目"
-   - 选择项目目录：`/Users/qinkuang.chen/traeProject/ai_project/game`
-   - 填写 AppID（可以使用测试号）
-   - 项目名称：拯救菜狗
-   - 点击"导入"
+项目使用 Jest 作为测试框架，配置文件 `jest.config.js`：
 
-3. **运行项目**
-   - 项目导入后会自动编译
-   - 在模拟器中可以看到游戏界面
-   - 点击"开始游戏"按钮开始
+```javascript
+module.exports = {
+  testEnvironment: 'node',
+  testMatch: ['**/tests/**/*.test.js'],
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
+  collectCoverageFrom: [
+    'utils/**/*.js',
+    '!utils/logger.js',
+    '!utils/fileLogger.js',
+    '!utils/tt.js'
+  ],
+  coverageThreshold: {
+    global: {
+      branches: 70,
+      functions: 80,
+      lines: 80,
+      statements: 80
+    }
+  }
+};
+```
 
-4. **测试功能**
-   - ✅ 主页：查看菜狗吉祥物和开始按钮
-   - ✅ 关卡选择：查看10个关卡
-   - ✅ 游戏：点击菜狗或狼，观察跑动效果
-   - ✅ 结果：完成关卡后查看星级和分数
+---
 
-### 方法二：抖音开发者工具
+## 运行测试
 
-1. **下载抖音开发者工具**
-   - 访问：https://developer.open-douyin.com/docs/resource/developer-docs/development-tool/mini-app/development-tool/update-and-download
-   - 下载对应平台的版本
+### 运行所有测试
 
-2. **打开项目**
-   - 启动抖音开发者工具
-   - 点击"导入项目"
-   - 选择项目目录：`/Users/qinkuang.chen/traeProject/ai_project/game`
-   - 填写 AppID
-   - 项目名称：拯救菜狗
-   - 点击"导入"
+```bash
+npm test
+```
 
-3. **运行项目**
-   - 项目导入后会自动编译
-   - 在模拟器中可以看到游戏界面
-   - 点击"开始游戏"按钮开始
+### 运行特定测试文件
+
+```bash
+npm test -- constants.test.js
+npm test -- levelManager.test.js
+npm test -- puzzleManager.test.js
+```
+
+### 运行匹配模式的测试
+
+```bash
+npm test -- --testNamePattern="should create"
+npm test -- --testNamePattern="Level"
+```
+
+### 监听模式
+
+```bash
+npm test -- --watch
+```
+
+### 生成测试覆盖率报告
+
+```bash
+npm test -- --coverage
+```
+
+覆盖率报告会生成在 `coverage/` 目录下：
+- `coverage/lcov-report/index.html` - HTML报告
+- `coverage/lcov.info` - LCOV格式报告
+
+### 详细输出
+
+```bash
+npm test -- --verbose
+```
+
+---
+
+## 测试覆盖率
+
+### 覆盖率要求
+
+| 指标 | 最低要求 | 目标 |
+|------|----------|------|
+| 分支覆盖率 (Branches) | 70% | 80% |
+| 函数覆盖率 (Functions) | 80% | 90% |
+| 行覆盖率 (Lines) | 80% | 90% |
+| 语句覆盖率 (Statements) | 80% | 90% |
+
+### 核心模块覆盖率要求
+
+| 模块 | 最低覆盖率 |
+|------|------------|
+| constants.js | 100% |
+| gameEngine.js | 80% |
+| puzzleManager.js | 80% |
+| levelManager.js | 80% |
+| gameStateManager.js | 80% |
+| unitManager.js | 80% |
+| renderer.js | 70% |
+| inputHandler.js | 70% |
+| storage.js | 70% |
+
+### 查看覆盖率报告
+
+```bash
+# 生成覆盖率报告
+npm test -- --coverage
+
+# 打开HTML报告（macOS）
+open coverage/lcov-report/index.html
+
+# 打开HTML报告（Windows）
+start coverage/lcov-report/index.html
+
+# 打开HTML报告（Linux）
+xdg-open coverage/lcov-report/index.html
+```
+
+---
+
+## 测试用例说明
+
+### 1. 常量测试 (constants.test.js)
+
+测试数量：11个
+
+```javascript
+describe('Constants', () => {
+  describe('Direction', () => {
+    test('should have UP_LEFT direction', () => {
+      expect(Direction.UP_LEFT).toBe('up_left');
+    });
+    // ... 其他方向测试
+  });
+  
+  describe('DIRECTION_VECTORS', () => {
+    test('should have correct vector for UP_LEFT', () => {
+      expect(DIRECTION_VECTORS[Direction.UP_LEFT]).toEqual({
+        col: -1, row: -1, angle: 225
+      });
+    });
+    // ... 其他向量测试
+  });
+  
+  describe('Helper Functions', () => {
+    test('getRandomDirection should return valid direction', () => {
+      const direction = getRandomDirection();
+      expect(Object.values(Direction)).toContain(direction);
+    });
+    
+    test('generateId should return unique id', () => {
+      const id1 = generateId();
+      const id2 = generateId();
+      expect(id1).not.toBe(id2);
+    });
+  });
+});
+```
+
+### 2. 单位测试 (unit.test.js)
+
+测试数量：17个
+
+```javascript
+describe('Unit', () => {
+  describe('Tile', () => {
+    test('should create tile with default values', () => {
+      const tile = new Tile({ gridCol: 1, gridRow: 1 });
+      expect(tile.type).toBe(TileType.HORIZONTAL);
+      expect(tile.unitType).toBe(UnitType.WOLF);
+      expect(tile.state).toBe(UnitState.IDLE);
+    });
+    
+    test('should create tile with custom values', () => {
+      const tile = new Tile({
+        type: TileType.VERTICAL,
+        unitType: UnitType.DOG,
+        gridCol: 5,
+        gridRow: 5,
+        direction: Direction.UP_LEFT
+      });
+      expect(tile.type).toBe(TileType.VERTICAL);
+      expect(tile.unitType).toBe(UnitType.DOG);
+    });
+    
+    test('should clone tile correctly', () => {
+      const tile = new Tile({ gridCol: 1, gridRow: 1 });
+      const cloned = tile.clone();
+      expect(cloned.gridCol).toBe(tile.gridCol);
+      expect(cloned.id).toBe(tile.id);
+    });
+  });
+});
+```
+
+### 3. 单位管理器测试 (unitManager.test.js)
+
+测试数量：23个
+
+```javascript
+describe('UnitManager', () => {
+  describe('createUnit', () => {
+    test('should create dog unit', () => {
+      const unit = unitManager.createUnit(UnitType.DOG, 7, 7);
+      expect(unit.unitType).toBe(UnitType.DOG);
+      expect(unit.gridCol).toBe(7);
+      expect(unit.gridRow).toBe(7);
+    });
+    
+    test('should create wolf unit', () => {
+      const unit = unitManager.createUnit(UnitType.WOLF, 3, 3);
+      expect(unit.unitType).toBe(UnitType.WOLF);
+    });
+  });
+  
+  describe('handleClick', () => {
+    test('should return null if no unit at position', () => {
+      const result = unitManager.handleClick(0, 0);
+      expect(result).toBeNull();
+    });
+    
+    test('should return unit if clicked', () => {
+      const unit = unitManager.createUnit(UnitType.DOG, 7, 7);
+      const result = unitManager.handleClick(7, 7);
+      expect(result).toBe(unit);
+    });
+  });
+});
+```
+
+### 4. 关卡管理器测试 (levelManager.test.js)
+
+测试数量：20个
+
+```javascript
+describe('LevelManager', () => {
+  describe('getLevel', () => {
+    test('should return level by id', async () => {
+      await levelManager.init();
+      const level = levelManager.getLevel(1);
+      expect(level).toBeDefined();
+      expect(level.id).toBe(1);
+    });
+    
+    test('should return null for invalid id', () => {
+      const level = levelManager.getLevel(999);
+      expect(level).toBeNull();
+    });
+  });
+  
+  describe('completeLevel', () => {
+    test('should complete level and unlock next', () => {
+      levelManager.setCurrentLevel(1);
+      const nextLevel = levelManager.completeLevel(3, 1000);
+      expect(nextLevel).toBeDefined();
+      expect(nextLevel.unlocked).toBe(true);
+    });
+  });
+  
+  describe('calculateStars', () => {
+    test('should return 3 stars for fast completion', () => {
+      const level = { type: 'timed', timeLimit: 30 };
+      const stars = levelManager.calculateStars(level, 10);
+      expect(stars).toBe(3);
+    });
+  });
+});
+```
+
+### 5. 游戏状态管理器测试 (gameStateManager.test.js)
+
+测试数量：25个
+
+```javascript
+describe('GameStateManager', () => {
+  describe('getState', () => {
+    test('should return initial state', () => {
+      const state = stateManager.getState();
+      expect(state.status).toBe(GameState.IDLE);
+    });
+  });
+  
+  describe('setState', () => {
+    test('should update state', () => {
+      stateManager.setState({ status: GameState.PLAYING });
+      expect(stateManager.getState().status).toBe(GameState.PLAYING);
+    });
+  });
+  
+  describe('subscribe', () => {
+    test('should notify listeners on state change', () => {
+      const listener = jest.fn();
+      stateManager.subscribe(listener);
+      stateManager.setState({ status: GameState.PLAYING });
+      expect(listener).toHaveBeenCalled();
+    });
+  });
+});
+```
+
+### 6. 谜题管理器测试 (puzzleManager.test.js)
+
+测试数量：若干
+
+```javascript
+describe('PuzzleManager', () => {
+  describe('slideTile', () => {
+    test('should slide tile in correct direction', () => {
+      puzzleManager.setCurrentLevel(1);
+      const tile = puzzleManager.getTiles()[0];
+      const result = puzzleManager.slideTile(tile);
+      expect(result.moved).toBe(true);
+    });
+    
+    test('should not slide if blocked', () => {
+      // 测试被阻挡的情况
+    });
+  });
+  
+  describe('checkCollision', () => {
+    test('should detect collision', () => {
+      // 测试碰撞检测
+    });
+  });
+  
+  describe('checkWinCondition', () => {
+    test('should return true when dog disappears', () => {
+      // 测试胜利条件
+    });
+  });
+});
+```
+
+### 7. 边界碰撞测试 (boundaryCollision.test.js)
+
+```javascript
+describe('Boundary Collision', () => {
+  test('should detect diamond boundary correctly', () => {
+    // 测试菱形边界检测
+  });
+  
+  test('should handle edge cases', () => {
+    // 测试边缘情况
+  });
+});
+```
+
+### 8. 格子点击移动测试 (gridClickMovement.test.js)
+
+```javascript
+describe('Grid Click Movement', () => {
+  test('should move tile on click', () => {
+    // 测试点击移动
+  });
+  
+  test('should handle coordinate transformation', () => {
+    // 测试坐标转换
+  });
+});
+```
+
+---
+
+## 编写测试
+
+### 测试文件命名规范
+
+- 测试文件放在 `tests/` 目录
+- 文件名格式：`<模块名>.test.js`
+- 例如：`levelManager.test.js`
+
+### 测试用例命名规范
+
+使用描述性的测试名称：
+
+```javascript
+// 好的命名
+test('should return null when level not found', () => {});
+test('should unlock next level after completion', () => {});
+
+// 不好的命名
+test('test1', () => {});
+test('works', () => {});
+```
+
+### 测试结构
+
+```javascript
+describe('ModuleName', () => {
+  describe('methodName', () => {
+    test('should do something when condition', () => {
+      // Arrange - 准备
+      const input = 'test';
+      
+      // Act - 执行
+      const result = module.methodName(input);
+      
+      // Assert - 断言
+      expect(result).toBe('expected');
+    });
+  });
+});
+```
+
+### 常用断言
+
+```javascript
+// 相等
+expect(value).toBe(expected);
+expect(value).toEqual(expected);
+
+// 真值
+expect(value).toBeTruthy();
+expect(value).toBeFalsy();
+expect(value).toBeNull();
+expect(value).toBeUndefined();
+expect(value).toBeDefined();
+
+// 数字
+expect(value).toBeGreaterThan(10);
+expect(value).toBeLessThan(20);
+expect(value).toBeCloseTo(0.5, 2);
+
+// 字符串
+expect(value).toMatch(/pattern/);
+expect(value).toContain('substring');
+
+// 数组
+expect(array).toHaveLength(3);
+expect(array).toContain(item);
+
+// 对象
+expect(object).toHaveProperty('key');
+expect(object).toHaveProperty('key', value);
+
+// 异常
+expect(() => fn()).toThrow();
+expect(() => fn()).toThrow(Error);
+
+// 异步
+await expect(promise).resolves.toBe(value);
+await expect(promise).rejects.toThrow();
+```
+
+### Mock 和 Spy
+
+```javascript
+// Mock 函数
+const mockFn = jest.fn();
+mockFn.mockReturnValue('value');
+mockFn.mockImplementation(() => 'value');
+
+// Spy
+jest.spyOn(object, 'method');
+jest.spyOn(console, 'log').mockImplementation();
+
+// Mock 模块
+jest.mock('./module', () => ({
+  method: jest.fn()
+}));
+
+// 清除 Mock
+beforeEach(() => {
+  jest.clearAllMocks();
+});
+```
+
+### 异步测试
+
+```javascript
+// Promise
+test('should handle async', async () => {
+  const result = await asyncFunction();
+  expect(result).toBe('expected');
+});
+
+// Callback
+test('should handle callback', (done) => {
+  asyncFunction((result) => {
+    expect(result).toBe('expected');
+    done();
+  });
+});
+```
+
+---
+
+## 持续集成
+
+### GitHub Actions 配置
+
+```yaml
+name: Test
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: cd game && npm install
+        
+      - name: Run tests
+        run: cd game && npm test -- --coverage
+        
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./game/coverage/lcov.info
+```
+
+### 测试检查清单
+
+在提交代码前，请确保：
+
+- [ ] 所有测试通过
+- [ ] 新代码有对应的测试
+- [ ] 测试覆盖率不低于要求
+- [ ] 没有跳过的测试（除非有充分理由）
+- [ ] 测试名称清晰描述测试内容
+
+---
 
 ## 功能测试清单
 
@@ -98,7 +588,7 @@
 
 ### 关卡页测试
 
-- [ ] 显示10个关卡
+- [ ] 显示关卡列表
 - [ ] 第1关已解锁，其他关卡锁定
 - [ ] 点击已解锁关卡进入游戏
 - [ ] 点击锁定关卡显示提示
@@ -152,6 +642,8 @@
 - [ ] 金币数量保存
 - [ ] 重新打开后数据恢复
 
+---
+
 ## 性能测试
 
 ### 帧率测试
@@ -166,107 +658,33 @@
 - [ ] 无明显内存泄漏
 - [ ] 长时间运行稳定
 
+---
+
 ## 常见问题排查
 
-### 问题1：项目无法导入
+### 问题1：测试失败
 
 **解决方案**：
-- 确保选择了正确的项目目录
-- 检查 app.json 文件是否存在
-- 检查 AppID 是否正确
+1. 运行 `npm install` 重新安装依赖
+2. 运行 `npm test` 查看具体错误
+3. 检查 Node.js 版本（建议 >= 14.0.0）
 
-### 问题2：页面空白
-
-**解决方案**：
-- 检查控制台是否有错误
-- 确认所有依赖已安装（npm install）
-- 清除缓存重新编译
-
-### 问题3：游戏无法点击
+### 问题2：覆盖率不足
 
 **解决方案**：
-- 检查 Canvas 是否正确初始化
-- 检查触摸事件是否正确绑定
-- 查看控制台错误信息
+1. 查看覆盖率报告，找出未覆盖的代码
+2. 为未覆盖的代码添加测试用例
+3. 重新运行测试验证覆盖率
 
-### 问题4：测试失败
+### 问题3：测试超时
 
 **解决方案**：
-- 运行 `npm install` 重新安装依赖
-- 运行 `npm test` 查看具体错误
-- 检查 Node.js 版本（建议 >= 14.0.0）
-
-## 调试技巧
-
-### 使用开发者工具调试
-
-1. **打开调试器**
-   - 微信开发者工具：点击"调试器"按钮
-   - 抖音开发者工具：点击"调试"按钮
-
-2. **查看控制台**
-   - 查看 Console 输出
-   - 查看 Network 请求
-   - 查看 Storage 数据
-
-3. **断点调试**
-   - 在代码中设置断点
-   - 单步执行
-   - 查看变量值
-
-### 查看日志
-
-游戏代码中已添加 console.log，可以在控制台查看：
-- 游戏启动日志
-- 关卡加载日志
-- 点击事件日志
-- 游戏状态变化日志
-
-## 测试报告模板
-
-### 测试环境
-- **测试平台**: 微信小程序 / 抖音小游戏
-- **测试设备**: 模拟器 / 真机
-- **测试时间**: YYYY-MM-DD HH:mm:ss
-- **测试人员**: [姓名]
-
-### 测试结果
-| 测试项 | 预期结果 | 实际结果 | 状态 | 备注 |
-|--------|----------|----------|------|------|
-| 主页显示 | 正常 | [ ] | [ ] | |
-| 关卡选择 | 正常 | [ ] | [ ] | |
-| 游戏运行 | 正常 | [ ] | [ ] | |
-| 点击交互 | 正常 | [ ] | [ ] | |
-| 胜利判定 | 正常 | [ ] | [ ] | |
-| 失败判定 | 正常 | [ ] | [ ] | |
-| 数据保存 | 正常 | [ ] | [ ] | |
-
-### 问题记录
-| 序号 | 问题描述 | 严重程度 | 处理状态 | 备注 |
-|------|----------|----------|----------|------|
-| 1 | | | | |
-| 2 | | | | |
-
-## 下一步
-
-测试完成后，可以进行以下操作：
-
-1. **发布到生产环境**
-   - 微信小程序：提交审核
-   - 抖音小游戏：提交审核
-
-2. **优化和改进**
-   - 根据测试反馈优化性能
-   - 修复发现的问题
-   - 添加新功能
-
-3. **用户测试**
-   - 邀请用户进行测试
-   - 收集用户反馈
-   - 持续改进
+1. 检查异步测试是否正确处理
+2. 增加测试超时时间：`test('...', async () => {}, 10000)`
+3. 检查是否有无限循环
 
 ---
 
-**文档版本**: v1.0
-**最后更新**: 2026-02-09
-**测试状态**: 单元测试全部通过 ✅
+**文档版本**: v2.0  
+**最后更新**: 2026-02-28  
+**测试状态**: 单元测试全部通过

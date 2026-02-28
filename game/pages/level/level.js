@@ -1,4 +1,5 @@
 const PuzzleManager = require('../../utils/puzzleManager');
+const TT = require('../../utils/tt');
 
 const app = getApp();
 
@@ -13,13 +14,11 @@ Page({
   puzzleManager: null,
 
   onLoad() {
-    console.log('关卡页加载');
     this.puzzleManager = new PuzzleManager();
     this.loadLevels();
   },
 
   onShow() {
-    console.log('关卡页显示');
     this.loadLevels();
   },
 
@@ -40,19 +39,19 @@ Page({
     const level = this.puzzleManager.getLevel(levelId);
 
     if (!level.unlocked) {
-      wx.showToast({
+      TT.showToast({
         title: '关卡未解锁',
         icon: 'none'
       });
       return;
     }
 
-    wx.navigateTo({
+    TT.navigateTo({
       url: `/pages/game/game?levelId=${levelId}`
     });
   },
 
   goBack() {
-    wx.navigateBack();
+    TT.navigateBack();
   }
 });

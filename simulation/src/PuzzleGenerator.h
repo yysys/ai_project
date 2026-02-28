@@ -6,6 +6,36 @@
 #include <string>
 #include <set>
 
+struct DifficultyParams {
+    int effectiveGridSize;
+    int maxTileSize;
+    int density;
+    bool randomDirections;
+    int dogEscapeBonus;
+    int minMoves;
+    int maxMoves;
+    
+    DifficultyParams() : effectiveGridSize(14), maxTileSize(2), density(100), 
+                         randomDirections(true), dogEscapeBonus(0), minMoves(1), maxMoves(10) {}
+};
+
+struct ValidationReport {
+    bool isValid;
+    int tileCount;
+    int dogTileCount;
+    int wolfTileCount;
+    bool hasDog;
+    bool allCellsCovered;
+    bool noOverlaps;
+    std::vector<std::string> errors;
+    std::vector<std::string> warnings;
+    std::vector<std::string> uncoveredCells;
+    std::vector<std::string> overlapPositions;
+    
+    ValidationReport() : isValid(false), tileCount(0), dogTileCount(0), wolfTileCount(0),
+                         hasDog(false), allCellsCovered(false), noOverlaps(true) {}
+};
+
 struct PuzzleLevel {
     int id;
     std::string name;
@@ -29,12 +59,17 @@ private:
     bool canPlaceTile(const std::vector<Tile>& tiles, int col, int row, int colSpan, int rowSpan);
     void markUsedPositions(std::set<std::string>& used, int col, int row, int colSpan, int rowSpan);
     std::vector<std::pair<int, int>> getValidCellsInRow(int row, int gridSize);
+    std::vector<std::pair<int, int>> getAllValidCells(int gridSize);
     bool isValidDiamondCell(int col, int row, int gridSize);
+    DifficultyParams getDifficultyParams(int levelId);
+    Direction getOptimalDogDirection(int dogCol, int dogRow, int gridSize);
+    PuzzleLevel generateLevelWithParams(int levelId, const DifficultyParams& params);
     
 public:
     PuzzleGenerator(int size = 14, int tSize = 18);
     
     PuzzleLevel generateLevel(int levelId);
+    PuzzleLevel generateSolvableLevel(int levelId, int maxRetries = 10);
     std::vector<Tile> generateTiles();
     PuzzleLevel generateLevel1();
     PuzzleLevel generateLevel2();
@@ -46,7 +81,9 @@ public:
     void setDogTile(PuzzleLevel& level);
     
     bool validateLevel(const PuzzleLevel& level);
+    ValidationReport validateLevelWithReport(const PuzzleLevel& level);
     bool checkLevelSolvability(const PuzzleLevel& level);
+    void printValidationReport(const ValidationReport& report);
 };
 
 #endif

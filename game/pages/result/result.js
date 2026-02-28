@@ -1,3 +1,4 @@
+const TT = require('../../utils/tt');
 const app = getApp();
 
 Page({
@@ -10,7 +11,6 @@ Page({
   },
 
   onLoad(options) {
-    console.log('过关页加载', options);
     const result = options.result || 'win';
     const levelId = parseInt(options.levelId) || 1;
     const stars = parseInt(options.stars) || 0;
@@ -30,7 +30,6 @@ Page({
   },
 
   onShow() {
-    console.log('过关页显示');
   },
 
   saveProgress() {
@@ -52,20 +51,20 @@ Page({
   },
 
   goHome() {
-    wx.reLaunch({
+    TT.reLaunch({
       url: '/pages/index/index'
     });
   },
 
   nextLevel() {
     const nextLevelId = this.data.levelId + 1;
-    wx.redirectTo({
+    TT.redirectTo({
       url: `/pages/game/game?levelId=${nextLevelId}`
     });
   },
 
   retryLevel() {
-    wx.redirectTo({
+    TT.redirectTo({
       url: `/pages/game/game?levelId=${this.data.levelId}`
     });
   }

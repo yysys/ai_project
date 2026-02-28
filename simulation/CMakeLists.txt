@@ -6,8 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
-set(SOURCES
-    src/main.cpp
+set(COMMON_SOURCES
     src/Tile.cpp
     src/PuzzleGenerator.cpp
     src/PuzzleSolver.cpp
@@ -15,8 +14,17 @@ set(SOURCES
     src/Utils.cpp
 )
 
-add_executable(puzzle_sim ${SOURCES})
+add_executable(puzzle_sim
+    src/main.cpp
+    ${COMMON_SOURCES}
+)
+
+add_executable(level_validator
+    src/LevelValidator.cpp
+    ${COMMON_SOURCES}
+)
 
 if(UNIX AND NOT APPLE)
     target_link_libraries(puzzle_sim pthread)
+    target_link_libraries(level_validator pthread)
 endif()

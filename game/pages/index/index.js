@@ -1,3 +1,4 @@
+const TT = require('../../utils/tt');
 const app = getApp();
 
 Page({
@@ -6,21 +7,19 @@ Page({
   },
 
   onLoad() {
-    console.log('主页加载');
   },
 
   onShow() {
-    console.log('主页显示');
   },
 
   startGame() {
-    wx.navigateTo({
+    TT.navigateTo({
       url: '/pages/level/level'
     });
   },
 
   openSettings() {
-    wx.showToast({
+    TT.showToast({
       title: '设置功能开发中',
       icon: 'none'
     });

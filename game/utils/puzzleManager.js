@@ -1,17 +1,33 @@
+/**
+ * 拼图游戏管理模块
+ * 包含 Tile、PuzzleLevel、PuzzleManager 类
+ * @module puzzleManager
+ */
+
 const { TileType, UnitType, UnitState, GameState, Direction, DIRECTION_VECTORS, generateId } = require('./constants');
 
 const logger = require('./logger');
-let fileLogger = null;
-try {
-  fileLogger = require('./fileLogger');
-  console.log('fileLogger 加载成功');
-} catch (e) {
-  console.error('fileLogger 加载失败，将只使用控制台日志:', e);
-}
 
+/**
+ * 方块类
+ * 表示游戏中的一个可滑动方块
+ */
 class Tile {
+  /**
+   * 创建一个方块
+   * @param {Object} config - 方块配置
+   * @param {string} [config.id] - 方块ID
+   * @param {string} config.type - 方块类型
+   * @param {string} [config.unitType] - 单位类型
+   * @param {number} config.gridCol - 网格列位置
+   * @param {number} config.gridRow - 网格行位置
+   * @param {number} [config.gridColSpan=1] - 列跨度
+   * @param {number} [config.gridRowSpan=1] - 行跨度
+   * @param {string} [config.direction] - 滑动方向
+   * @param {string} [config.imageUrl] - 图片URL
+   */
   constructor(config) {
-    this.id = generateId();
+    this.id = config.id || generateId();
     this.type = config.type;
     this.unitType = config.unitType || UnitType.WOLF;
     this.gridCol = config.gridCol;
@@ -34,9 +50,101 @@ class Tile {
     this.targetGridRow = 0;
     this.opacity = 1;
   }
+
+  /**
+   * 克隆当前方块
+   * @returns {Tile} 克隆的方块实例
+   */
+  clone() {
+    const cloned = new Tile({
+      id: this.id,
+      type: this.type,
+      unitType: this.unitType,
+      gridCol: this.gridCol,
+      gridRow: this.gridRow,
+      gridColSpan: this.gridColSpan,
+      gridRowSpan: this.gridRowSpan,
+      direction: this.direction,
+      imageUrl: this.imageUrl
+    });
+    cloned.state = this.state;
+    cloned.animating = this.animating;
+    cloned.animationProgress = this.animationProgress;
+    cloned.startX = this.startX;
+    cloned.startY = this.startY;
+    cloned.currentX = this.currentX;
+    cloned.currentY = this.currentY;
+    cloned.targetX = this.targetX;
+    cloned.targetY = this.targetY;
+    cloned.targetGridCol = this.targetGridCol;
+    cloned.targetGridRow = this.targetGridRow;
+    cloned.opacity = this.opacity;
+    return cloned;
+  }
+
+  /**
+   * 从保存的状态恢复方块
+   * @param {Object} saved - 保存的状态对象
+   */
+  restoreFrom(saved) {
+    this.gridCol = saved.gridCol;
+    this.gridRow = saved.gridRow;
+    this.state = saved.state;
+    this.animating = saved.animating;
+    this.animationProgress = saved.animationProgress;
+    this.startX = saved.startX;
+    this.startY = saved.startY;
+    this.currentX = saved.currentX;
+    this.currentY = saved.currentY;
+    this.targetX = saved.targetX;
+    this.targetY = saved.targetY;
+    this.targetGridCol = saved.targetGridCol;
+    this.targetGridRow = saved.targetGridRow;
+    this.opacity = saved.opacity;
+  }
+
+  /**
+   * 获取方块状态快照
+   * @returns {Object} 状态快照对象
+   */
+  getStateSnapshot() {
+    return {
+      id: this.id,
+      gridCol: this.gridCol,
+      gridRow: this.gridRow,
+      gridColSpan: this.gridColSpan,
+      gridRowSpan: this.gridRowSpan,
+      state: this.state,
+      animating: this.animating,
+      animationProgress: this.animationProgress,
+      startX: this.startX,
+      startY: this.startY,
+      currentX: this.currentX,
+      currentY: this.currentY,
+      targetX: this.targetX,
+      targetY: this.targetY,
+      targetGridCol: this.targetGridCol,
+      targetGridRow: this.targetGridRow,
+      opacity: this.opacity
+    };
+  }
 }
 
+/**
+ * 关卡类
+ * 表示游戏中的一个关卡
+ */
 class PuzzleLevel {
+  /**
+   * 创建一个关卡
+   * @param {Object} config - 关卡配置
+   * @param {number} config.id - 关卡ID
+   * @param {string} config.name - 关卡名称
+   * @param {string} [config.type='normal'] - 关卡类型
+   * @param {number} [config.timeLimit] - 时间限制
+   * @param {Array} [config.tiles] - 方块配置数组
+   * @param {boolean} [config.unlocked=false] - 是否解锁
+   */
   constructor(config) {
     this.id = config.id;
     this.name = config.name;
@@ -59,8 +167,33 @@ class PuzzleLevel {
       });
     }
   }
+
+  /**
+   * 获取所有方块的状态快照
+   * @returns {Array} 方块状态快照数组
+   */
+  getTileSnapshots() {
+    return this.tiles.map(tile => tile.getStateSnapshot());
+  }
+
+  /**
+   * 从快照恢复关卡状态
+   * @param {Array} snapshots - 方块状态快照数组
+   */
+  restoreFromSnapshots(snapshots) {
+    snapshots.forEach(snapshot => {
+      const tile = this.tiles.find(t => t.id === snapshot.id);
+      if (tile) {
+        tile.restoreFrom(snapshot);
+      }
+    });
+  }
 }
 
+/**
+ * 拼图管理器类
+ * 管理游戏关卡、方块滑动、状态历史等
+ */
 class PuzzleManager {
   constructor() {
     this.levels = [];
@@ -72,14 +205,25 @@ class PuzzleManager {
     this.maxHistory = 50;
     this.screenWidth = 0;
     this.screenHeight = 0;
+    this.initialLevelStates = new Map();
     this.initLevels();
   }
 
+  /**
+   * 设置屏幕尺寸
+   * @param {number} width - 屏幕宽度
+   * @param {number} height - 屏幕高度
+   */
   setScreenSize(width, height) {
     this.screenWidth = width;
     this.screenHeight = height;
   }
 
+  /**
+   * 获取方块的屏幕位置
+   * @param {Tile} tile - 方块实例
+   * @returns {Object|null} 屏幕坐标 {x, y} 或 null
+   */
   getTileScreenPosition(tile) {
     if (this.screenWidth === 0 || this.screenHeight === 0) {
       return null;
@@ -113,6 +257,14 @@ class PuzzleManager {
     };
   }
 
+  /**
+   * 检查位置是否在菱形区域内
+   * @param {number} col - 列位置
+   * @param {number} row - 行位置
+   * @param {number} colSpan - 列跨度
+   * @param {number} rowSpan - 行跨度
+   * @returns {boolean} 是否在菱形区域内
+   */
   isPositionInDiamond(col, row, colSpan, rowSpan) {
     const gridSize = this.gridSize;
     const center = Math.ceil(gridSize / 2);
@@ -132,10 +284,29 @@ class PuzzleManager {
     return true;
   }
 
+  /**
+   * 获取指定位置的菱形边界
+   * @param {number} row - 行位置
+   * @param {number} colSpan - 列跨度
+   * @returns {Object} 边界信息 {startCol, endCol, maxColInRow}
+   */
+  getDiamondBoundaryForPosition(row, colSpan) {
+    const gridSize = this.gridSize;
+    const center = Math.ceil(gridSize / 2);
+    const distanceFromCenter = Math.abs(row - center);
+    const maxColInRow = gridSize - distanceFromCenter;
+    const startCol = Math.ceil((gridSize - maxColInRow) / 2);
+    const endCol = startCol + maxColInRow - 1;
+    
+    return { startCol, endCol, maxColInRow };
+  }
+
+  /**
+   * 初始化所有关卡
+   * @private
+   */
   initLevels() {
     const level1Tiles = this.generateLevel1Tiles();
-    console.log('Level 1 tiles generated:', level1Tiles.length);
-    console.log('Level 1 dog tiles:', level1Tiles.filter(t => t.unitType === 'dog').length);
 
     const levels = [
       {
@@ -166,6 +337,11 @@ class PuzzleManager {
     });
   }
 
+  /**
+   * 生成第1关的方块
+   * @returns {Array} 方块配置数组
+   * @private
+   */
   generateLevel1Tiles() {
     const tiles = [];
     const gridSize = 14;
@@ -235,17 +411,16 @@ class PuzzleManager {
 
     if (centerTileIndex !== -1) {
       tiles[centerTileIndex].unitType = UnitType.DOG;
-      console.log('Center tile found and set to DOG:', tiles[centerTileIndex]);
-    } else {
-      console.error('No tile found covering center position', center, center);
     }
-
-    console.log('Total tiles generated:', tiles.length);
-    console.log('Dog tiles count:', tiles.filter(t => t.unitType === 'dog').length);
 
     return tiles;
   }
 
+  /**
+   * 生成第2关的方块
+   * @returns {Array} 方块配置数组
+   * @private
+   */
   generateLevel2Tiles() {
     const tiles = [];
     const gridSize = 14;
@@ -303,6 +478,11 @@ class PuzzleManager {
     return tiles;
   }
 
+  /**
+   * 生成第3关的方块
+   * @returns {Array} 方块配置数组
+   * @private
+   */
   generateLevel3Tiles() {
     const tiles = [];
     const gridSize = 14;
@@ -360,76 +540,92 @@ class PuzzleManager {
     return tiles;
   }
 
+  /**
+   * 根据ID获取关卡
+   * @param {number} id - 关卡ID
+   * @returns {PuzzleLevel|undefined} 关卡实例
+   */
   getLevel(id) {
     return this.levels.find(level => level.id === id);
   }
 
+  /**
+   * 获取所有关卡
+   * @returns {Array<PuzzleLevel>} 关卡数组
+   */
   getLevels() {
     return this.levels;
   }
 
+  /**
+   * 获取当前关卡
+   * @returns {PuzzleLevel|null} 当前关卡实例
+   */
   getCurrentLevel() {
     return this.currentLevel;
   }
 
+  /**
+   * 设置当前关卡
+   * @param {number} id - 关卡ID
+   * @returns {boolean} 是否设置成功
+   */
   setCurrentLevel(id) {
     const level = this.getLevel(id);
     if (level && level.unlocked) {
       this.currentLevel = level;
       this.currentLevelIndex = this.levels.findIndex(l => l.id === id);
       this.history = [];
+      
+      if (!this.initialLevelStates.has(id)) {
+        this.initialLevelStates.set(id, this.currentLevel.getTileSnapshots());
+      }
+      
       this.saveState();
       return true;
     }
     return false;
   }
 
+  /**
+   * 获取当前关卡的所有可见方块
+   * @returns {Array<Tile>} 方块数组
+   */
   getTiles() {
     return this.currentLevel ? this.currentLevel.tiles.filter(t => t.state !== UnitState.DISAPPEARED) : [];
   }
 
+  /**
+   * 获取狗方块
+   * @returns {Tile|null} 狗方块实例
+   */
   getDogTile() {
     return this.currentLevel ? this.currentLevel.dogTile : null;
   }
 
+  /**
+   * 滑动方块
+   * @param {Tile} tile - 要滑动的方块
+   * @returns {Object} 滑动结果 {moved, disappeared, tile, distance, reason}
+   */
   slideTile(tile) {
-    if (!this.slideTileLogShown) {
-      logger.log('=== slideTile 方法被调用 ===');
-      if (fileLogger) fileLogger.log('=== slideTile 方法被调用 ===');
-      this.slideTileLogShown = true;
-    }
-    
-    if (fileLogger) {
-      fileLogger.log('=== slideTile 开始 ===');
-      fileLogger.log('格子 ID:', tile.id);
-      fileLogger.log('格子类型:', tile.unitType);
-      fileLogger.log('格子状态:', tile.state);
-    }
-    
     if (tile.state !== UnitState.IDLE) {
-      logger.log('格子不是 IDLE 状态:', tile.state);
-      if (fileLogger) fileLogger.log('格子不是 IDLE 状态:', tile.state);
+      logger.debug('格子不是 IDLE 状态:', tile.state);
       return { moved: false, disappeared: false, reason: 'tile_not_idle' };
     }
 
     const direction = tile.direction;
     const vector = DIRECTION_VECTORS[direction];
     
-    if (fileLogger) {
-      fileLogger.log('格子方向:', direction);
-      fileLogger.log('方向向量:', JSON.stringify(vector));
-    }
-    
     if (!vector) {
-      logger.log('无效的方向:', direction);
-      if (fileLogger) fileLogger.log('无效的方向:', direction);
+      logger.warn('无效的方向:', direction);
       return { moved: false, disappeared: false, reason: 'invalid_direction' };
     }
 
     const targetPosition = this.calculateTargetPosition(tile, vector);
     
     if (!targetPosition.canMove) {
-      return { moved: false, disappeared: false, reason: 'cannot_move' };
+      return { moved: false, disappeared: false, reason: targetPosition.reason || 'cannot_move' };
     }
 
     const startPos = this.getTileScreenPosition(tile);
@@ -449,13 +645,7 @@ class PuzzleManager {
     tile.targetX = endPos ? endPos.x : 0;
     tile.targetY = endPos ? endPos.y : 0;
 
-    logger.log('=== slideTile 开始 ===');
-    logger.log('格子 ID:', tile.id);
-    logger.log('格子类型:', tile.unitType);
-    logger.log('格子方向:', direction);
-    logger.log('初始位置:', tile.gridCol, tile.gridRow);
-    logger.log('目标位置:', tile.targetGridCol, tile.targetGridRow);
-    logger.log('是否消失:', targetPosition.willDisappear);
+    logger.debug('slideTile:', tile.id, '方向:', direction, '目标:', tile.targetGridCol, tile.targetGridRow);
 
     return { 
       moved: true, 
@@ -465,39 +655,66 @@ class PuzzleManager {
     };
   }
 
+  /**
+   * 计算方块的目标位置
+   * @param {Tile} tile - 方块实例
+   * @param {Object} vector - 方向向量
+   * @returns {Object} 目标位置信息
+   * @private
+   */
   calculateTargetPosition(tile, vector) {
     let currentCol = tile.gridCol;
     let currentRow = tile.gridRow;
     let distance = 0;
+    const originalCol = tile.gridCol;
+    const originalRow = tile.gridRow;
     
     while (true) {
       const nextCol = currentCol + vector.col;
       const nextRow = currentRow + vector.row;
-      const nextRight = nextCol + tile.gridColSpan - 1;
-      const nextBottom = nextRow + tile.gridRowSpan - 1;
       
-      const isOutOfBounds = nextCol < 1 || nextRight > this.gridSize || 
-                            nextRow < 1 || nextBottom > this.gridSize;
+      const isInsideDiamond = this.isPositionInDiamond(
+        nextCol, nextRow, 
+        tile.gridColSpan, tile.gridRowSpan
+      );
       
-      const isInsideDiamond = this.isPositionInDiamond(nextCol, nextRow, tile.gridColSpan, tile.gridRowSpan);
-      
-      if (isOutOfBounds || !isInsideDiamond) {
-        return {
-          gridCol: currentCol,
-          gridRow: currentRow,
-          willDisappear: true,
-          distance,
-          canMove: distance > 0
-        };
-      }
-      
-      if (this.checkCollision(tile, nextCol, nextRow)) {
+      if (!isInsideDiamond) {
+        if (distance === 0) {
+          return {
+            gridCol: originalCol,
+            gridRow: originalRow,
+            willDisappear: false,
+            distance: 0,
+            canMove: false,
+            reason: 'blocked_by_boundary'
+          };
+        }
         return {
           gridCol: currentCol,
           gridRow: currentRow,
           willDisappear: false,
           distance,
-          canMove: distance > 0
+          canMove: true
+        };
+      }
+      
+      if (this.checkCollision(tile, nextCol, nextRow)) {
+        if (distance === 0) {
+          return {
+            gridCol: originalCol,
+            gridRow: originalRow,
+            willDisappear: false,
+            distance: 0,
+            canMove: false,
+            reason: 'blocked_by_collision'
+          };
+        }
+        return {
+          gridCol: currentCol,
+          gridRow: currentRow,
+          willDisappear: false,
+          distance,
+          canMove: true
         };
       }
       
@@ -507,6 +724,11 @@ class PuzzleManager {
     }
   }
 
+  /**
+   * 更新方块动画
+   * @param {Tile} tile - 方块实例
+   * @param {number} deltaTime - 时间增量（秒）
+   */
   updateTileAnimation(tile, deltaTime) {
     if (!tile.animating) return;
 
@@ -529,23 +751,8 @@ class PuzzleManager {
         if (tile.targetGridCol > 0 && tile.targetGridRow > 0) {
           tile.gridCol = tile.targetGridCol;
           tile.gridRow = tile.targetGridRow;
-          
-          const isInsideDiamond = this.isPositionInDiamond(
-            tile.gridCol, tile.gridRow, 
-            tile.gridColSpan, tile.gridRowSpan
-          );
-          
-          if (!isInsideDiamond || tile.gridCol < 1 || tile.gridCol > this.gridSize ||
-              tile.gridRow < 1 || tile.gridRow > this.gridSize) {
-            tile.state = UnitState.FADING_OUT;
-            tile.animating = true;
-            tile.animationProgress = 0;
-          } else {
-            tile.state = UnitState.IDLE;
-          }
-        } else {
-          tile.state = UnitState.IDLE;
         }
+        tile.state = UnitState.IDLE;
         return;
       }
       
@@ -560,20 +767,7 @@ class PuzzleManager {
         tile.gridCol = tile.targetGridCol;
         tile.gridRow = tile.targetGridRow;
         tile.animating = false;
-        
-        const isInsideDiamond = this.isPositionInDiamond(
-          tile.gridCol, tile.gridRow, 
-          tile.gridColSpan, tile.gridRowSpan
-        );
-        
-        if (!isInsideDiamond || tile.gridCol < 1 || tile.gridCol > this.gridSize ||
-            tile.gridRow < 1 || tile.gridRow > this.gridSize) {
-          tile.state = UnitState.FADING_OUT;
-          tile.animating = true;
-          tile.animationProgress = 0;
-        } else {
-          tile.state = UnitState.IDLE;
-        }
+        tile.state = UnitState.IDLE;
       } else {
         const clampedProgress = Math.min(tile.animationProgress, 1);
         tile.currentX = tile.startX + (tile.targetX - tile.startX) * clampedProgress;
@@ -593,6 +787,13 @@ class PuzzleManager {
     }
   }
 
+  /**
+   * 检查碰撞
+   * @param {Tile} tile - 方块实例
+   * @param {number} col - 列位置
+   * @param {number} row - 行位置
+   * @returns {boolean} 是否发生碰撞
+   */
   checkCollision(tile, col, row) {
     const tiles = this.currentLevel.tiles.filter(t => 
       t.id !== tile.id && t.state !== UnitState.DISAPPEARED
@@ -603,57 +804,29 @@ class PuzzleManager {
     const tileTop = row;
     const tileBottom = row + tile.gridRowSpan - 1;
 
-    const collisionStart = '--- 碰撞检测开始 ---';
-    console.log(collisionStart);
-    fileLogger.log(collisionStart);
-    
-    const tileInfo = `移动的格子: ${tile.id} 位置: (${col}, ${row}) span: ${tile.gridColSpan}x${tile.gridRowSpan}`;
-    console.log('移动的格子:', tile.id, '位置:', col, row, 'span:', tile.gridColSpan, tile.gridRowSpan);
-    fileLogger.log(tileInfo);
-    
-    const boundaryInfo = `检测边界: [${tileLeft}, ${tileTop}] 到 [${tileRight}, ${tileBottom}]`;
-    console.log('检测边界:', tileLeft, tileTop, tileRight, tileBottom);
-    fileLogger.log(boundaryInfo);
-
     for (const other of tiles) {
       const otherLeft = other.gridCol;
       const otherRight = other.gridCol + other.gridColSpan - 1;
       const otherTop = other.gridRow;
       const otherBottom = other.gridRow + other.gridRowSpan - 1;
 
-      const checkInfo = `  检查格子: ${other.id} 位置: (${otherLeft}, ${otherTop}) span: ${other.gridColSpan}x${other.gridRowSpan}`;
-      console.log('  检查格子:', other.id, '位置:', otherLeft, otherTop, 'span:', other.gridColSpan, other.gridRowSpan);
-      fileLogger.log(checkInfo);
-
       if (tileLeft <= otherRight && tileRight >= otherLeft &&
           tileTop <= otherBottom && tileBottom >= otherTop) {
-        const collisionFound = `  *** 碰撞！与格子 ${other.id} 相交`;
-        const collisionDetail = `  *** 碰撞详情: [${tileLeft}, ${tileTop}] - [${tileRight}, ${tileBottom}] 与 [${otherLeft}, ${otherTop}] - [${otherRight}, ${otherBottom}]`;
-        console.log('  *** 碰撞！与格子', other.id, '相交');
-        console.log('  *** 碰撞详情: [', tileLeft, ',', tileTop, '] - [', tileRight, ',', tileBottom, '] 与 [', otherLeft, ',', otherTop, '] - [', otherRight, ',', otherBottom, ']');
-        fileLogger.log(collisionFound);
-        fileLogger.log(collisionDetail);
         return true;
       }
     }
 
-    const collisionEnd = '--- 碰撞检测结束：无碰撞 ---';
-    console.log(collisionEnd);
-    fileLogger.log(collisionEnd);
-
     return false;
   }
 
+  /**
+   * 保存当前状态到历史记录
+   */
   saveState() {
     if (!this.currentLevel) return;
 
     const state = {
-      tiles: this.currentLevel.tiles.map(tile => ({
-        id: tile.id,
-        gridCol: tile.gridCol,
-        gridRow: tile.gridRow,
-        state: tile.state
-      }))
+      tiles: this.currentLevel.tiles.map(tile => tile.getStateSnapshot())
     };
 
     this.history.push(state);
@@ -662,24 +835,32 @@ class PuzzleManager {
     }
   }
 
+  /**
+   * 撤销上一步操作
+   * @returns {boolean} 是否撤销成功
+   */
   undo() {
     if (this.history.length <= 1) return false;
 
     this.history.pop();
     const previousState = this.history[this.history.length - 1];
 
-    previousState.tiles.forEach(savedTile => {
-      const tile = this.currentLevel.tiles.find(t => t.id === savedTile.id);
-      if (tile) {
-        tile.gridCol = savedTile.gridCol;
-        tile.gridRow = savedTile.gridRow;
-        tile.state = savedTile.state;
-      }
-    });
+    if (previousState && previousState.tiles) {
+      previousState.tiles.forEach(savedTile => {
+        const tile = this.currentLevel.tiles.find(t => t.id === savedTile.id);
+        if (tile) {
+          tile.restoreFrom(savedTile);
+        }
+      });
+    }
 
     return true;
   }
 
+  /**
+   * 检查是否满足胜利条件
+   * @returns {boolean} 是否胜利
+   */
   checkWinCondition() {
     const dogTile = this.getDogTile();
     if (!dogTile) return false;
@@ -687,6 +868,12 @@ class PuzzleManager {
     return dogTile.state === UnitState.DISAPPEARED;
   }
 
+  /**
+   * 完成当前关卡
+   * @param {number} stars - 获得的星星数
+   * @param {number} score - 获得的分数
+   * @returns {PuzzleLevel|null} 解锁的下一关
+   */
   completeLevel(stars, score) {
     if (this.currentLevel) {
       this.currentLevel.completed = true;
@@ -697,6 +884,10 @@ class PuzzleManager {
     return null;
   }
 
+  /**
+   * 解锁下一关
+   * @returns {PuzzleLevel|null} 解锁的关卡
+   */
   unlockNextLevel() {
     const nextIndex = this.currentLevelIndex + 1;
     if (nextIndex < this.levels.length) {
@@ -706,23 +897,48 @@ class PuzzleManager {
     return null;
   }
 
+  /**
+   * 重置当前关卡
+   */
   resetLevel() {
     if (!this.currentLevel) return;
 
-    this.history = [];
-    const originalTiles = this.getLevel(this.currentLevel.id).tiles;
+    const levelId = this.currentLevel.id;
+    const initialSnapshots = this.initialLevelStates.get(levelId);
     
-    this.currentLevel.tiles.forEach((tile, index) => {
-      if (originalTiles[index]) {
-        tile.gridCol = originalTiles[index].gridCol;
-        tile.gridRow = originalTiles[index].gridRow;
-        tile.state = UnitState.IDLE;
+    if (initialSnapshots) {
+      initialSnapshots.forEach(snapshot => {
+        const tile = this.currentLevel.tiles.find(t => t.id === snapshot.id);
+        if (tile) {
+          tile.restoreFrom(snapshot);
+        }
+      });
+    } else {
+      const originalLevel = this.getLevel(levelId);
+      if (originalLevel) {
+        this.currentLevel.tiles.forEach((tile, index) => {
+          if (originalLevel.tiles[index]) {
+            tile.gridCol = originalLevel.tiles[index].gridCol;
+            tile.gridRow = originalLevel.tiles[index].gridRow;
+            tile.state = UnitState.IDLE;
+            tile.animating = false;
+            tile.animationProgress = 0;
+            tile.opacity = 1;
+          }
+        });
       }
-    });
+    }
 
+    this.history = [];
     this.saveState();
   }
 
+  /**
+   * 计算星星数
+   * @param {PuzzleLevel} level - 关卡实例
+   * @param {number} timeUsed - 使用时间
+   * @returns {number} 星星数
+   */
   calculateStars(level, timeUsed) {
     let stars = 1;
 
@@ -737,6 +953,12 @@ class PuzzleManager {
     return stars;
   }
 
+  /**
+   * 计算分数
+   * @param {PuzzleLevel} level - 关卡实例
+   * @param {number} timeUsed - 使用时间
+   * @returns {number} 分数
+   */
   calculateScore(level, timeUsed) {
     let score = 0;
 
@@ -754,4 +976,3 @@ class PuzzleManager {
 module.exports = PuzzleManager;
 module.exports.PuzzleLevel = PuzzleLevel;
 module.exports.Tile = Tile;
-

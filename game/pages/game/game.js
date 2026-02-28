@@ -1,5 +1,6 @@
 const PuzzleManager = require('../../utils/puzzleManager');
 const logger = require('../../utils/logger');
+const TT = require('../../utils/tt');
 const { ANIMATION_CONFIG } = require('../../utils/constants');
 
 const app = getApp();
@@ -76,12 +77,12 @@ Page({
       });
       this.updateTiles();
     } else {
-      wx.showToast({
+      TT.showToast({
         title: '关卡加载失败',
         icon: 'none'
       });
       setTimeout(() => {
-        wx.navigateBack();
+        TT.navigateBack();
       }, 1500);
     }
   },
@@ -114,26 +115,20 @@ Page({
   },
 
   handleTileTap(e) {
-    logger.log('=== handleTileTap 触发 ===');
     if (!this.data.gameActive) {
-      logger.log('游戏未激活');
       return;
     }
 
     const tileIndex = e.currentTarget.dataset.tileIndex;
-    logger.log('tileIndex:', tileIndex);
     const tiles = this.data.tiles;
     const tile = tiles[tileIndex];
-    logger.log('点击的 tile:', tile);
 
     if (!tile) return;
 
     const puzzleTile = this.puzzleManager.getTiles().find(t => t.id === tile.id);
-    logger.log('找到的 puzzleTile:', puzzleTile);
     if (!puzzleTile) return;
 
     const result = this.puzzleManager.slideTile(puzzleTile);
-    logger.log('slideTile 结果:', result);
     
     if (result.moved) {
       this.updateTiles();
@@ -197,7 +192,7 @@ Page({
     this.puzzleManager.completeLevel(stars, score);
 
     setTimeout(() => {
-      wx.redirectTo({
+      TT.redirectTo({
         url: `/pages/result/result?result=win&levelId=${this.data.levelId}&stars=${stars}&score=${score}`
       });
     }, 500);
@@ -207,7 +202,7 @@ Page({
     this.setData({ gameActive: false });
 
     setTimeout(() => {
-      wx.redirectTo({
+      TT.redirectTo({
         url: `/pages/result/result?result=lose&levelId=${this.data.levelId}`
       });
     }, 500);
@@ -221,13 +216,13 @@ Page({
     const success = this.puzzleManager.undo();
     if (success) {
       this.updateTiles();
-      wx.showToast({
+      TT.showToast({
         title: '已撤销',
         icon: 'success',
         duration: 1000
       });
     } else {
-      wx.showToast({
+      TT.showToast({
         title: '无法撤销',
         icon: 'none',
         duration: 1000
@@ -292,13 +287,13 @@ Page({
         down_right: '向右下'
       };
       
-      wx.showToast({
+      TT.showToast({
         title: `提示: 点击${directionTexts[hintTile.direction]}的方块`,
         icon: 'none',
         duration: 2000
       });
     } else {
-      wx.showToast({
+      TT.showToast({
         title: '没有可移动的方块',
         icon: 'none',
         duration: 2000
@@ -330,7 +325,7 @@ Page({
       return;
     }
 
-    wx.showModal({
+    TT.showModal({
       title: '确认重置',
       content: '确定要重置当前关卡吗？',
       success: (res) => {
@@ -338,7 +333,7 @@ Page({
           const success = this.puzzleManager.resetLevel();
           if (success) {
             this.updateTiles();
-            wx.showToast({
+            TT.showToast({
               title: '已重置',
               icon: 'success',
               duration: 1000
@@ -363,24 +358,24 @@ Page({
 
   goBack() {
     if (this.data.gameActive) {
-      wx.showModal({
+      TT.showModal({
         title: '确认退出',
         content: '当前游戏进度将丢失，确定要退出吗？',
         success: (res) => {
           if (res.confirm) {
             this.destroyGame();
-            wx.navigateBack();
+            TT.navigateBack();
           }
         }
       });
     } else {
-      wx.navigateBack();
+      TT.navigateBack();
     }
   },
 
   showSettings() {
     logger.saveLog();
-    wx.showToast({
+    TT.showToast({
       title: '日志已保存',
       icon: 'none',
       duration: 1500

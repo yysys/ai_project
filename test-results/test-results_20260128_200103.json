@@ -1,0 +1,31 @@
+{
+  "timestamp": "2026-01-28 20:01:03",
+  "login_page": {
+    "success": false,
+    "error": "JavaScript语法错误:   File \"pages/login/login.js\", line 1\n    // login.js\n    ^\nSyntaxError: invalid syntax\n\n"
+  },
+  "flight_page": {
+    "success": false,
+    "error": "JavaScript语法错误:   File \"pages/flight/flight.js\", line 1\n    // flight.js\n    ^\nSyntaxError: invalid syntax\n\n"
+  },
+  "index_page": {
+    "success": false,
+    "error": "JavaScript语法错误:   File \"pages/index/index.js\", line 1\n    // index.js\n    ^\nSyntaxError: invalid syntax\n\n"
+  },
+  "app_files": {
+    "success": true,
+    "output": "应用配置文件测试通过"
+  },
+  "assets": {
+    "success": true,
+    "output": "资源文件测试通过"
+  },
+  "ui_interaction": {
+    "success": true,
+    "output": "UI交互图测试通过"
+  },
+  "scripts": {
+    "success": false,
+    "error": "脚本语法错误: generate-images.js:   File \"generate-images.js\", line 1\n    /**\n    ^\nSyntaxError: invalid syntax\n\n"
+  }
+}

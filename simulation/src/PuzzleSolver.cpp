@@ -209,17 +209,18 @@ bool PuzzleSolver::solveBFS(const std::vector<Tile>& tiles, std::vector<Move>& s
         auto currentTiles = current.first;
         auto currentMoves = current.second;
         
-        if (hasDogEscaped(currentTiles)) {
-            solution = currentMoves;
-            return true;
-        }
-        
         auto moves = getPossibleMoves(currentTiles);
         
         for (const auto& move : moves) {
             auto newTiles = currentTiles;
             newTiles[move.tileIndex].gridCol = move.newCol;
             newTiles[move.tileIndex].gridRow = move.newRow;
+            
+            if (move.disappeared) {
+                solution = currentMoves;
+                solution.push_back(move);
+                return true;
+            }
             
             GameState newState(newTiles);
             if (!visited.count(newState)) {

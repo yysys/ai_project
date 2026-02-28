@@ -1,10 +1,120 @@
-const { GameState, TILE_CONFIG, GAME_CONFIG } = require('./constants');
+const { GameState, TILE_CONFIG, GAME_CONFIG, ANIMATION_CONFIG, UnitState } = require('./constants');
 const PuzzleManager = require('./puzzleManager');
+const Renderer = require('./renderer');
 const logger = require('./logger');
+
+const requestAnimationFrame = (typeof tt !== 'undefined' && tt.requestAnimationFrame) 
+  ? tt.requestAnimationFrame.bind(tt) 
+  : (typeof requestAnimationFrame !== 'undefined' ? requestAnimationFrame : (cb) => setTimeout(cb, 16));
+
+const cancelAnimationFrame = (typeof tt !== 'undefined' && tt.cancelAnimationFrame)
+  ? tt.cancelAnimationFrame.bind(tt)
+  : (typeof cancelAnimationFrame !== 'undefined' ? cancelAnimationFrame : clearTimeout);
+
+class EventSystem {
+  constructor() {
+    this.events = new Map();
+  }
+
+  on(event, callback) {
+    if (!this.events.has(event)) {
+      this.events.set(event, new Set());
+    }
+    this.events.get(event).add(callback);
+    return () => this.off(event, callback);
+  }
+
+  off(event, callback) {
+    this.events.get(event)?.delete(callback);
+  }
+
+  emit(event, data) {
+    this.events.get(event)?.forEach(callback => {
+      try {
+        callback(data);
+      } catch (e) {
+        logger.error('Event callback error:', e);
+      }
+    });
+  }
+
+  once(event, callback) {
+    const wrapper = (data) => {
+      callback(data);
+      this.off(event, wrapper);
+    };
+    this.on(event, wrapper);
+  }
+
+  clear() {
+    this.events.clear();
+  }
+}
+
+class StateManager {
+  constructor(initialState = {}) {
+    this.state = {
+      status: GameState.IDLE,
+      currentLevelId: null,
+      elapsedTime: 0,
+      score: 0,
+      stars: 0,
+      isPaused: false,
+      moveCount: 0,
+      ...initialState
+    };
+    this.listeners = [];
+  }
+
+  getState() {
+    return { ...this.state };
+  }
+
+  setState(partial) {
+    const oldState = { ...this.state };
+    this.state = { ...this.state, ...partial };
+    this.notifyListeners(oldState, this.state);
+  }
+
+  subscribe(listener) {
+    this.listeners.push(listener);
+    return () => {
+      const index = this.listeners.indexOf(listener);
+      if (index > -1) {
+        this.listeners.splice(index, 1);
+      }
+    };
+  }
+
+  notifyListeners(oldState, newState) {
+    this.listeners.forEach(listener => {
+      try {
+        listener(oldState, newState);
+      } catch (e) {
+        logger.error('State listener error:', e);
+      }
+    });
+  }
+
+  reset() {
+    this.setState({
+      status: GameState.IDLE,
+      currentLevelId: null,
+      elapsedTime: 0,
+      score: 0,
+      stars: 0,
+      isPaused: false,
+      moveCount: 0
+    });
+  }
+}
 
 class GameEngine {
   constructor() {
     this.puzzleManager = new PuzzleManager();
+    this.renderer = new Renderer();
+    this.eventSystem = new EventSystem();
+    this.stateManager = new StateManager();
     
     this.lastTimestamp = 0;
     this.deltaTime = 0;
@@ -19,12 +129,35 @@ class GameEngine {
     this.isInitialized = false;
     this.animationId = null;
     
-    this.gameState = GameState.IDLE;
-    this.elapsedTime = 0;
-    
     this.onWin = null;
     this.onLose = null;
     this.onUpdate = null;
+
+    this._setupStateListener();
+  }
+
+  _setupStateListener() {
+    this.stateManager.subscribe((oldState, newState) => {
+      if (oldState.status !== newState.status) {
+        this.eventSystem.emit('stateChange', {
+          oldStatus: oldState.status,
+          newStatus: newState.status,
+          state: newState
+        });
+      }
+    });
+  }
+
+  on(event, callback) {
+    return this.eventSystem.on(event, callback);
+  }
+
+  off(event, callback) {
+    this.eventSystem.off(event, callback);
+  }
+
+  emit(event, data) {
+    this.eventSystem.emit(event, data);
   }
 
   init(canvas, ctx, screenWidth, screenHeight) {
@@ -33,25 +166,37 @@ class GameEngine {
     this.screenWidth = screenWidth;
     this.screenHeight = screenHeight;
     
+    this.renderer.init(canvas, ctx);
+    this.renderer.setScreenSize(screenWidth, screenHeight);
+    
     this.puzzleManager.setScreenSize(screenWidth, screenHeight);
     
     this.isInitialized = true;
+    this.stateManager.setState({ status: GameState.IDLE });
+    
+    this.emit('init', { screenWidth, screenHeight });
   }
 
   startLevel(levelId) {
     if (!this.isInitialized) {
-      console.error('GameEngine not initialized');
+      logger.error('GameEngine not initialized');
       return false;
     }
 
     const success = this.puzzleManager.setCurrentLevel(levelId);
     if (!success) {
-      console.error('Failed to set current level');
+      logger.error('Failed to set current level');
       return false;
     }
 
-    this.gameState = GameState.PLAYING;
-    this.elapsedTime = 0;
+    this.stateManager.setState({
+      status: GameState.PLAYING,
+      currentLevelId: levelId,
+      elapsedTime: 0,
+      moveCount: 0
+    });
+
+    this.emit('levelStart', { levelId });
     
     this.startGameLoop();
     
@@ -64,56 +209,96 @@ class GameEngine {
     }
     
     this.lastTimestamp = performance.now();
-    this.gameLoop(this.lastTimestamp);
+    this._gameLoop(this.lastTimestamp);
   }
 
-  gameLoop(timestamp) {
-    if (this.gameState === GameState.WIN || this.gameState === GameState.LOSE) {
+  _gameLoop(timestamp) {
+    const currentState = this.stateManager.getState();
+    
+    if (currentState.status === GameState.WIN || currentState.status === GameState.LOSE) {
+      return;
+    }
+
+    if (currentState.status === GameState.PAUSED) {
+      this.animationId = requestAnimationFrame(this._gameLoop.bind(this));
       return;
     }
 
     this.deltaTime = (timestamp - this.lastTimestamp) / 1000;
     this.lastTimestamp = timestamp;
 
-    this.update();
-    this.render();
+    this._update();
+    this._render();
 
-    this.animationId = requestAnimationFrame(this.gameLoop.bind(this));
+    this.animationId = requestAnimationFrame(this._gameLoop.bind(this));
   }
 
-  update() {
-    if (this.gameState !== GameState.PLAYING) {
+  _update() {
+    const currentState = this.stateManager.getState();
+    
+    if (currentState.status !== GameState.PLAYING) {
       return;
     }
 
-    this.elapsedTime += this.deltaTime;
+    const newElapsedTime = currentState.elapsedTime + this.deltaTime;
+    this.stateManager.setState({ elapsedTime: newElapsedTime });
+
+    const tiles = this.puzzleManager.getTiles();
+    
+    tiles.forEach(tile => {
+      if (tile.animating) {
+        this.puzzleManager.updateTileAnimation(tile, this.deltaTime);
+      }
+    });
+
+    this.renderer.updateAnimations(this.deltaTime);
 
     if (this.puzzleManager.checkWinCondition()) {
-      this.handleWin();
+      this._handleWin();
     }
 
     if (this.onUpdate) {
-      this.onUpdate(this.elapsedTime);
+      this.onUpdate(newElapsedTime);
     }
   }
 
-  handleWin() {
+  _handleWin() {
     const level = this.puzzleManager.getCurrentLevel();
-    const timeUsed = this.elapsedTime;
+    const currentState = this.stateManager.getState();
+    const timeUsed = currentState.elapsedTime;
     
     const stars = this.puzzleManager.calculateStars(level, timeUsed);
     const score = this.puzzleManager.calculateScore(level, timeUsed);
     
     this.puzzleManager.completeLevel(stars, score);
-    this.gameState = GameState.WIN;
     
-    if (this.onWin) {
-      this.onWin();
-    }
+    this.renderer.startWinAnimation(() => {
+      this.stateManager.setState({
+        status: GameState.WIN,
+        stars,
+        score
+      });
+
+      this.emit('win', {
+        levelId: level.id,
+        stars,
+        score,
+        timeUsed,
+        moveCount: currentState.moveCount
+      });
+      
+      if (this.onWin) {
+        this.onWin({ stars, score, timeUsed });
+      }
+    });
   }
 
-  handleLose() {
-    this.gameState = GameState.LOSE;
+  _handleLose() {
+    this.stateManager.setState({ status: GameState.LOSE });
+    
+    this.emit('lose', {
+      timeUsed: this.stateManager.getState().elapsedTime
+    });
     
     if (this.onLose) {
       this.onLose();
@@ -121,32 +306,44 @@ class GameEngine {
   }
 
   handleClick(x, y) {
-    console.log('=== handleClick 被调用 ===');
-    console.log('点击坐标:', x, y);
-    console.log('gameState:', this.gameState);
-    console.log('GameState.PLAYING:', GameState.PLAYING);
+    const currentState = this.stateManager.getState();
     
-    if (this.gameState !== GameState.PLAYING) {
-      console.log('点击事件：游戏不在 PLAYING 状态');
+    if (currentState.status !== GameState.PLAYING) {
+      logger.log('点击事件：游戏不在 PLAYING 状态', currentState.status);
       return false;
     }
 
     const tile = this.getTileAtPosition(x, y);
-    
-    console.log('点击事件：getTileAtPosition 返回', tile ? tile.id : 'null');
 
     if (tile) {
+      if (tile.animating || tile.state !== UnitState.IDLE) {
+        return false;
+      }
+      
       const result = this.puzzleManager.slideTile(tile);
-      console.log('点击事件：slideTile 返回', result);
+      
+      if (result.moved) {
+        this.stateManager.setState({
+          moveCount: currentState.moveCount + 1
+        });
+        
+        this.emit('tileSlide', {
+          tile,
+          result,
+          moveCount: currentState.moveCount + 1
+        });
+      }
+      
       return result.moved;
     }
 
-    console.log('点击事件：没有点击到格子');
     return false;
   }
 
   getTileAtPosition(screenX, screenY) {
     const tiles = this.puzzleManager.getTiles();
+    
+    const gridPos = this.renderer.screenToGrid(screenX, screenY);
     
     const sqrt2 = Math.sqrt(2);
     const maxGridWidth = this.screenWidth / sqrt2;
@@ -172,50 +369,63 @@ class GameEngine {
     const localX = rotatedX + centerX;
     const localY = rotatedY + centerY;
 
-    console.log('[getTileAtPosition] 总格子数:', tiles.length);
-    console.log('[getTileAtPosition] 点击坐标:', screenX, screenY);
-    console.log('[getTileAtPosition] 局部坐标:', localX, localY);
-
-    for (const tile of tiles) {
+    for (let i = tiles.length - 1; i >= 0; i--) {
+      const tile = tiles[i];
+      
+      if (tile.state === UnitState.DISAPPEARED) continue;
+      
       const tileX = offsetX + (tile.gridCol - 1) * tileSize;
       const tileY = offsetY + (tile.gridRow - 1) * tileSize;
       const tileWidth = tile.gridColSpan * tileSize;
       const tileHeight = tile.gridRowSpan * tileSize;
 
-      console.log('[getTileAtPosition] 检查格子:', tile.id, '位置:', tile.gridCol, tile.gridRow, '范围:', tileX, tileY, tileX + tileWidth, tileY + tileHeight);
-
       if (localX >= tileX && localX < tileX + tileWidth &&
           localY >= tileY && localY < tileY + tileHeight) {
-        console.log('[getTileAtPosition] 找到格子!', tile);
         return tile;
       }
     }
 
-    console.log('[getTileAtPosition] 未找到格子');
     return null;
   }
 
   undo() {
-    if (this.gameState !== GameState.PLAYING) {
+    const currentState = this.stateManager.getState();
+    
+    if (currentState.status !== GameState.PLAYING) {
       return false;
     }
 
-    return this.puzzleManager.undo();
+    const result = this.puzzleManager.undo();
+    
+    if (result) {
+      this.emit('undo', { moveCount: currentState.moveCount - 1 });
+    }
+    
+    return result;
   }
 
   reset() {
-    if (this.gameState !== GameState.PLAYING) {
+    const currentState = this.stateManager.getState();
+    
+    if (currentState.status !== GameState.PLAYING) {
       return false;
     }
 
     this.puzzleManager.resetLevel();
-    this.elapsedTime = 0;
+    this.stateManager.setState({
+      elapsedTime: 0,
+      moveCount: 0
+    });
+    
+    this.emit('levelReset', { levelId: currentState.currentLevelId });
     
     return true;
   }
 
   getHint() {
-    if (this.gameState !== GameState.PLAYING) {
+    const currentState = this.stateManager.getState();
+    
+    if (currentState.status !== GameState.PLAYING) {
       return null;
     }
 
@@ -225,7 +435,7 @@ class GameEngine {
     if (!dogTile) return null;
 
     for (const tile of tiles) {
-      const result = this.canSlideTile(tile);
+      const result = this._canSlideTile(tile);
       if (result.canSlide) {
         return {
           tile: tile,
@@ -237,9 +447,11 @@ class GameEngine {
     return null;
   }
 
-  canSlideTile(tile) {
+  _canSlideTile(tile) {
     const direction = tile.direction;
-    const vector = this.puzzleManager.DIRECTION_VECTORS?.[direction];
+    const vector = this.puzzleManager.getDirectionVector ? 
+      this.puzzleManager.getDirectionVector(direction) :
+      null;
     
     if (!vector) {
       return { canSlide: false, reason: 'invalid_direction' };
@@ -252,8 +464,13 @@ class GameEngine {
       const nextCol = newCol + vector.col;
       const nextRow = newRow + vector.row;
 
-      if (nextCol < 1 || nextCol > this.puzzleManager.gridSize || 
-          nextRow < 1 || nextRow > this.puzzleManager.gridSize) {
+      const boundaryCheck = this._checkBoundary(tile, nextCol, nextRow);
+      
+      if (boundaryCheck.outOfBounds) {
+        return { canSlide: true, willDisappear: true };
+      }
+
+      if (!boundaryCheck.insideDiamond) {
         return { canSlide: true, willDisappear: true };
       }
 
@@ -267,145 +484,75 @@ class GameEngine {
     }
   }
 
+  _checkBoundary(tile, col, row) {
+    const gridSize = this.puzzleManager.gridSize;
+    const nextRight = col + tile.gridColSpan - 1;
+    const nextBottom = row + tile.gridRowSpan - 1;
+    
+    const outOfBounds = col < 1 || nextRight > gridSize || 
+                        row < 1 || nextBottom > gridSize;
+    
+    const insideDiamond = this.puzzleManager.isPositionInDiamond(
+      col, row, tile.gridColSpan, tile.gridRowSpan
+    );
+    
+    return { outOfBounds, insideDiamond };
+  }
+
   pause() {
-    if (this.gameState === GameState.PLAYING) {
-      this.gameState = GameState.PAUSED;
+    const currentState = this.stateManager.getState();
+    
+    if (currentState.status === GameState.PLAYING) {
+      this.stateManager.setState({
+        status: GameState.PAUSED,
+        isPaused: true
+      });
+      
+      this.emit('pause', { elapsedTime: currentState.elapsedTime });
     }
   }
 
   resume() {
-    if (this.gameState === GameState.PAUSED) {
-      this.gameState = GameState.PLAYING;
+    const currentState = this.stateManager.getState();
+    
+    if (currentState.status === GameState.PAUSED) {
+      this.stateManager.setState({
+        status: GameState.PLAYING,
+        isPaused: false
+      });
+      
+      this.lastTimestamp = performance.now();
+      
+      this.emit('resume', { elapsedTime: currentState.elapsedTime });
     }
   }
 
-  render() {
-    if (!this.ctx || !this.canvas) return;
-
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-    this.drawBackground();
-    this.drawTiles();
-    this.drawUI();
+  getState() {
+    return this.stateManager.getState();
   }
 
-  drawBackground() {
-    this.ctx.fillStyle = GAME_CONFIG.BACKGROUND_COLOR;
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+  getElapsedTime() {
+    return this.stateManager.getState().elapsedTime;
   }
 
-  drawGrid() {
-    const tileSize = Math.min(this.screenWidth, this.screenHeight) / TILE_CONFIG.gridSize;
-    const offsetX = (this.screenWidth - tileSize * TILE_CONFIG.gridSize) / 2;
-    const offsetY = (this.screenHeight - tileSize * TILE_CONFIG.gridSize) / 2;
-
-    this.ctx.strokeStyle = TILE_CONFIG.gridColor;
-    this.ctx.lineWidth = 0.5;
-
-    for (let i = 0; i <= TILE_CONFIG.gridSize; i++) {
-      const x = offsetX + i * tileSize;
-      this.ctx.beginPath();
-      this.ctx.moveTo(x, offsetY);
-      this.ctx.lineTo(x, offsetY + tileSize * TILE_CONFIG.gridSize);
-      this.ctx.stroke();
-
-      const y = offsetY + i * tileSize;
-      this.ctx.beginPath();
-      this.ctx.moveTo(offsetX, y);
-      this.ctx.lineTo(offsetX + tileSize * TILE_CONFIG.gridSize, y);
-      this.ctx.stroke();
-    }
+  getCurrentLevel() {
+    return this.puzzleManager.getCurrentLevel();
   }
 
-  drawTiles() {
+  _render() {
+    const currentState = this.stateManager.getState();
+    const level = this.puzzleManager.getCurrentLevel();
     const tiles = this.puzzleManager.getTiles();
     
-    const sqrt2 = Math.sqrt(2);
-    const maxGridWidth = this.screenWidth / sqrt2;
-    const maxGridHeight = this.screenHeight / sqrt2;
-    
-    const tileSize = Math.min(maxGridWidth, maxGridHeight) / TILE_CONFIG.gridSize;
-    const gridWidth = tileSize * TILE_CONFIG.gridSize;
-    const gridHeight = tileSize * TILE_CONFIG.gridSize;
-    
-    const offsetX = (this.screenWidth - gridWidth) / 2;
-    const offsetY = (this.screenHeight - gridHeight) / 2;
-
-    this.ctx.save();
-
-    const centerX = this.screenWidth / 2;
-    const centerY = this.screenHeight / 2;
-
-    this.ctx.translate(centerX, centerY);
-    this.ctx.rotate(45 * Math.PI / 180);
-    this.ctx.translate(-centerX, -centerY);
-
-    tiles.forEach((tile, index) => {
-      const x = offsetX + (tile.gridCol - 1) * tileSize;
-      const y = offsetY + (tile.gridRow - 1) * tileSize;
-      const width = tile.gridColSpan * tileSize;
-      const height = tile.gridRowSpan * tileSize;
-
-      this.drawTile(tile, x, y, width, height);
-    });
-
-    this.ctx.restore();
-  }
-
-  drawTile(tile, x, y, width, height) {
-    this.ctx.save();
-
-    const isDog = tile.unitType === 'dog';
-    const direction = tile.direction;
-
-    this.ctx.fillStyle = isDog ? '#FFEB3B' : '#F5E6D3';
-    this.ctx.fillRect(x, y, width, height);
-
-    this.ctx.strokeStyle = '#333333';
-    this.ctx.lineWidth = 3;
-    this.ctx.strokeRect(x, y, width, height);
-
-    const directionAngle = this.getDirectionAngle(direction);
-
-    this.ctx.save();
-    this.ctx.translate(x + width / 2, y + height / 2);
-    this.ctx.rotate(directionAngle * Math.PI / 180);
-
-    this.ctx.fillStyle = '#333333';
-    this.ctx.font = `${Math.min(width, height) * 0.5}px Arial`;
-    this.ctx.textAlign = 'center';
-    this.ctx.textBaseline = 'middle';
-    this.ctx.fillText(isDog ? '🐕' : '🐺', 0, 0);
-
-    this.ctx.restore();
-    this.ctx.restore();
-  }
-
-  getDirectionAngle(direction) {
-    const angles = {
-      'up_left': 225,
-      'up_right': 315,
-      'down_left': 135,
-      'down_right': 45
+    const renderState = {
+      tiles: tiles,
+      level: level,
+      elapsedTime: currentState.elapsedTime,
+      moveCount: currentState.moveCount,
+      status: currentState.status
     };
-    return angles[direction] || 0;
-  }
-
-  drawUI() {
-    const level = this.puzzleManager.getCurrentLevel();
-    if (!level) return;
-
-    this.ctx.fillStyle = '#1f2937';
-    this.ctx.font = '16px Arial';
-    this.ctx.textAlign = 'left';
-    this.ctx.fillText(`${level.name}`, 20, 30);
-
-    if (level.type === 'timed' && level.timeLimit) {
-      const timeRemaining = Math.max(0, level.timeLimit - this.elapsedTime);
-      
-      this.ctx.textAlign = 'right';
-      this.ctx.fillText(`时间: ${timeRemaining.toFixed(1)}s`, this.screenWidth - 20, 30);
-    }
+    
+    this.renderer.render(renderState);
   }
 
   destroy() {
@@ -414,11 +561,19 @@ class GameEngine {
       this.animationId = null;
     }
     
+    this.renderer.destroy();
+    
     this.canvas = null;
     this.ctx = null;
     this.isInitialized = false;
-    this.gameState = GameState.IDLE;
+    
+    this.stateManager.reset();
+    this.eventSystem.clear();
+    
+    this.emit('destroy', {});
   }
 }
 
 module.exports = GameEngine;
+module.exports.EventSystem = EventSystem;
+module.exports.StateManager = StateManager;

@@ -1,0 +1,31 @@
+{
+  "timestamp": "2026-01-28 20:08:38",
+  "login_page": {
+    "success": true,
+    "output": "登录页面测试通过"
+  },
+  "flight_page": {
+    "success": true,
+    "output": "飞行页面测试通过"
+  },
+  "index_page": {
+    "success": true,
+    "output": "首页测试通过"
+  },
+  "app_files": {
+    "success": true,
+    "output": "应用配置文件测试通过"
+  },
+  "assets": {
+    "success": true,
+    "output": "资源文件测试通过"
+  },
+  "ui_interaction": {
+    "success": true,
+    "output": "UI交互图测试通过"
+  },
+  "scripts": {
+    "success": true,
+    "output": "脚本文件测试通过"
+  }
+}
