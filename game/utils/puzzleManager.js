@@ -546,38 +546,11 @@ class PuzzleManager {
     const fadeOutDuration = ANIMATION_CONFIG.FADE_OUT_DURATION;
 
     if (tile.state === UnitState.SLIDING) {
-      const totalDistance = Math.sqrt(
-        Math.pow(tile.targetX - tile.startX, 2) + 
-        Math.pow(tile.targetY - tile.startY, 2)
-      );
-      
-      if (totalDistance === 0) {
-        tile.currentX = tile.targetGridCol - 1;
-        tile.currentY = tile.targetGridRow - 1;
-        tile.animationProgress = 1;
-        
-        if (tile.targetGridCol > 0 && tile.targetGridRow > 0) {
-          tile.gridCol = tile.targetGridCol;
-          tile.gridRow = tile.targetGridRow;
-        }
-        
-        const isOutside = !this.isValidPosition(tile.gridCol, tile.gridRow, tile.gridColSpan, tile.gridRowSpan);
-        if (isOutside) {
-          tile.state = UnitState.FADING_OUT;
-          tile.animationProgress = 0;
-          logger.log('[消失] 格子:', tile.id, '移出边界，位置:(', tile.gridCol, ',', tile.gridRow, ')');
-        } else {
-          tile.animating = false;
-          tile.state = UnitState.IDLE;
-        }
-        return;
-      }
-      
       const progressStep = deltaTime * 1000 / slideDuration;
       tile.animationProgress += progressStep;
       
       if (tile.animationProgress >= 1) {
-        logger.log('[动画完成] 格子:', tile.id, '总进度:', tile.animationProgress);
+        logger.log('[动画完成] 格子:', tile.id, '总进度:', tile.animationProgress, '动画时间:', slideDuration);
         tile.animationProgress = 1;
         tile.currentX = tile.targetGridCol - 1;
         tile.currentY = tile.targetGridRow - 1;
