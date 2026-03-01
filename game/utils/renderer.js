@@ -256,32 +256,6 @@ class Renderer {
   drawBackground() {
     this.ctx.fillStyle = this.renderConfig.backgroundColor;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    
-    this._drawDiamondBackground();
-  }
-
-  _drawDiamondBackground() {
-    this.ctx.save();
-    this.ctx.translate(this.centerX, this.centerY);
-    this.ctx.rotate(this.rotation * Math.PI / 180);
-    this.ctx.translate(-this.centerX, -this.centerY);
-    
-    const gradient = this.ctx.createLinearGradient(
-      this.offsetX, this.offsetY,
-      this.offsetX + this.gridWidth, this.offsetY + this.gridHeight
-    );
-    gradient.addColorStop(0, '#e8f5e9');
-    gradient.addColorStop(0.5, '#c8e6c9');
-    gradient.addColorStop(1, '#a5d6a7');
-    
-    this.ctx.fillStyle = gradient;
-    this.ctx.fillRect(this.offsetX, this.offsetY, this.gridWidth, this.gridHeight);
-    
-    this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
-    this.ctx.lineWidth = 2;
-    this.ctx.strokeRect(this.offsetX, this.offsetY, this.gridWidth, this.gridHeight);
-    
-    this.ctx.restore();
   }
 
   drawGrid() {
@@ -301,32 +275,6 @@ class Renderer {
       this.ctx.lineTo(this.offsetX + this.gridWidth, y);
       this.ctx.stroke();
     }
-    
-    this._drawDiamondBoundary();
-  }
-
-  _drawDiamondBoundary() {
-    const center = Math.ceil(this.gridSize / 2);
-    
-    this.ctx.save();
-    this.ctx.strokeStyle = 'rgba(255, 193, 7, 0.3)';
-    this.ctx.lineWidth = 1;
-    this.ctx.setLineDash([5, 5]);
-    
-    for (let row = 1; row <= this.gridSize; row++) {
-      const distanceFromCenter = Math.abs(row - center);
-      const maxColInRow = this.gridSize - distanceFromCenter;
-      const startCol = Math.ceil((this.gridSize - maxColInRow) / 2);
-      
-      const y = this.offsetY + (row - 1) * this.tileSize;
-      
-      this.ctx.beginPath();
-      this.ctx.moveTo(this.offsetX + startCol * this.tileSize, y);
-      this.ctx.lineTo(this.offsetX + (startCol + maxColInRow) * this.tileSize, y);
-      this.ctx.stroke();
-    }
-    
-    this.ctx.restore();
   }
 
   drawTiles(tiles) {
@@ -361,10 +309,21 @@ class Renderer {
       width = tile.gridColSpan * this.tileSize;
       height = tile.gridRowSpan * this.tileSize;
     }
+
+    if (tile.shakeEndTime && Date.now() < tile.shakeEndTime) {
+      const shakeX = (Math.random() - 0.5) * tile.shakeOffset * 2;
+      const shakeY = (Math.random() - 0.5) * tile.shakeOffset * 2;
+      x += shakeX;
+      y += shakeY;
+    }
     
     this._drawTileBase(tile, x, y, width, height);
     this._drawTileContent(tile, x, y, width, height);
     this._drawTileDirection(tile, x, y, width, height);
+
+    if (tile.shakeEndTime && Date.now() < tile.shakeEndTime) {
+      this._drawFlashEffect(tile, x, y, width, height);
+    }
   }
 
   _drawTileBase(tile, x, y, width, height) {
@@ -430,7 +389,7 @@ class Renderer {
     this.ctx.save();
     
     const opacity = tile.opacity !== undefined ? tile.opacity : 1;
-    this.ctx.globalAlpha = opacity * 0.8;
+    this.ctx.globalAlpha = opacity * 0.9;
     
     const direction = tile.direction;
     const vector = DIRECTION_VECTORS[direction];
@@ -442,24 +401,47 @@ class Renderer {
     
     const centerX = x + width / 2;
     const centerY = y + height / 2;
-    const arrowLength = Math.min(width, height) * 0.3;
-    const arrowWidth = arrowLength * 0.4;
+    const arrowSize = Math.min(width, height) * 0.35;
     
     const angle = vector.angle * Math.PI / 180;
     
     this.ctx.translate(centerX, centerY);
     this.ctx.rotate(angle);
+
+    this.ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+    this.ctx.shadowBlur = 3;
+    this.ctx.shadowOffsetX = 1;
+    this.ctx.shadowOffsetY = 1;
     
     this.ctx.beginPath();
-    this.ctx.moveTo(arrowLength / 2, 0);
-    this.ctx.lineTo(-arrowLength / 2, -arrowWidth);
-    this.ctx.lineTo(-arrowLength / 3, 0);
-    this.ctx.lineTo(-arrowLength / 2, arrowWidth);
+    this.ctx.moveTo(arrowSize * 0.6, 0);
+    this.ctx.lineTo(-arrowSize * 0.4, -arrowSize * 0.4);
+    this.ctx.lineTo(-arrowSize * 0.2, 0);
+    this.ctx.lineTo(-arrowSize * 0.4, arrowSize * 0.4);
     this.ctx.closePath();
     
     const isDog = tile.unitType === UnitType.DOG;
-    this.ctx.fillStyle = isDog ? 'rgba(255, 152, 0, 0.6)' : 'rgba(84, 110, 122, 0.6)';
+    this.ctx.fillStyle = isDog ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.8)';
     this.ctx.fill();
+    
+    this.ctx.strokeStyle = isDog ? 'rgba(255, 152, 0, 0.8)' : 'rgba(84, 110, 122, 0.8)';
+    this.ctx.lineWidth = 2;
+    this.ctx.stroke();
+    
+    this.ctx.restore();
+  }
+
+  _drawFlashEffect(tile, x, y, width, height) {
+    this.ctx.save();
+    
+    const flashPhase = Math.floor(Date.now() / 100) % 2;
+    if (flashPhase === 0) {
+      this.ctx.strokeStyle = tile.flashColor || '#ff0000';
+      this.ctx.lineWidth = 4;
+      const radius = Math.min(width, height) * 0.1;
+      this._roundRect(x, y, width, height, radius);
+      this.ctx.stroke();
+    }
     
     this.ctx.restore();
   }

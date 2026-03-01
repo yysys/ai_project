@@ -10,10 +10,10 @@
  * @enum {string}
  */
 const Direction = {
-  UP_LEFT: 'up_left',
-  UP_RIGHT: 'up_right',
-  DOWN_LEFT: 'down_left',
-  DOWN_RIGHT: 'down_right'
+  UP: 'up',
+  DOWN: 'down',
+  LEFT: 'left',
+  RIGHT: 'right'
 };
 
 /**
@@ -22,10 +22,10 @@ const Direction = {
  * @type {Object.<string, {col: number, row: number, angle: number}>}
  */
 const DIRECTION_VECTORS = {
-  [Direction.UP_LEFT]: { col: -1, row: -1, angle: 225 },
-  [Direction.UP_RIGHT]: { col: 1, row: -1, angle: 315 },
-  [Direction.DOWN_LEFT]: { col: -1, row: 1, angle: 135 },
-  [Direction.DOWN_RIGHT]: { col: 1, row: 1, angle: 45 }
+  [Direction.UP]: { col: 0, row: -1, angle: 270 },
+  [Direction.DOWN]: { col: 0, row: 1, angle: 90 },
+  [Direction.LEFT]: { col: -1, row: 0, angle: 180 },
+  [Direction.RIGHT]: { col: 1, row: 0, angle: 0 }
 };
 
 /**
@@ -119,7 +119,14 @@ const GAME_CONFIG = {
 const ANIMATION_CONFIG = {
   MOVE_SPEED: 300,
   FADE_OUT_DURATION: 500,
-  FRAME_RATE: 60
+  FRAME_RATE: 60,
+  minSlideDuration: 500,
+  maxSlideDuration: 1500,
+  durationPerTile: 100,
+  shakeDuration: 150,
+  shakeAmplitude: 4,
+  flashCount: 3,
+  flashColor: '#ff0000'
 };
 
 /**
@@ -145,8 +152,24 @@ const WOLF_CONFIG = {
  * @returns {string} 随机方向值
  */
 function getRandomDirection() {
-  const directions = [Direction.UP_LEFT, Direction.UP_RIGHT, Direction.DOWN_LEFT, Direction.DOWN_RIGHT];
+  const directions = [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT];
   return directions[Math.floor(Math.random() * directions.length)];
+}
+
+/**
+ * 获取横向随机方向（左或右）
+ * @returns {string} LEFT 或 RIGHT
+ */
+function getRandomHorizontalDirection() {
+  return Math.random() < 0.5 ? Direction.LEFT : Direction.RIGHT;
+}
+
+/**
+ * 获取纵向随机方向（上或下）
+ * @returns {string} UP 或 DOWN
+ */
+function getRandomVerticalDirection() {
+  return Math.random() < 0.5 ? Direction.UP : Direction.DOWN;
 }
 
 /**
@@ -171,5 +194,7 @@ module.exports = {
   VEGETABLE_DOG_CONFIG,
   WOLF_CONFIG,
   getRandomDirection,
+  getRandomHorizontalDirection,
+  getRandomVerticalDirection,
   generateId
 };

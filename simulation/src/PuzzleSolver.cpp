@@ -3,8 +3,26 @@
 #include <algorithm>
 #include <functional>
 #include <iostream>
+#include <chrono>
 
-PuzzleSolver::PuzzleSolver(int size) : gridSize(size), maxDepth(1000), maxStates(100000) {}
+PuzzleSolver::PuzzleSolver(int size) : gridSize(size), maxDepth(1000), maxStates(100000), timeoutSeconds(10), shouldTerminate(false) {}
+
+bool PuzzleSolver::checkTimeout() {
+    if (timeoutSeconds <= 0) return false;
+    
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(currentTime - startTime).count();
+    
+    if (elapsed >= timeoutSeconds) {
+        shouldTerminate = true;
+        return true;
+    }
+    return false;
+}
+
+void PuzzleSolver::setTimeout(int seconds) {
+    timeoutSeconds = seconds;
+}
 
 bool GameState::operator==(const GameState& other) const {
     if (tiles.size() != other.tiles.size()) return false;
@@ -124,8 +142,11 @@ bool PuzzleSolver::hasDogEscaped(const std::vector<Tile>& tiles) {
 
 bool PuzzleSolver::solveDFS(std::vector<Tile>& tiles, std::vector<Move>& solution, 
                             int depth, std::unordered_set<GameState, GameStateHash>& visited) {
+    if (shouldTerminate || checkTimeout()) return false;
     if (depth > maxDepth) return false;
     if (static_cast<int>(visited.size()) > maxStates) return false;
+    
+    if (depth % 100 == 0 && checkTimeout()) return false;
     
     GameState currentState(tiles);
     if (visited.count(currentState)) return false;
@@ -147,6 +168,8 @@ bool PuzzleSolver::solveDFS(std::vector<Tile>& tiles, std::vector<Move>& solutio
     }
     
     for (const auto& move : dogMoves) {
+        if (shouldTerminate) return false;
+        
         Tile& tile = tiles[move.tileIndex];
         int oldCol = tile.gridCol;
         int oldRow = tile.gridRow;
@@ -169,6 +192,8 @@ bool PuzzleSolver::solveDFS(std::vector<Tile>& tiles, std::vector<Move>& solutio
     }
     
     for (const auto& move : otherMoves) {
+        if (shouldTerminate) return false;
+        
         Tile& tile = tiles[move.tileIndex];
         int oldCol = tile.gridCol;
         int oldRow = tile.gridRow;
@@ -200,8 +225,12 @@ bool PuzzleSolver::solveBFS(const std::vector<Tile>& tiles, std::vector<Move>& s
     int iterations = 0;
     
     while (!queue.empty()) {
+        if (shouldTerminate || checkTimeout()) return false;
+        
         iterations++;
         if (iterations > maxStates) return false;
+        
+        if (iterations % 1000 == 0 && checkTimeout()) return false;
         
         auto current = queue.front();
         queue.pop();
@@ -212,6 +241,8 @@ bool PuzzleSolver::solveBFS(const std::vector<Tile>& tiles, std::vector<Move>& s
         auto moves = getPossibleMoves(currentTiles);
         
         for (const auto& move : moves) {
+            if (shouldTerminate) return false;
+            
             auto newTiles = currentTiles;
             newTiles[move.tileIndex].gridCol = move.newCol;
             newTiles[move.tileIndex].gridRow = move.newRow;
@@ -238,6 +269,9 @@ bool PuzzleSolver::solveBFS(const std::vector<Tile>& tiles, std::vector<Move>& s
 }
 
 bool PuzzleSolver::isSolvable(const PuzzleLevel& level) {
+    shouldTerminate = false;
+    startTime = std::chrono::high_resolution_clock::now();
+    
     std::vector<Tile> tiles = level.tiles;
     std::vector<Move> solution;
     std::unordered_set<GameState, GameStateHash> visited;
@@ -246,6 +280,9 @@ bool PuzzleSolver::isSolvable(const PuzzleLevel& level) {
 }
 
 std::vector<Move> PuzzleSolver::findSolution(const PuzzleLevel& level) {
+    shouldTerminate = false;
+    startTime = std::chrono::high_resolution_clock::now();
+    
     std::vector<Tile> tiles = level.tiles;
     std::vector<Move> solution;
     

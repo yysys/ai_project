@@ -1,12 +1,69 @@
-# Debug logs
-debug/*.log
-debug/*.png
-debug/*.jpg
-debug/*.jpeg
+# Debug logs and output
+debug/
+*.log
 
-# OS files
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
 Thumbs.db
+ehthumbs.db
+Desktop.ini
 
-# Node modules (if exists)
+# Node modules
 node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# IDE and editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+*.iml
+
+# Build output
+dist/
+build/
+out/
+*.min.js
+*.min.css
+
+# Test coverage
+coverage/
+.nyc_output/
+test-results/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.cache
+.cache/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Compiled C++ files
+*.o
+*.obj
+*.exe
+*.out
+*.app
+simulation/*.out
+difficulty_test/*.out
+
+# Archive files
+*.zip
+*.tar.gz
+*.rar
+*.7z

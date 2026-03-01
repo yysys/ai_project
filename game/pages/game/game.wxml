@@ -9,7 +9,7 @@
       <text class="level-title">{{levelName}}</text>
       <view class="level-info">
         <text class="material-symbols-outlined">pets</text>
-        <text>100% 完整拼图</text>
+        <text>让菜狗逃出格子</text>
       </view>
     </view>
     <view class="header-right">
@@ -20,25 +20,32 @@
   </view>
 
   <view class="game-area">
-    <view class="board-rotate-wrapper">
+    <view class="board-wrapper">
       <view class="parquet-grid">
-        <block wx:for="{{tiles}}" wx:key="id">
-          <view 
-            wx:if="{{tile.state !== 'disappeared'}}"
-            class="tile {{tile.type === 'horizontal' ? 'tile-h' : tile.type === 'vertical' ? 'tile-v' : ''}} {{tile.unitType === 'dog' ? 'tile-dog' : 'tile-wolf'}} {{tile.state === 'sliding' ? 'tile-animating' : ''}}"
-            style="grid-column:{{tile.gridCol}}/{{tile.gridCol + tile.gridColSpan}}; grid-row:{{tile.gridRow}}/{{tile.gridRow + tile.gridRowSpan}}; opacity: {{tile.opacity}}; transition: opacity 0.5s ease-out;"
-            bindtap="handleTileTap"
-            data-tile-index="{{index}}"
-          >
-            <view class="tile-content tile-direction-{{tile.direction}}">
-              <image 
-                class="unit-img" 
-                src="{{tile.unitType === 'dog' ? dogImageUrl : wolfImageUrl}}"
-                mode="aspectFill"
-              />
+        <view class="grid-background">
+          <block wx:for="{{196}}" wx:key="index">
+            <view class="grid-cell"></view>
+          </block>
+        </view>
+        <view class="tiles-container">
+          <block wx:for="{{tiles}}" wx:key="id">
+            <view 
+              wx:if="{{item.state !== 'disappeared'}}"
+              class="tile {{item.type === 'horizontal' ? 'tile-h' : item.type === 'vertical' ? 'tile-v' : ''}} {{item.unitType === 'dog' ? 'tile-dog' : 'tile-wolf'}}"
+              style="left: {{item.displayX}}px; top: {{item.displayY}}px; width: {{item.displayWidth}}px; height: {{item.displayHeight}}px; opacity: {{item.opacity}}; transform: rotate(0deg);"
+              bindtap="handleTileTap"
+              data-tile-id="{{item.id}}"
+            >
+              <view class="tile-content tile-direction-{{item.direction}}">
+                <image 
+                  class="unit-img" 
+                  src="{{item.unitType === 'dog' ? dogImageUrl : wolfImageUrl}}"
+                  mode="aspectFill"
+                />
+              </view>
             </view>
-          </view>
-        </block>
+          </block>
+        </view>
       </view>
     </view>
   </view>

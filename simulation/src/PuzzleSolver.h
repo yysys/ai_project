@@ -7,6 +7,7 @@
 #include <queue>
 #include <unordered_set>
 #include <memory>
+#include <chrono>
 
 struct Move {
     int tileIndex;
@@ -34,6 +35,9 @@ private:
     int gridSize;
     int maxDepth;
     int maxStates;
+    int timeoutSeconds;
+    bool shouldTerminate;
+    std::chrono::high_resolution_clock::time_point startTime;
     
     bool checkCollision(const std::vector<Tile>& tiles, int excludeIndex, int col, int row, int colSpan, int rowSpan);
     bool isOutOfBounds(int col, int row, int colSpan, int rowSpan);
@@ -42,6 +46,7 @@ private:
     bool solveDFS(std::vector<Tile>& tiles, std::vector<Move>& solution, int depth, std::unordered_set<GameState, GameStateHash>& visited);
     bool solveBFS(const std::vector<Tile>& tiles, std::vector<Move>& solution);
     bool hasDogEscaped(const std::vector<Tile>& tiles);
+    bool checkTimeout();
     
 public:
     PuzzleSolver(int size = 14);
@@ -52,6 +57,7 @@ public:
     
     void setMaxDepth(int depth);
     void setMaxStates(int states);
+    void setTimeout(int seconds);
 };
 
 #endif

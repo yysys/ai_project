@@ -8,7 +8,7 @@
 #include <chrono>
 
 PuzzleGenerator::PuzzleGenerator(int size, int tSize) 
-    : gridSize(size), tileSize(tSize) {}
+    : gridSize(size), tileSize(tSize), timeoutSeconds(30), maxRetriesDefault(50) {}
 
 bool PuzzleGenerator::isPositionUsed(const std::vector<Tile>& tiles, int col, int row) {
     for (const auto& tile : tiles) {
@@ -82,38 +82,38 @@ std::vector<std::pair<int, int>> PuzzleGenerator::getAllValidCells(int gridSize)
 DifficultyParams PuzzleGenerator::getDifficultyParams(int levelId) {
     DifficultyParams params;
     
-    if (levelId >= 1 && levelId <= 3) {
+    if (levelId == 1) {
         params.effectiveGridSize = 6;
-        params.maxTileSize = 2;
-        params.density = 50;
+        params.maxTileSize = 1;
+        params.density = 6;
         params.randomDirections = false;
         params.dogEscapeBonus = 0;
-        params.minMoves = 2;
-        params.maxMoves = 4;
+        params.minMoves = 1;
+        params.maxMoves = 2;
+    } else if (levelId >= 2 && levelId <= 3) {
+        params.effectiveGridSize = 6;
+        params.maxTileSize = 2;
+        params.density = 35 + (levelId - 2) * 5;
+        params.randomDirections = false;
+        params.dogEscapeBonus = 0;
+        params.minMoves = 2 + (levelId - 2);
+        params.maxMoves = 4 + (levelId - 2) * 2;
     } else if (levelId >= 4 && levelId <= 6) {
         params.effectiveGridSize = 8;
         params.maxTileSize = 2;
-        params.density = 55;
-        params.randomDirections = false;
+        params.density = 50 + (levelId - 4) * 3;
+        params.randomDirections = (levelId >= 5);
         params.dogEscapeBonus = 0;
-        params.minMoves = 3;
-        params.maxMoves = 6;
+        params.minMoves = 4 + (levelId - 4);
+        params.maxMoves = 7 + (levelId - 4) * 2;
     } else if (levelId >= 7 && levelId <= 10) {
         params.effectiveGridSize = 10;
-        params.maxTileSize = 2;
-        params.density = 60;
-        params.randomDirections = true;
-        params.dogEscapeBonus = 0;
-        params.minMoves = 4;
-        params.maxMoves = 10;
-    } else if (levelId >= 11 && levelId <= 15) {
-        params.effectiveGridSize = 12;
         params.maxTileSize = 3;
-        params.density = 65;
+        params.density = 60 + (levelId - 7) * 2;
         params.randomDirections = true;
         params.dogEscapeBonus = 0;
-        params.minMoves = 6;
-        params.maxMoves = 15;
+        params.minMoves = 7 + (levelId - 7);
+        params.maxMoves = 10 + (levelId - 7) * 2;
     } else {
         params.effectiveGridSize = 14;
         params.maxTileSize = 3;
@@ -265,13 +265,27 @@ PuzzleLevel PuzzleGenerator::generateSolvableLevel(int levelId, int maxRetries) 
     DifficultyParams params = getDifficultyParams(levelId);
     PuzzleSolver solver(gridSize);
     
-    solver.setMaxDepth(300);
-    solver.setMaxStates(30000);
+    solver.setMaxDepth(500);
+    solver.setMaxStates(50000);
+    solver.setTimeout(10);
     
     PuzzleLevel lastLevel;
+    auto startTime = std::chrono::high_resolution_clock::now();
+    int actualRetries = (maxRetries > 0) ? maxRetries : maxRetriesDefault;
     
-    for (int attempt = 0; attempt < maxRetries; attempt++) {
-        params.density = std::max(30, params.density - (attempt / 3));
+    for (int attempt = 0; attempt < actualRetries; attempt++) {
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(currentTime - startTime).count();
+        
+        if (elapsed >= timeoutSeconds) {
+            std::cout << "Level " << levelId << " generation timed out after " << elapsed << " seconds" << std::endl;
+            break;
+        }
+        
+        if (attempt > 0 && attempt % 5 == 0) {
+            params = degradeDifficulty(params, attempt);
+            std::cout << "  Degrading difficulty for level " << levelId << " (attempt " << (attempt + 1) << ")" << std::endl;
+        }
         
         PuzzleLevel level = generateLevelWithParams(levelId, params);
         
@@ -288,17 +302,62 @@ PuzzleLevel PuzzleGenerator::generateSolvableLevel(int levelId, int maxRetries) 
         
         if (validateLevel(level)) {
             if (solver.isSolvable(level)) {
-                std::cout << "Level " << levelId << " generated and verified solvable (attempt " << (attempt + 1) << ")" << std::endl;
+                auto endTime = std::chrono::high_resolution_clock::now();
+                auto duration = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime).count();
+                std::cout << "Level " << levelId << " generated and verified solvable (attempt " << (attempt + 1) 
+                          << ", time: " << duration << "s)" << std::endl;
                 return level;
             }
         }
         
-        std::cout << "Level " << levelId << " attempt " << (attempt + 1) << " not solvable, retrying..." << std::endl;
+        if (attempt % 10 == 9) {
+            std::cout << "Level " << levelId << " attempt " << (attempt + 1) << " not solvable, continuing..." << std::endl;
+        }
     }
     
-    std::cout << "Warning: Could not generate solvable level " << levelId << " after " << maxRetries << " attempts." << std::endl;
+    std::cout << "Warning: Could not generate solvable level " << levelId << " after " << actualRetries << " attempts." << std::endl;
+    std::cout << "  Creating simplified level as fallback..." << std::endl;
     
-    return lastLevel;
+    DifficultyParams simpleParams;
+    simpleParams.effectiveGridSize = 6;
+    simpleParams.maxTileSize = 1;
+    simpleParams.density = 30;
+    simpleParams.randomDirections = false;
+    simpleParams.minMoves = 1;
+    simpleParams.maxMoves = 3;
+    
+    PuzzleLevel simpleLevel = generateLevelWithParams(levelId, simpleParams);
+    simpleLevel.id = levelId;
+    simpleLevel.name = "第" + std::to_string(levelId) + "关";
+    simpleLevel.type = "normal";
+    simpleLevel.unlocked = (levelId == 1);
+    setDogTile(simpleLevel);
+    
+    return simpleLevel;
+}
+
+DifficultyParams PuzzleGenerator::degradeDifficulty(const DifficultyParams& params, int attemptCount) {
+    DifficultyParams degraded = params;
+    
+    degraded.density = std::max(25, params.density - 5);
+    
+    if (attemptCount > 15 && params.effectiveGridSize > 6) {
+        degraded.effectiveGridSize = params.effectiveGridSize - 1;
+    }
+    
+    if (attemptCount > 20 && params.maxTileSize > 1) {
+        degraded.maxTileSize = params.maxTileSize - 1;
+    }
+    
+    return degraded;
+}
+
+void PuzzleGenerator::setTimeout(int seconds) {
+    timeoutSeconds = seconds;
+}
+
+void PuzzleGenerator::setMaxRetries(int retries) {
+    maxRetriesDefault = retries;
 }
 
 PuzzleLevel PuzzleGenerator::generateLevel1() {

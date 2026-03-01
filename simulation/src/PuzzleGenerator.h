@@ -54,6 +54,8 @@ class PuzzleGenerator {
 private:
     int gridSize;
     int tileSize;
+    int timeoutSeconds;
+    int maxRetriesDefault;
     
     bool isPositionUsed(const std::vector<Tile>& tiles, int col, int row);
     bool canPlaceTile(const std::vector<Tile>& tiles, int col, int row, int colSpan, int rowSpan);
@@ -64,12 +66,13 @@ private:
     DifficultyParams getDifficultyParams(int levelId);
     Direction getOptimalDogDirection(int dogCol, int dogRow, int gridSize);
     PuzzleLevel generateLevelWithParams(int levelId, const DifficultyParams& params);
+    DifficultyParams degradeDifficulty(const DifficultyParams& params, int attemptCount);
     
 public:
     PuzzleGenerator(int size = 14, int tSize = 18);
     
     PuzzleLevel generateLevel(int levelId);
-    PuzzleLevel generateSolvableLevel(int levelId, int maxRetries = 10);
+    PuzzleLevel generateSolvableLevel(int levelId, int maxRetries = 50);
     std::vector<Tile> generateTiles();
     PuzzleLevel generateLevel1();
     PuzzleLevel generateLevel2();
@@ -79,6 +82,8 @@ public:
     PuzzleLevel generateLevelWithGridSize(int levelId, int effectiveGridSize, int maxTileSize, int density);
     
     void setDogTile(PuzzleLevel& level);
+    void setTimeout(int seconds);
+    void setMaxRetries(int retries);
     
     bool validateLevel(const PuzzleLevel& level);
     ValidationReport validateLevelWithReport(const PuzzleLevel& level);

@@ -492,11 +492,7 @@ class GameEngine {
     const outOfBounds = col < 1 || nextRight > gridSize || 
                         row < 1 || nextBottom > gridSize;
     
-    const insideDiamond = this.puzzleManager.isPositionInDiamond(
-      col, row, tile.gridColSpan, tile.gridRowSpan
-    );
-    
-    return { outOfBounds, insideDiamond };
+    return { outOfBounds };
   }
 
   pause() {
