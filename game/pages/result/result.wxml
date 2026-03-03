@@ -1,47 +1,68 @@
 <view class="container">
-  <view class="top-bar">
-    <view class="icon-btn" bindtap="goHome">
-      <text>🏠</text>
-    </view>
-    <text class="title">第{{levelId}}关</text>
-    <view class="placeholder"></view>
+  <view class="confetti-container" wx:if="{{result === 'win'}}">
+    <view class="confetti confetti-1"></view>
+    <view class="confetti confetti-2"></view>
+    <view class="confetti confetti-3"></view>
+    <view class="confetti confetti-4"></view>
+    <view class="confetti confetti-5"></view>
+    <view class="confetti confetti-6"></view>
+    <view class="confetti confetti-7"></view>
+    <view class="confetti confetti-8"></view>
+    <view class="confetti confetti-9"></view>
   </view>
 
-  <view class="content">
-    <view class="result-message">
-      <text class="result-text" wx:if="{{result === 'win'}}">🎉 过关成功！🎉</text>
-      <text class="result-text lose" wx:if="{{result === 'lose'}}">😢 游戏失败 😢</text>
-    </view>
+  <view class="result-modal">
+    <view class="modal-glow" wx:if="{{result === 'win'}}"></view>
+    
+    <view class="modal-content">
+      <view class="mascot-container">
+        <view class="mascot {{result === 'win' ? 'pulse-animation' : ''}}">
+          <text class="mascot-emoji">{{result === 'win' ? '🐕' : '🐺'}}</text>
+        </view>
+        <view class="celebration-badge bounce-animation" wx:if="{{result === 'win'}}">
+          <text class="material-symbols-outlined">celebration</text>
+        </view>
+      </view>
 
-    <view class="mascot {{result === 'win' ? 'pulse-animation' : ''}}">
-      <text class="mascot-emoji">{{result === 'win' ? '🐕' : '🐺'}}</text>
-    </view>
-
-    <view class="stars-display" wx:if="{{result === 'win'}}">
-      <text class="star" wx:for="{{[1,2,3]}}" wx:for-item="star" wx:key="*this">
-        {{star <= stars ? '★' : '☆'}}
+      <text class="result-title {{result === 'win' ? 'win' : 'lose'}}">
+        {{result === 'win' ? '过关成功!' : '游戏失败'}}
       </text>
+
+      <view class="stars-display" wx:if="{{result === 'win'}}">
+        <text class="star {{stars >= 1 ? 'filled' : ''}}">★</text>
+        <text class="star {{stars >= 2 ? 'filled' : ''}} star-large">★</text>
+        <text class="star {{stars >= 3 ? 'filled' : ''}}">★</text>
+      </view>
+
+      <view class="rewards-container" wx:if="{{result === 'win'}}">
+        <view class="reward-item">
+          <view class="reward-icon coins">
+            <text>💰</text>
+          </view>
+          <text class="reward-value">+{{coins}}</text>
+        </view>
+        <view class="reward-divider"></view>
+        <view class="reward-item">
+          <view class="reward-icon bones">
+            <text>🦴</text>
+          </view>
+          <text class="reward-value">x {{bones}}</text>
+        </view>
+      </view>
     </view>
 
-    <view class="score-display" wx:if="{{result === 'win'}}">
-      <text class="score-label">分数:</text>
-      <text class="score-value">{{score}}</text>
-    </view>
-
-    <view class="reward-display" wx:if="{{result === 'win'}}">
-      <text class="reward-text">奖励: +{{Math.floor(score / 10)}}金币</text>
-    </view>
-  </view>
-
-  <view class="bottom-bar">
-    <view class="btn-secondary" bindtap="goHome">
-      <text>返回首页</text>
-    </view>
-    <view class="btn-primary" wx:if="{{result === 'win'}}" bindtap="nextLevel">
-      <text>下一关</text>
-    </view>
-    <view class="btn-primary" wx:if="{{result === 'lose'}}" bindtap="retryLevel">
-      <text>重试</text>
+    <view class="modal-footer">
+      <view class="btn-secondary" bindtap="goHome">
+        <text>返回首页</text>
+      </view>
+      <view class="btn-primary" wx:if="{{result === 'win'}}" bindtap="nextLevel">
+        <text class="material-symbols-outlined btn-icon">arrow_forward</text>
+        <text>下一关</text>
+      </view>
+      <view class="btn-primary" wx:if="{{result === 'lose'}}" bindtap="retryLevel">
+        <text class="material-symbols-outlined btn-icon">refresh</text>
+        <text>重试</text>
+      </view>
     </view>
   </view>
 </view>

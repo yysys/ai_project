@@ -26,9 +26,17 @@ Page({
     const levels = this.puzzleManager.getLevels();
     const totalStars = this.puzzleManager.getTotalStars();
     const maxStars = this.puzzleManager.getMaxStars();
+    
+    const progress = app.loadGameProgress ? app.loadGameProgress() : null;
+    const currentLevelId = progress ? progress.currentLevel : 1;
+    
+    const processedLevels = levels.map(level => ({
+      ...level,
+      current: level.id === currentLevelId
+    }));
 
     this.setData({
-      levels,
+      levels: processedLevels,
       totalStars,
       maxStars
     });

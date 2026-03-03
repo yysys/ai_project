@@ -7,7 +7,8 @@ Page({
     levelId: 0,
     stars: 0,
     score: 0,
-    showConfetti: false
+    coins: 0,
+    bones: 1
   },
 
   onLoad(options) {
@@ -15,13 +16,16 @@ Page({
     const levelId = parseInt(options.levelId) || 1;
     const stars = parseInt(options.stars) || 0;
     const score = parseInt(options.score) || 0;
+    const coins = Math.floor(score / 10);
+    const bones = stars >= 3 ? 2 : 1;
 
     this.setData({
       result,
       levelId,
       stars,
       score,
-      showConfetti: result === 'win'
+      coins,
+      bones
     });
 
     if (result === 'win') {
@@ -44,7 +48,7 @@ Page({
       }
       
       progress.totalScore += this.data.score;
-      progress.coins += Math.floor(this.data.score / 10);
+      progress.coins += this.data.coins;
       
       app.saveGameProgress(progress);
     }
