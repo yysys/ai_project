@@ -8,14 +8,17 @@ Page({
     stars: 0,
     score: 0,
     coins: 0,
-    bones: 1
+    bones: 1,
+    hasNextLevel: true,
+    moves: 0
   },
 
-  onLoad(options) {
+  async onLoad(options) {
     const result = options.result || 'win';
     const levelId = parseInt(options.levelId) || 1;
     const stars = parseInt(options.stars) || 0;
     const score = parseInt(options.score) || 0;
+    const moves = parseInt(options.moves) || 0;
     const coins = Math.floor(score / 10);
     const bones = stars >= 3 ? 2 : 1;
 
@@ -25,32 +28,64 @@ Page({
       stars,
       score,
       coins,
-      bones
+      bones,
+      moves
     });
 
     if (result === 'win') {
-      this.saveProgress();
+      await this.saveProgress();
     }
   },
 
   onShow() {
   },
 
-  saveProgress() {
-    const progress = app.loadGameProgress();
-    if (progress) {
-      if (!progress.unlockedLevels.includes(this.data.levelId + 1)) {
-        progress.unlockedLevels.push(this.data.levelId + 1);
-      }
+  async saveProgress() {
+    try {
+      let progress = await app.loadGameProgress();
       
-      if (!progress.highScores[this.data.levelId] || progress.highScores[this.data.levelId] < this.data.score) {
-        progress.highScores[this.data.levelId] = this.data.score;
+      if (!progress) {
+        progress = {
+          currentLevel: 1,
+          unlockedLevels: [1],
+          levelStars: {},
+          levelScores: {},
+          totalScore: 0,
+          coins: 0,
+          lastPlayTime: 0
+        };
       }
-      
-      progress.totalScore += this.data.score;
+
+      const nextLevelId = this.data.levelId + 1;
+      if (!progress.unlockedLevels.includes(nextLevelId)) {
+        progress.unlockedLevels.push(nextLevelId);
+      }
+
+      if (!progress.levelStars[this.data.levelId] || progress.levelStars[this.data.levelId] < this.data.stars) {
+        progress.levelStars[this.data.levelId] = this.data.stars;
+      }
+
+      if (!progress.levelScores[this.data.levelId] || progress.levelScores[this.data.levelId] < this.data.score) {
+        progress.levelScores[this.data.levelId] = this.data.score;
+      }
+
+      progress.currentLevel = nextLevelId;
+      progress.totalScore = Object.values(progress.levelScores).reduce((sum, s) => sum + s, 0);
       progress.coins += this.data.coins;
+      progress.lastPlayTime = Date.now();
+
+      await app.saveGameProgress(progress);
+
+      const LevelManager = require('../../utils/levelManager');
+      const levelManager = new LevelManager();
+      await levelManager.init();
+      const levels = levelManager.getLevels();
+      const hasNextLevel = levels.some(l => l.id === nextLevelId);
       
-      app.saveGameProgress(progress);
+      this.setData({ hasNextLevel });
+      
+    } catch (error) {
+      console.error('Save progress error:', error);
     }
   },
 

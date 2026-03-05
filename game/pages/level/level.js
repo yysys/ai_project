@@ -1,4 +1,4 @@
-const PuzzleManager = require('../../utils/puzzleManager');
+const LevelManager = require('../../utils/levelManager');
 const TT = require('../../utils/tt');
 
 const app = getApp();
@@ -11,27 +11,37 @@ Page({
     currentChapter: '第一章'
   },
 
-  puzzleManager: null,
+  levelManager: null,
 
-  onLoad() {
-    this.puzzleManager = new PuzzleManager();
-    this.loadLevels();
+  async onLoad() {
+    this.levelManager = new LevelManager();
+    await this.loadLevels();
   },
 
-  onShow() {
-    this.loadLevels();
+  async onShow() {
+    await this.loadLevels();
   },
 
-  loadLevels() {
-    const levels = this.puzzleManager.getLevels();
-    const totalStars = this.puzzleManager.getTotalStars();
-    const maxStars = this.puzzleManager.getMaxStars();
+  async loadLevels() {
+    await this.levelManager.init();
     
-    const progress = app.loadGameProgress ? app.loadGameProgress() : null;
+    const progress = await app.loadGameProgress();
+    if (progress) {
+      this.levelManager.loadProgress(progress);
+    }
+
+    const levels = this.levelManager.getLevels();
+    const totalStars = this.levelManager.getTotalStars();
+    const maxStars = this.levelManager.getMaxStars();
     const currentLevelId = progress ? progress.currentLevel : 1;
-    
+
     const processedLevels = levels.map(level => ({
-      ...level,
+      id: level.id,
+      name: level.name,
+      unlocked: level.unlocked,
+      completed: level.completed,
+      stars: level.stars,
+      score: level.score,
       current: level.id === currentLevelId
     }));
 
@@ -44,9 +54,9 @@ Page({
 
   selectLevel(e) {
     const levelId = e.currentTarget.dataset.id;
-    const level = this.puzzleManager.getLevel(levelId);
+    const level = this.levelManager.getLevel(levelId);
 
-    if (!level.unlocked) {
+    if (!level || !level.unlocked) {
       TT.showToast({
         title: '关卡未解锁',
         icon: 'none'

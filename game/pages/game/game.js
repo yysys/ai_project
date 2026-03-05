@@ -1,4 +1,4 @@
-const PuzzleManager = require('../../utils/puzzleManager');
+const LevelManager = require('../../utils/levelManager');
 const logger = require('../../utils/logger');
 const TT = require('../../utils/tt');
 
@@ -15,13 +15,16 @@ Page({
     tiles: [],
     dogImageUrl: '',
     wolfImageUrl: '',
-    gameActive: false
+    gameActive: false,
+    moves: 0,
+    targetMoves: 3
   },
 
-  puzzleManager: null,
+  levelManager: null,
+  currentLevel: null,
   animationTimer: null,
   
-  onLoad(options) {
+  async onLoad(options) {
     logger.log('=== pages/game/game.js onLoad ===');
     const levelId = parseInt(options.levelId) || 1;
     this.setData({ 
@@ -29,12 +32,11 @@ Page({
       dogImageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuApwgydymAcHiZkKh1m7yRT8Ux1Athx7JWBLVxihj0GvKV9YGLaF_cjL-sNIkQzfCrkFQHfkVcxRYKtcJAeyJ0XuUiQ52EbkxxQKFUe1VqgijE18eZUWu8xuiccee7G2qmudVaCILYLA_reP36lOJoRpFG8Dj0GyAEZ4xI7EBR7FcNmiSck-l2nppKSOQ1Z0GzyHPSxkY1p2RCT0knSz1FXGmGLa7fpJbpRBZPleUWj5Cp2-5aZW3TxuSOe6yQ3mXvdBAmkBB5c5nc',
       wolfImageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDVeXRADc6lXjRd-XWy9RkmbsKO0Uc4VSgBJAEwxReL1RlNzE7MLaq56uWMFiCpC2ltIZRbkAxwZboY5HDimcU4nGE93iVm3AdtaHaXReUIr_2cCmxe30FVoj9QC2yttS7Y8hQDfoqylTi4VC3s3d95rb1iG-T7EdTiegMqUx23F3uAXZjtO9BtNoHvEha4eStbQKR_1Yd_wuH-aSCCBmUDYmIc3QRoXZdcr_tyVwFTeb54TtsGnNijKh3qAKSrcGT1OB8hwrTc2-o'
     });
-    this.initGame();
+    await this.initGame();
   },
 
   onReady() {
     logger.log('=== pages/game/game.js onReady ===');
-    this.startLevel();
   },
 
   onShow() {
@@ -49,25 +51,26 @@ Page({
     this.destroyGame();
   },
 
-  initGame() {
-    this.puzzleManager = new PuzzleManager();
-    const level = this.puzzleManager.getLevel(this.data.levelId);
-    if (level) {
-      this.setData({
-        levelName: level.name
-      });
+  async initGame() {
+    this.levelManager = new LevelManager();
+    await this.levelManager.init();
+    
+    const progress = await app.loadGameProgress();
+    if (progress) {
+      this.levelManager.loadProgress(progress);
     }
-  },
 
-  startLevel() {
-    const success = this.puzzleManager.setCurrentLevel(this.data.levelId);
-    if (success) {
-      const level = this.puzzleManager.getCurrentLevel();
+    const level = this.levelManager.getLevel(this.data.levelId);
+    if (level) {
+      this.currentLevel = level;
+      const targetMoves = this.levelManager.calculateTargetMoves(level);
       this.setData({
         levelName: level.name,
-        gameActive: true
+        gameActive: true,
+        moves: 0,
+        targetMoves
       });
-      this.updateTiles();
+      this.updateTilesFromLevel(level);
     } else {
       TT.showToast({
         title: '关卡加载失败',
@@ -79,19 +82,18 @@ Page({
     }
   },
 
-  calculateTileDisplayPosition(tile) {
-    const x = (tile.currentX !== undefined ? tile.currentX : tile.gridCol - 1) * CELL_SIZE;
-    const y = (tile.currentY !== undefined ? tile.currentY : tile.gridRow - 1) * CELL_SIZE;
-    const width = tile.gridColSpan * CELL_SIZE;
-    const height = tile.gridRowSpan * CELL_SIZE;
-    
-    return { x, y, width, height };
-  },
+  updateTilesFromLevel(level) {
+    if (!level || !level.tiles) {
+      this.setData({ tiles: [] });
+      return;
+    }
 
-  updateTiles() {
-    const tiles = this.puzzleManager.getTiles();
-    const displayTiles = tiles.map(tile => {
-      const pos = this.calculateTileDisplayPosition(tile);
+    const displayTiles = level.tiles.map(tile => {
+      const x = (tile.gridCol - 1) * CELL_SIZE;
+      const y = (tile.gridRow - 1) * CELL_SIZE;
+      const width = tile.gridColSpan * CELL_SIZE;
+      const height = tile.gridRowSpan * CELL_SIZE;
+      
       return {
         id: tile.id,
         type: tile.type,
@@ -101,16 +103,25 @@ Page({
         gridColSpan: tile.gridColSpan,
         gridRowSpan: tile.gridRowSpan,
         direction: tile.direction,
-        state: tile.state,
-        displayX: pos.x,
-        displayY: pos.y,
-        displayWidth: pos.width,
-        displayHeight: pos.height,
-        opacity: tile.opacity !== undefined ? tile.opacity : 1
+        state: tile.state || 'idle',
+        displayX: x,
+        displayY: y,
+        displayWidth: width,
+        displayHeight: height,
+        opacity: 1
       };
     });
     
     this.setData({ tiles: displayTiles });
+  },
+
+  calculateTileDisplayPosition(tile) {
+    const x = (tile.currentX !== undefined ? tile.currentX : tile.gridCol - 1) * CELL_SIZE;
+    const y = (tile.currentY !== undefined ? tile.currentY : tile.gridRow - 1) * CELL_SIZE;
+    const width = tile.gridColSpan * CELL_SIZE;
+    const height = tile.gridRowSpan * CELL_SIZE;
+    
+    return { x, y, width, height };
   },
 
   handleTileTap(e) {
@@ -119,79 +130,144 @@ Page({
     }
 
     const tileId = e.currentTarget.dataset.tileId;
-    const puzzleTile = this.puzzleManager.getTiles().find(t => t.id === tileId);
-    if (!puzzleTile) return;
+    const tile = this.data.tiles.find(t => t.id === tileId);
+    if (!tile) return;
 
-    logger.log('[触摸] 点击格子:', tileId, '位置:(', puzzleTile.gridCol, ',', puzzleTile.gridRow, ')');
+    logger.log('[触摸] 点击格子:', tileId, '位置:(', tile.gridCol, ',', tile.gridRow, ')');
     
-    const result = this.puzzleManager.slideTile(puzzleTile);
-    
-    if (result.moved) {
-      this.startAnimationLoop();
-      
-      if (result.disappeared) {
-        this.watchTileDisappearance(puzzleTile);
-      }
-    }
+    this.handleTileSlide(tile);
   },
 
-  startAnimationLoop() {
-    if (this.animationTimer) {
-      clearInterval(this.animationTimer);
+  handleTileSlide(tile) {
+    const { Direction, DIRECTION_VECTORS } = require('../../utils/constants');
+    
+    let direction = tile.direction;
+    let vector = DIRECTION_VECTORS[direction];
+    
+    if (!vector) {
+      TT.showToast({
+        title: '无法移动',
+        icon: 'none'
+      });
+      return;
     }
-    
-    let lastTime = Date.now();
-    
-    this.animationTimer = setInterval(() => {
-      const now = Date.now();
-      const deltaTime = (now - lastTime) / 1000;
-      lastTime = now;
+
+    let newCol = tile.gridCol + vector.col * tile.gridColSpan;
+    let newRow = tile.gridRow + vector.row * tile.gridRowSpan;
+
+    const isBlocked = this.checkCollision(newCol, newRow, tile);
+    const isOutOfBounds = newCol < 1 || newCol > GRID_SIZE || newRow < 1 || newRow > GRID_SIZE;
+
+    if (isOutOfBounds && tile.unitType === 'dog') {
+      this.animateTileExit(tile, vector);
+      return;
+    }
+
+    if (isBlocked || isOutOfBounds) {
+      TT.showToast({
+        title: '无法移动',
+        icon: 'none',
+        duration: 1000
+      });
+      return;
+    }
+
+    this.animateTileMove(tile, newCol, newRow);
+  },
+
+  checkCollision(newCol, newRow, excludeTile) {
+    for (const tile of this.data.tiles) {
+      if (tile.id === excludeTile.id) continue;
       
-      const tiles = this.puzzleManager.getTiles();
-      let hasAnimatingTiles = false;
+      if (this.tilesOverlap(newCol, newRow, excludeTile.gridColSpan, excludeTile.gridRowSpan,
+                           tile.gridCol, tile.gridRow, tile.gridColSpan, tile.gridRowSpan)) {
+        return true;
+      }
+    }
+    return false;
+  },
+
+  tilesOverlap(col1, row1, spanCol1, spanRow1, col2, row2, spanCol2, spanRow2) {
+    return !(col1 + spanCol1 <= col2 || col2 + spanCol2 <= col1 ||
+             row1 + spanRow1 <= row2 || row2 + spanRow2 <= row1);
+  },
+
+  animateTileMove(tile, newCol, newRow) {
+    const newMoves = this.data.moves + 1;
+    const tiles = this.data.tiles.map(t => {
+      if (t.id === tile.id) {
+        return {
+          ...t,
+          gridCol: newCol,
+          gridRow: newRow,
+          displayX: (newCol - 1) * CELL_SIZE,
+          displayY: (newRow - 1) * CELL_SIZE
+        };
+      }
+      return t;
+    });
+    
+    this.setData({ tiles, moves: newMoves });
+  },
+
+  animateTileExit(tile, vector) {
+    const newMoves = this.data.moves + 1;
+    const tiles = this.data.tiles.map(t => {
+      if (t.id === tile.id) {
+        return {
+          ...t,
+          state: 'exiting'
+        };
+      }
+      return t;
+    });
+    
+    this.setData({ tiles, moves: newMoves });
+
+    let currentCol = tile.gridCol;
+    let currentRow = tile.gridRow;
+    
+    const exitAnimation = setInterval(() => {
+      currentCol += vector.col;
+      currentRow += vector.row;
       
-      tiles.forEach(tile => {
-        if (tile.animating) {
-          this.puzzleManager.updateTileAnimation(tile, deltaTime);
-          hasAnimatingTiles = true;
+      const tiles = this.data.tiles.map(t => {
+        if (t.id === tile.id) {
+          return {
+            ...t,
+            displayX: (currentCol - 1) * CELL_SIZE,
+            displayY: (currentRow - 1) * CELL_SIZE,
+            opacity: Math.max(0, t.opacity - 0.1)
+          };
         }
+        return t;
       });
       
-      this.updateTiles();
+      this.setData({ tiles });
       
-      if (!hasAnimatingTiles) {
-        clearInterval(this.animationTimer);
-        this.animationTimer = null;
+      if (currentCol < -2 || currentCol > GRID_SIZE + 2 || currentRow < -2 || currentRow > GRID_SIZE + 2) {
+        clearInterval(exitAnimation);
+        this.handleWin();
       }
-    }, 16);
+    }, 30);
   },
 
-  watchTileDisappearance(tile) {
-    const checkInterval = setInterval(() => {
-      const currentTile = this.puzzleManager.getTiles().find(t => t.id === tile.id);
-      if (!currentTile || currentTile.state === 'disappeared') {
-        clearInterval(checkInterval);
-        if (tile.unitType === 'dog') {
-          this.handleWin();
-        }
-      }
-    }, 100);
-  },
-
-  handleWin() {
+  async handleWin() {
     this.setData({ gameActive: false });
 
-    const level = this.puzzleManager.getCurrentLevel();
-    const timeUsed = 0;
+    const moves = this.data.moves;
+    const stars = this.levelManager.calculateStars(this.currentLevel, moves);
+    const score = this.levelManager.calculateScore(this.currentLevel, moves);
     
-    const stars = this.puzzleManager.calculateStars(level, timeUsed);
-    const score = this.puzzleManager.calculateScore(level, timeUsed);
+    this.levelManager.setCurrentLevel(this.data.levelId);
+    this.levelManager.completeLevel(stars, score);
     
-    this.puzzleManager.completeLevel(stars, score);
+    const progress = this.levelManager.saveProgress();
+    await app.saveGameProgress(progress);
 
     setTimeout(() => {
       TT.redirectTo({
-        url: `/pages/result/result?result=win&levelId=${this.data.levelId}&stars=${stars}&score=${score}`
+        url: `/pages/result/result?result=win&levelId=${this.data.levelId}&stars=${stars}&score=${score}&moves=${moves}`
       });
     }, 500);
   },
@@ -211,21 +287,11 @@ Page({
       return;
     }
 
-    const success = this.puzzleManager.undo();
-    if (success) {
-      this.updateTiles();
-      TT.showToast({
-        title: '已撤销',
-        icon: 'success',
-        duration: 1000
-      });
-    } else {
-      TT.showToast({
-        title: '无法撤销',
-        icon: 'none',
-        duration: 1000
-      });
-    }
+    TT.showToast({
+      title: '无法撤销',
+      icon: 'none',
+      duration: 1000
+    });
   },
 
   handleHint() {
@@ -250,8 +316,8 @@ Page({
       content: '确定要重置当前关卡吗？',
       success: (res) => {
         if (res.confirm) {
-          this.puzzleManager.resetLevel();
-          this.updateTiles();
+          this.updateTilesFromLevel(this.currentLevel);
+          this.setData({ moves: 0 });
           TT.showToast({
             title: '已重置',
             icon: 'success',
@@ -309,6 +375,7 @@ Page({
       clearInterval(this.animationTimer);
       this.animationTimer = null;
     }
-    this.puzzleManager = null;
+    this.levelManager = null;
+    this.currentLevel = null;
   }
 });

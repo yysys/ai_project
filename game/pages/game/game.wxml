@@ -13,9 +13,10 @@
       </view>
     </view>
     <view class="header-right">
-      <button class="icon-btn" bindtap="showSettings">
-        <text class="material-symbols-outlined">settings</text>
-      </button>
+      <view class="moves-display">
+        <text class="moves-label">步数</text>
+        <text class="moves-value">{{moves}}/{{targetMoves}}</text>
+      </view>
     </view>
   </view>
 

@@ -55,9 +55,13 @@
       <view class="btn-secondary" bindtap="goHome">
         <text>返回首页</text>
       </view>
-      <view class="btn-primary" wx:if="{{result === 'win'}}" bindtap="nextLevel">
+      <view class="btn-primary" wx:if="{{result === 'win' && hasNextLevel}}" bindtap="nextLevel">
         <text class="material-symbols-outlined btn-icon">arrow_forward</text>
         <text>下一关</text>
+      </view>
+      <view class="btn-primary" wx:if="{{result === 'win' && !hasNextLevel}}" bindtap="goHome">
+        <text class="material-symbols-outlined btn-icon">emoji_events</text>
+        <text>全部通关!</text>
       </view>
       <view class="btn-primary" wx:if="{{result === 'lose'}}" bindtap="retryLevel">
         <text class="material-symbols-outlined btn-icon">refresh</text>

@@ -23,6 +23,7 @@ const DEFAULT_PROGRESS = {
   levelStars: {},
   levelScores: {},
   totalScore: 0,
+  coins: 0,
   lastPlayTime: 0
 };
 

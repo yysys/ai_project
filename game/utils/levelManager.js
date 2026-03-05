@@ -101,6 +101,7 @@ class LevelLoader {
   constructor() {
     this.jsonLevelsPath = '../../simulation_json/';
     this.loadedLevels = new Map();
+    this.TT = null;
   }
 
   async loadLevelFromJSON(levelId) {
@@ -109,19 +110,44 @@ class LevelLoader {
     }
 
     try {
-      const fs = require('fs');
-      const path = require('path');
-      const levelPath = path.join(__dirname, this.jsonLevelsPath, `level_${levelId}.json`);
+      const TT = this.TT || (this.TT = require('./tt'));
+      const fs = TT.getFileSystemManager();
       
-      if (!fs.existsSync(levelPath)) {
+      if (!fs) {
+        console.warn('FileSystem not available, using default level');
         return null;
       }
 
-      const data = fs.readFileSync(levelPath, 'utf8');
-      const levelData = JSON.parse(data);
+      const levelPath = `${this.jsonLevelsPath}level_${levelId}.json`;
       
-      this.loadedLevels.set(levelId, levelData);
-      return levelData;
+      return new Promise((resolve) => {
+        fs.access({
+          path: levelPath,
+          success: () => {
+            fs.readFile({
+              filePath: levelPath,
+              encoding: 'utf8',
+              success: (res) => {
+                try {
+                  const levelData = JSON.parse(res.data);
+                  this.loadedLevels.set(levelId, levelData);
+                  resolve(levelData);
+                } catch (e) {
+                  console.error(`Failed to parse level ${levelId}:`, e);
+                  resolve(null);
+                }
+              },
+              fail: (err) => {
+                console.error(`Failed to read level ${levelId}:`, err);
+                resolve(null);
+              }
+            });
+          },
+          fail: () => {
+            resolve(null);
+          }
+        });
+      });
     } catch (error) {
       console.error(`Failed to load level ${levelId}:`, error);
       return null;
@@ -130,18 +156,43 @@ class LevelLoader {
 
   async loadAllLevels() {
     try {
-      const fs = require('fs');
-      const path = require('path');
-      const levelsPath = path.join(__dirname, this.jsonLevelsPath, 'levels.json');
+      const TT = this.TT || (this.TT = require('./tt'));
+      const fs = TT.getFileSystemManager();
       
-      if (!fs.existsSync(levelsPath)) {
+      if (!fs) {
+        console.warn('FileSystem not available, using default levels');
         return [];
       }
 
-      const data = fs.readFileSync(levelsPath, 'utf8');
-      const levelsData = JSON.parse(data);
+      const levelsPath = `${this.jsonLevelsPath}levels.json`;
       
-      return levelsData;
+      return new Promise((resolve) => {
+        fs.access({
+          path: levelsPath,
+          success: () => {
+            fs.readFile({
+              filePath: levelsPath,
+              encoding: 'utf8',
+              success: (res) => {
+                try {
+                  const levelsData = JSON.parse(res.data);
+                  resolve(levelsData);
+                } catch (e) {
+                  console.error('Failed to parse levels.json:', e);
+                  resolve([]);
+                }
+              },
+              fail: (err) => {
+                console.error('Failed to read levels.json:', err);
+                resolve([]);
+              }
+            });
+          },
+          fail: () => {
+            resolve([]);
+          }
+        });
+      });
     } catch (error) {
       console.error('Failed to load all levels:', error);
       return [];
@@ -556,50 +607,49 @@ class LevelManager {
     return this.levels.filter(level => !level.solvable);
   }
 
-  calculateStars(level, timeUsed) {
-    if (!level) return 0;
-
-    let stars = 1;
-
-    if (level.type === LevelType.TIMED && level.timeLimit) {
-      const timeRatio = timeUsed / level.timeLimit;
-      if (timeRatio < 0.5) {
-        stars = 3;
-      } else if (timeRatio < 0.75) {
-        stars = 2;
-      }
-    } else if (level.type === LevelType.CHALLENGE) {
-      const wolfCount = level.getWolfCount();
-      if (wolfCount <= 3) {
-        stars = 3;
-      } else if (wolfCount <= 5) {
-        stars = 2;
-      }
-    } else {
-      const wolfCount = level.getWolfCount();
-      if (wolfCount <= 3) {
-        stars = 3;
-      } else if (wolfCount <= 5) {
-        stars = 2;
-      }
-    }
-
-    return stars;
+  calculateTargetMoves(level) {
+    if (!level) return 3;
+    const wolfCount = level.getWolfCount ? level.getWolfCount() : 0;
+    return wolfCount + 1;
   }
 
-  calculateScore(level, timeUsed) {
+  calculateStars(level, moves) {
+    if (!level) return 1;
+    
+    if (moves === undefined || moves === null) {
+      return 1;
+    }
+    
+    const targetMoves = this.calculateTargetMoves(level);
+    
+    if (moves <= targetMoves) {
+      return 3;
+    } else if (moves <= targetMoves * 1.5) {
+      return 2;
+    } else {
+      return 1;
+    }
+  }
+
+  calculateScore(level, moves) {
     if (!level) return 0;
-
-    let score = 500;
-
-    if (level.type === LevelType.TIMED && level.timeLimit) {
-      const timeRemaining = level.timeLimit - timeUsed;
-      if (timeRemaining > 0) {
-        score += Math.floor(timeRemaining * 5);
-      }
+    
+    if (moves === undefined || moves === null) {
+      moves = 999;
     }
 
-    const wolfCount = level.getWolfCount();
+    let score = 500;
+    const targetMoves = this.calculateTargetMoves(level);
+    
+    if (moves <= targetMoves) {
+      score += 300;
+    } else if (moves <= targetMoves * 1.5) {
+      score += 150;
+    } else if (moves <= targetMoves * 2) {
+      score += 50;
+    }
+
+    const wolfCount = level.getWolfCount ? level.getWolfCount() : 0;
     score += wolfCount * 50;
 
     return score;
